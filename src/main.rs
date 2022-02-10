@@ -10,6 +10,17 @@ use std::io::prelude::*;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
+use criterion_stats::univariate::kde::kernel::Gaussian;
+use criterion_stats::univariate::kde::{Bandwidth, Kde};
+use criterion_stats::univariate::Sample;
+
+use itertools_num::linspace;
+
+use plotlib::page::Page;
+use plotlib::repr::Plot;
+use plotlib::style::{LineStyle, LineJoin};
+use plotlib::view::ContinuousView;
+
 use serde::{Serialize, Deserialize};
 
 // TODO: REPLACE ME
@@ -176,13 +187,8 @@ impl PerformanceBenchmark<'_> {
   }
 }
 
-struct Result<'a> {
-    benchmarks: PerformanceBenchmark<'a>,
-    // This is just known by the benchmarker
-    prepared_file_size: bool,
-    // Since we often iterate over it, a Map does not make sense
-    data_per_access_size: Vec<(u64, Vec<f64>)>
-}
+// --------------------------------------
+// Begin JSON
 
 fn get_all_jsons_from_directory(folder: &PathBuf) -> Vec<PathBuf> {
     let folder: PathBuf = canonicalize(&folder).unwrap();
@@ -255,8 +261,8 @@ struct BenchmarkJSON {
     durations: Vec<f64>,
 }
 
-impl Result<'_> {
-    fn new_from_dir(folder: PathBuf) -> Vec<BenchmarkJSON> {
+impl BenchmarkJSON {
+    fn new_from_dir(folder: &PathBuf) -> Vec<Self> {
         let json_paths: Vec<PathBuf> = get_all_jsons_from_directory(&folder);
         println!("json_paths: {:?}", json_paths);
         let jsons: Vec<BenchmarkJSON> = json_paths.iter()
@@ -266,9 +272,30 @@ impl Result<'_> {
             .collect();
         jsons
     }
+
+    fn generate_kde_from(&self, n: &u64) -> BenchmarkKde {
+        let slice = &self.durations[..];
+        let data = Sample::new(slice);
+        let kde = Kde::new(data, Gaussian, Bandwidth::Silverman);
+        let h = kde.bandwidth();
+        let (left, right): (f64, f64) = (data.min() - 5. * h, data.max() + 5. * h);
+        let xs: Vec<f64> = linspace::<f64>(left,right, 100).collect();
+        let ys: Vec<f64> = kde.map(&xs).to_vec();
+        BenchmarkKde { left, right, xs, ys, }
+    }
 }
+
+struct BenchmarkKde {
+    left: f64,
+    right: f64,
+    xs: Vec<f64>,
+    ys: Vec<f64>
+}
+
+
+
 
 fn main() {
     println!("test");
-    Result::new_from_dir(PathBuf::from("/home/lquenti/code/io-modeller/RandomUncached"));
+    BenchmarkJSON::new_from_dir(&PathBuf::from("/home/lquenti/code/io-modeller/RandomUncached"));
 }
