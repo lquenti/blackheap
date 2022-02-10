@@ -16,11 +16,6 @@ use criterion_stats::univariate::Sample;
 
 use itertools_num::linspace;
 
-use plotlib::page::Page;
-use plotlib::repr::Plot;
-use plotlib::style::{LineStyle, LineJoin};
-use plotlib::view::ContinuousView;
-
 use serde::{Serialize, Deserialize};
 
 // TODO: REPLACE ME
