@@ -49,6 +49,7 @@ struct PerformanceBenchmark<'a> {
     use_o_direct: bool,
     drop_cache_before: bool,
     reread_every_block: bool,
+    delete_afterwards: bool,
 
     available_ram_in_bytes: Option<i32>,
     file_path: Option<&'a str>,
@@ -68,6 +69,7 @@ impl PerformanceBenchmark<'_> {
         use_o_direct: false,
         drop_cache_before: true,
         reread_every_block: false,
+        delete_afterwards: true,
 
         available_ram_in_bytes: None,
         file_path: None,
@@ -98,6 +100,9 @@ impl PerformanceBenchmark<'_> {
     }
     if self.reread_every_block {
         params.push(String::from("--reread"));
+    }
+    if self.delete_afterwards {
+        params.push(String::from("--delete-afterwards"));
     }
     params
   }
