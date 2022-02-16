@@ -1,6 +1,4 @@
-// TODO: Use snitch
 // TODO: Replace unwraps and excepts
-// TODO: Add more typing (and a linter that rejects not completely typed code.)
 // TODO: Replace paths with AsRef<Path>
 use std::fmt;
 use std::fs::{canonicalize, create_dir, create_dir_all, DirEntry, File, read_dir, ReadDir};
@@ -17,6 +15,12 @@ use criterion_stats::univariate::Sample;
 
 use itertools_num::linspace;
 
+use plotlib::page::Page;
+use plotlib::repr::Plot;
+use plotlib::style::{LineStyle, LineJoin};
+use plotlib::view::ContinuousView;
+
+use sailfish::TemplateOnce;
 use serde::{Serialize, Deserialize};
 
 const NAME: &str = "io-modeller";
@@ -296,7 +300,6 @@ struct BenchmarkJSON {
 impl BenchmarkJSON {
     fn new_from_dir(folder: &PathBuf) -> Vec<Self> {
         let json_paths: Vec<PathBuf> = get_all_jsons_from_directory(&folder);
-        println!("json_paths: {:?}", json_paths);
         let jsons: Vec<BenchmarkJSON> = json_paths.iter()
             .map(|path| benchmark_json_to_struct(path))
             .filter(|x| x.is_some())
@@ -305,13 +308,13 @@ impl BenchmarkJSON {
         jsons
     }
 
-    fn generate_kde_from(&self, n: &u64) -> BenchmarkKde {
+    fn generate_kde_from(&self, n: usize) -> BenchmarkKde {
         let slice = &self.durations[..];
         let data = Sample::new(slice);
         let kde = Kde::new(data, Gaussian, Bandwidth::Silverman);
         let h = kde.bandwidth();
         let (left, right): (f64, f64) = (data.min() - 5. * h, data.max() + 5. * h);
-        let xs: Vec<f64> = linspace::<f64>(left,right, 100).collect();
+        let xs: Vec<f64> = linspace::<f64>(left,right, n).collect();
         let ys: Vec<f64> = kde.map(&xs).to_vec();
         BenchmarkKde { left, right, xs, ys, }
     }
@@ -323,6 +326,21 @@ struct BenchmarkKde {
     xs: Vec<f64>,
     ys: Vec<f64>
 }
+
+impl BenchmarkKde {
+    fn to_svg(&self) -> String{
+        let zipped: Vec<(f64, f64)> = self.xs.iter().cloned().zip(self.ys.iter().cloned()).collect();
+        let line = Plot::new(zipped).line_style(
+            LineStyle::new()
+            .colour("burlywood")
+            .linejoin(LineJoin::Round)
+        );
+        let v = ContinuousView::new().add(line);
+        Page::single(&v).to_svg().unwrap().to_string()
+    }
+}
+
+
 
 // -------
 // main
@@ -357,6 +375,13 @@ fn validate_create_model(model_path: &String, benchmarker_path: &String) -> Resu
     Ok(())
 }
 
+#[derive(TemplateOnce)]
+#[template(path = "result.stpl")]
+struct ResultTemplate<'a> {
+    benchmark_name: String,
+    jsons_kdes: Vec<(&'a BenchmarkJSON, &'a BenchmarkKde)>,
+}
+
 fn create_model(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Result<(), std::io::Error> {
     // create folders
     create_dir_all(model_path)?;
@@ -369,11 +394,37 @@ fn create_model(model_path: &String, benchmark_file_path: &String, benchmarker_p
     let random_uncached = PerformanceBenchmark::new_random_uncached(benchmarker_path, benchmark_file_path);
     random_uncached.run_and_save_all_benchmarks(model_path)?;
 
+    // re-read benchmarks
+    let benchmark_folder = random_uncached.get_benchmark_folder(model_path);
+    let mut jsons = BenchmarkJSON::new_from_dir(&PathBuf::from(benchmark_folder));
+    jsons.sort_by_key(|j| j.access_size_in_bytes);
+
+    // Generate KDEs
+    let kdes: Vec<BenchmarkKde> = jsons.iter().map(|j| j.generate_kde_from(100)).collect();
+    let jsons_kdes: Vec<(&BenchmarkJSON, &BenchmarkKde)> = jsons.iter().zip(kdes.iter()).collect();
+
+    // Generate HTML report
+    let ctx = ResultTemplate {
+        benchmark_name: random_uncached.benchmark_type.to_string(),
+        jsons_kdes: jsons_kdes,
+    };
+    let html: String = ctx.render_once().unwrap();
+
+    let html_template_path = format!("{}/{}", model_path, String::from("html"));
+    create_dir(&html_template_path)?;
+
+    let mut output = File::create(format!("{}/{}.html", &html_template_path, random_uncached.benchmark_type.to_string()))?;
+    write!(output, "{}", html)?;
+
+
+
+
+
     // TODO
     // - [ ] (colourful) CLI plotting for progress
     // - [x] Create folder-structure
     // - [x] Run benchmarks with arguments provided
-    // - [ ] Create KDEs
+    // - [x] Create KDEs
     Ok(())
 }
 
@@ -389,7 +440,10 @@ fn main() {
                     format!("{:?}", e)
                 ).exit();
             }
-            create_model(to, file, benchmarker);
+            match create_model(to, file, benchmarker)  {
+                Ok(_) => { },
+                Err(e) => eprintln!("{:?}", e),
+            }
         },
         Commands::UseModel { .. } => {
         },
