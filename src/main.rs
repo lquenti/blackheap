@@ -10,7 +10,7 @@ use std::io::prelude::*;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
-use clap::{AppSettings, Parser, Subcommand};
+use clap::{AppSettings, IntoApp, Parser, Subcommand};
 
 use criterion_stats::univariate::kde::kernel::Gaussian;
 use criterion_stats::univariate::kde::{Bandwidth, Kde};
@@ -104,13 +104,13 @@ struct PerformanceBenchmark {
     delete_afterwards: bool,
 
     benchmarker_path: String,
+    file_path: String,
 
     available_ram_in_bytes: Option<i32>,
-    file_path: Option<String>,
 }
 
 impl PerformanceBenchmark {
-  fn new_random_uncached(benchmarker_path: &String) -> Self {
+  fn new_random_uncached(benchmarker_path: &String, file_path: &String) -> Self {
     PerformanceBenchmark {
         benchmark_type: BenchmarkType::RandomUncached,
         is_read_op: true,
@@ -125,9 +125,9 @@ impl PerformanceBenchmark {
         delete_afterwards: true,
 
         benchmarker_path: benchmarker_path.clone(),
+        file_path: file_path.clone(),
 
         available_ram_in_bytes: None,
-        file_path: None,
     }
   }
 
@@ -140,15 +140,13 @@ impl PerformanceBenchmark {
         format!("--mem-buf={}", self.memory_buffer_size_in_bytes),
         format!("--file-buf={}", self.file_buffer_size_in_bytes),
         format!("--access-size={}", access_size),
+        format!("--file={}", self.file_path),
     ];
     if self.use_o_direct {
         params.push(String::from("--o-direct"));
     }
     if let Some(bytes) = self.available_ram_in_bytes {
         params.push(format!("--free-ram={}", bytes));
-    }
-    if let Some(file_path) = &self.file_path {
-        params.push(format!("--file={}", file_path));
     }
     if self.drop_cache_before {
         params.push(String::from("--drop-cache"));
@@ -332,9 +330,49 @@ struct BenchmarkKde {
     ys: Vec<f64>
 }
 
+// -------
+// main
 
-fn create_model(to: &String, file: &String) {
-    println!("DEBUG: called create_model with to:'{}', file:'{}'", to, file);
+fn path_exists(path: &PathBuf) -> Result<(), std::io::Error> {
+    if !path.exists() {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            format!("{:?} does not exist!", path)
+        ));
+    }
+    Ok(())
+}
+
+fn path_does_not_exist(path: &PathBuf) -> Result<(), std::io::Error> {
+    if path.exists() {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::AlreadyExists,
+            format!("{:?} already exists!", path),
+        ));
+    }
+    Ok(())
+}
+
+fn validate_create_model(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Result<(), std::io::Error> {
+    // The model path should be a non-existing directory with an existing parent directory
+    path_does_not_exist(&PathBuf::from(model_path))?;
+    let mut parent = PathBuf::from(model_path);
+    parent.pop();
+    path_exists(&parent)?;
+
+    // The benchmark parent should exist in order to create the file in
+    let mut parent = PathBuf::from(benchmark_file_path);
+    parent.pop();
+    path_exists(&parent)?;
+
+    // The benchmarker should obviously exist
+    path_exists(&PathBuf::from(benchmarker_path))?;
+
+    Ok(())
+}
+
+fn create_model(mode_path: &String, benchmark_file_path: &String, benchmarker_path: &String) {
+    //let random_uncached = PerformanceBenchmark::new_random_uncached(benchmarker_path, file_path);
     // TODO
     // - [ ] (colourful) CLI plotting for progress
     // - [ ] Create folder-structure
@@ -342,8 +380,7 @@ fn create_model(to: &String, file: &String) {
     // - [ ] Create KDEs
 }
 
-fn use_model(model: &String, file: &String) {
-    println!("DEBUG: use_model with model:'{}', file:'{}'", model, file);
+fn use_model() {
 }
 
 
@@ -352,10 +389,16 @@ fn main() {
 
     match &cli.command {
         Commands::CreateModel { to, file, benchmarker } => {
-            create_model(to, file);
+            if let Err(e) = validate_create_model(to, file, benchmarker) {
+                let mut app = Cli::into_app();
+                app.error(
+                    clap::ErrorKind::InvalidValue,
+                    format!("{:?}", e)
+                ).exit();
+            }
+            create_model(to, file, benchmarker);
         },
         Commands::UseModel { model, file } => {
-            use_model(model, file);
         },
     }
     //BenchmarkJSON::new_from_dir(&PathBuf::from("/home/lquenti/code/io-modeller/RandomUncached"));
