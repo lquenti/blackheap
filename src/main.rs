@@ -10,6 +10,8 @@ use std::io::prelude::*;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
+use clap::{AppSettings, Parser, Subcommand};
+
 use criterion_stats::univariate::kde::kernel::Gaussian;
 use criterion_stats::univariate::kde::{Bandwidth, Kde};
 use criterion_stats::univariate::Sample;
@@ -21,6 +23,41 @@ use serde::{Serialize, Deserialize};
 // TODO: REPLACE ME
 const PATH_TO_EXECUTABLE: &str = "/home/lquenti/code/lquentin/dev/io-benchmark/build/io-benchmark.exe";
 
+const NAME: &str = "io-modeller";
+const AUTHOR: &str = "Lars Quentin <lars.quentin@gwdg.de>";
+const VERSION: &str = "0.1";
+const ABOUT: &str = "A blackbox modeller for I/O-classification";
+
+#[derive(Parser)]
+#[clap(name = NAME, author = AUTHOR, version = VERSION, about = ABOUT, long_about = None)]
+#[clap(global_setting(AppSettings::InferLongArgs))]
+#[clap(global_setting(AppSettings::PropagateVersion))]
+struct Cli {
+    #[clap(subcommand)]
+    command: Commands,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    /// Create a new performance model
+    CreateModel {
+        /// Path to where the models will be saved.
+        #[clap(short, long, default_value_t = String::from("./default-model"))]
+        to: String,
+        /// Path to where the benchmark should be done.
+        #[clap(short, long, default_value_t = String::from("./tmp/io_benchmark_test_file.dat"))]
+        file: String,
+    },
+    /// Evaluate recorded I/O accesses according to previously created benchmark.
+    UseModel {
+        /// Path to model on which the performane will be evaluated on.
+        #[clap(short, long, required = true)]
+        model: String,
+        /// Path to the recorded io accesses.
+        #[clap(short, long, required = true)]
+        file: String,
+    },
+}
 #[derive(Debug)]
 enum AccessPattern {
     Off0,
@@ -288,9 +325,25 @@ struct BenchmarkKde {
 }
 
 
+fn create_model(to: &String, file: &String) {
+    println!("create_model with to:'{}', file:'{}'", to, file);
+}
+
+fn use_model(model: &String, file: &String) {
+    println!("use_model with model:'{}', file:'{}'", model, file);
+}
 
 
 fn main() {
-    println!("test");
-    BenchmarkJSON::new_from_dir(&PathBuf::from("/home/lquenti/code/io-modeller/RandomUncached"));
+    let cli = Cli::parse();
+
+    match &cli.command {
+        Commands::CreateModel { to, file } => {
+            create_model(to, file);
+        },
+        Commands::UseModel { model, file } => {
+            use_model(model, file);
+        },
+    }
+    //BenchmarkJSON::new_from_dir(&PathBuf::from("/home/lquenti/code/io-modeller/RandomUncached"));
 }
