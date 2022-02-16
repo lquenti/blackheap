@@ -17,7 +17,7 @@ use itertools_num::linspace;
 
 use plotlib::page::Page;
 use plotlib::repr::Plot;
-use plotlib::style::{LineStyle, LineJoin};
+use plotlib::style::{LineStyle, LineJoin, PointMarker, PointStyle};
 use plotlib::view::ContinuousView;
 
 use sailfish::TemplateOnce;
@@ -329,14 +329,51 @@ struct BenchmarkKde {
 
 impl BenchmarkKde {
     fn to_svg(&self) -> String{
-        let zipped: Vec<(f64, f64)> = self.xs.iter().cloned().zip(self.ys.iter().cloned()).collect();
-        let line = Plot::new(zipped).line_style(
+        let kde_points: Vec<(f64, f64)> = self.xs.iter().cloned().zip(self.ys.iter().cloned()).collect();
+
+        // KDE itself
+        let line_plot = Plot::new(kde_points).line_style(
             LineStyle::new()
-            .colour("burlywood")
+            .colour("#e1c16e")
             .linejoin(LineJoin::Round)
         );
-        let v = ContinuousView::new().add(line);
+
+        // Minima and Maxima
+        let (minima, maxima) = self.get_extrema();
+        let maxima_plot = Plot::new(maxima).point_style(
+            PointStyle::new()
+            .marker(PointMarker::Circle)
+            .colour("#ff0000")
+        );
+        let minima_plot = Plot::new(minima).point_style(
+            PointStyle::new()
+            .marker(PointMarker::Circle)
+            .colour("#0000ff")
+        );
+
+        let v = ContinuousView::new()
+            .add(line_plot)
+            .add(minima_plot)
+            .add(maxima_plot);
         Page::single(&v).to_svg().unwrap().to_string()
+    }
+
+    fn get_extrema(&self) -> (Vec<(f64, f64)>, Vec<(f64, f64)>){
+        let mut minima = Vec::new();
+        let mut maxima = Vec::new();
+        for i in 1..(self.xs.len()-1) {
+            let is_increasing_before = self.ys[i-1] <= self.ys[i];
+            let is_increasing_after = self.ys[i] <= self.ys[i+1];
+            if is_increasing_before == is_increasing_after {
+                continue
+            }
+            if is_increasing_before && !is_increasing_after {
+                maxima.push((self.xs[i], self.ys[i]));
+            } else {
+                minima.push((self.xs[i], self.ys[i]));
+            }
+        }
+        (minima, maxima)
     }
 }
 
@@ -367,10 +404,12 @@ fn path_does_not_exist(path: &PathBuf) -> Result<(), std::io::Error> {
 
 fn validate_create_model(model_path: &String, benchmarker_path: &String) -> Result<(), std::io::Error> {
     // The model path should be non-existing
-    path_does_not_exist(&PathBuf::from(model_path))?;
+    //TODO
+    //path_does_not_exist(&PathBuf::from(model_path))?;
 
     // The benchmarker should obviously exist
-    path_exists(&PathBuf::from(benchmarker_path))?;
+    //TODO
+    //path_exists(&PathBuf::from(benchmarker_path))?;
 
     Ok(())
 }
@@ -392,7 +431,7 @@ fn create_model(model_path: &String, benchmark_file_path: &String, benchmarker_p
 
     // Create Benchmarks
     let random_uncached = PerformanceBenchmark::new_random_uncached(benchmarker_path, benchmark_file_path);
-    random_uncached.run_and_save_all_benchmarks(model_path)?;
+    //random_uncached.run_and_save_all_benchmarks(model_path)?;
 
     // re-read benchmarks
     let benchmark_folder = random_uncached.get_benchmark_folder(model_path);
@@ -448,5 +487,4 @@ fn main() {
         Commands::UseModel { .. } => {
         },
     }
-    //BenchmarkJSON::new_from_dir(&PathBuf::from("/home/lquenti/code/io-modeller/RandomUncached"));
 }
