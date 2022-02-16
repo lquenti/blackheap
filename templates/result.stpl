@@ -21,12 +21,13 @@
           Access Size: <%= json.access_size_in_bytes %>
         </h4>
       </div>
+      <div class="center" />
 
-      <svg>
-        <%# This is unescaped %>
-        <%- kde.to_svg() %>
-      </svg>
+      <%# This is unescaped %>
+      <%- kde.to_svg() %>
+
       <% } %>
+      </div>
 
     </main>
   </body>
