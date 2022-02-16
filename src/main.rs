@@ -2,13 +2,14 @@
 // TODO: Replace unwraps and excepts
 // TODO: Add more typing (and a linter that rejects not completely typed code.)
 // TODO: Replace paths with AsRef<Path>
-use std::env;
 use std::fmt;
-use std::fs::{canonicalize, create_dir, DirEntry, File, read_dir, ReadDir};
+use std::fs::{canonicalize, create_dir, create_dir_all, DirEntry, File, read_dir, ReadDir};
 use std::io::BufReader;
 use std::io::prelude::*;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
+
+use clap::{AppSettings, IntoApp, Parser, Subcommand};
 
 use criterion_stats::univariate::kde::kernel::Gaussian;
 use criterion_stats::univariate::kde::{Bandwidth, Kde};
@@ -18,9 +19,48 @@ use itertools_num::linspace;
 
 use serde::{Serialize, Deserialize};
 
-// TODO: REPLACE ME
-const PATH_TO_EXECUTABLE: &str = "/home/lquenti/code/lquentin/dev/io-benchmark/build/io-benchmark.exe";
+const NAME: &str = "io-modeller";
+const AUTHOR: &str = "Lars Quentin <lars.quentin@gwdg.de>";
+const VERSION: &str = "0.1";
+const ABOUT: &str = "A blackbox modeller for I/O-classification";
 
+// TODO: some have to be cwd, some path of io-benchmarker
+// Probably we should use lazy_static
+const DEFAULT_MODEL_PATH: &str = "./default-model";
+const DEFAULT_BENCHMARK_FILE_PATH: &str = "/tmp/io_benchmark_test_file.dat";
+
+#[derive(Parser)]
+#[clap(name = NAME, author = AUTHOR, version = VERSION, about = ABOUT, long_about = None)]
+#[clap(global_setting(AppSettings::InferLongArgs))]
+#[clap(global_setting(AppSettings::PropagateVersion))]
+struct Cli {
+    #[clap(subcommand)]
+    command: Commands,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    /// Create a new performance model
+    CreateModel {
+        /// Path to where the models will be saved.
+        #[clap(short, long, default_value_t = String::from(DEFAULT_MODEL_PATH))]
+        to: String,
+        /// Path to where the benchmark should be done.
+        #[clap(short, long, default_value_t = String::from(DEFAULT_BENCHMARK_FILE_PATH))]
+        file: String,
+        #[clap(short, long, required = true)]
+        benchmarker: String,
+    },
+    /// Evaluate recorded I/O accesses according to previously created benchmark.
+    UseModel {
+        /// Path to model on which the performane will be evaluated on.
+        #[clap(short, long, required = true)]
+        model: String,
+        /// Path to the recorded io accesses.
+        #[clap(short, long, required = true)]
+        file: String,
+    },
+}
 #[derive(Debug)]
 enum AccessPattern {
     Off0,
@@ -46,9 +86,8 @@ impl fmt::Display for BenchmarkType {
 }
 
 
-// TODO: Add default value to path to executable
 #[derive(Debug)]
-struct PerformanceBenchmark<'a> {
+struct PerformanceBenchmark {
     benchmark_type: BenchmarkType,
 
     is_read_op: bool,
@@ -62,13 +101,14 @@ struct PerformanceBenchmark<'a> {
     reread_every_block: bool,
     delete_afterwards: bool,
 
+    benchmarker_path: String,
+    file_path: String,
+
     available_ram_in_bytes: Option<i32>,
-    file_path: Option<&'a str>,
 }
 
-// TODO: Why the anonymous lifetime
-impl PerformanceBenchmark<'_> {
-  fn new_random_uncached() -> Self {
+impl PerformanceBenchmark {
+  fn new_random_uncached(benchmarker_path: &String, file_path: &String) -> Self {
     PerformanceBenchmark {
         benchmark_type: BenchmarkType::RandomUncached,
         is_read_op: true,
@@ -82,8 +122,10 @@ impl PerformanceBenchmark<'_> {
         reread_every_block: false,
         delete_afterwards: true,
 
+        benchmarker_path: benchmarker_path.clone(),
+        file_path: file_path.clone(),
+
         available_ram_in_bytes: None,
-        file_path: None,
     }
   }
 
@@ -96,15 +138,13 @@ impl PerformanceBenchmark<'_> {
         format!("--mem-buf={}", self.memory_buffer_size_in_bytes),
         format!("--file-buf={}", self.file_buffer_size_in_bytes),
         format!("--access-size={}", access_size),
+        format!("--file={}", self.file_path),
     ];
     if self.use_o_direct {
         params.push(String::from("--o-direct"));
     }
     if let Some(bytes) = self.available_ram_in_bytes {
         params.push(format!("--free-ram={}", bytes));
-    }
-    if let Some(file_path) = self.file_path {
-        params.push(format!("--file={}", file_path));
     }
     if self.drop_cache_before {
         params.push(String::from("--drop-cache"));
@@ -119,7 +159,7 @@ impl PerformanceBenchmark<'_> {
   }
 
   fn run_test(&self, access_size: &u64) -> std::result::Result<String, String> {
-    let child = Command::new(PATH_TO_EXECUTABLE)
+    let child = Command::new(&self.benchmarker_path)
         .args(self.get_parameters(access_size))
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -154,31 +194,28 @@ impl PerformanceBenchmark<'_> {
       }
   }
 
-  fn create_folder_in_pwd(&self) {
-      let cwd = env::current_dir().unwrap();
-      let path: PathBuf = [cwd.to_str().unwrap(), self.benchmark_type.to_string().as_str()].iter().collect();
-      println!("path: {:?}", path);
-      create_dir(path).unwrap();
+  fn get_benchmark_folder(&self, model_path: &String) -> String {
+    format!("{}/{}", model_path, self.benchmark_type.to_string())
   }
 
-  fn run_and_save_all_benchmarks(&self) {
-    let benchmark_type_string = self.benchmark_type.to_string();
-    let benchmark_type_str = benchmark_type_string.as_str();
 
-    self.create_folder_in_pwd();
+
+  fn run_and_save_all_benchmarks(&self, model_path: &String) -> Result<(), std::io::Error> {
+    let benchmark_folder_path = self.get_benchmark_folder(model_path);
+    create_dir(&benchmark_folder_path)?;
+
     for i in 1..28 {
         let access_size = u64::pow(2, i);
-        println!("Running {} with access_size {}", benchmark_type_str, access_size);
+        println!("Running {} with access_size {}", self.benchmark_type.to_string(), access_size);
 
-        let cwd = env::current_dir().unwrap();
         let path: PathBuf = [
-            cwd.to_str().unwrap(),
-            benchmark_type_str,
-            format!("{}.json", access_size).as_str()
+            &benchmark_folder_path,
+            &format!("{}.json", access_size)
         ].iter().collect();
 
         self.run_test_and_save_to_file(&access_size, &path.to_str().unwrap());
     }
+    Ok(())
   }
 }
 
@@ -287,10 +324,75 @@ struct BenchmarkKde {
     ys: Vec<f64>
 }
 
+// -------
+// main
 
+fn path_exists(path: &PathBuf) -> Result<(), std::io::Error> {
+    if !path.exists() {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            format!("{:?} does not exist!", path)
+        ));
+    }
+    Ok(())
+}
 
+fn path_does_not_exist(path: &PathBuf) -> Result<(), std::io::Error> {
+    if path.exists() {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::AlreadyExists,
+            format!("{:?} already exists!", path),
+        ));
+    }
+    Ok(())
+}
+
+fn validate_create_model(model_path: &String, benchmarker_path: &String) -> Result<(), std::io::Error> {
+    // The model path should be non-existing
+    path_does_not_exist(&PathBuf::from(model_path))?;
+
+    // The benchmarker should obviously exist
+    path_exists(&PathBuf::from(benchmarker_path))?;
+
+    Ok(())
+}
+
+fn create_model(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Result<(), std::io::Error> {
+    // create folders
+    create_dir_all(model_path)?;
+
+    let mut parent = PathBuf::from(benchmark_file_path);
+    parent.pop();
+    create_dir_all(parent)?;
+
+    // Create Benchmarks
+    let random_uncached = PerformanceBenchmark::new_random_uncached(benchmarker_path, benchmark_file_path);
+    random_uncached.run_and_save_all_benchmarks(model_path)?;
+
+    // TODO
+    // - [ ] (colourful) CLI plotting for progress
+    // - [x] Create folder-structure
+    // - [x] Run benchmarks with arguments provided
+    // - [ ] Create KDEs
+    Ok(())
+}
 
 fn main() {
-    println!("test");
-    BenchmarkJSON::new_from_dir(&PathBuf::from("/home/lquenti/code/io-modeller/RandomUncached"));
+    let cli = Cli::parse();
+
+    match &cli.command {
+        Commands::CreateModel { to, file, benchmarker } => {
+            if let Err(e) = validate_create_model(to, benchmarker) {
+                let mut app = Cli::into_app();
+                app.error(
+                    clap::ErrorKind::InvalidValue,
+                    format!("{:?}", e)
+                ).exit();
+            }
+            create_model(to, file, benchmarker);
+        },
+        Commands::UseModel { .. } => {
+        },
+    }
+    //BenchmarkJSON::new_from_dir(&PathBuf::from("/home/lquenti/code/io-modeller/RandomUncached"));
 }
