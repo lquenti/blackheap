@@ -8,7 +8,16 @@ edition = "2021"
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+
 criterion-stats = "0.2.5"
+
+# Used for linspace (like np.linspace())
 itertools-num = "0.1"
+
+# Greatest pure rust library
 plotlib = "0.5.1"
+
 clap = { version = "3.0.14", features = ["derive"] }
+
+# Used for its few dependencies
+sailfish = "0.3.4"
