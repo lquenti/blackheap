@@ -28,7 +28,6 @@ const ABOUT: &str = "A blackbox modeller for I/O-classification";
 // Probably we should use lazy_static
 const DEFAULT_MODEL_PATH: &str = "./default-model";
 const DEFAULT_BENCHMARK_FILE_PATH: &str = "/tmp/io_benchmark_test_file.dat";
-const DEFAULT_BENCHMARKER_PATH: &str = "./io-benchmarker.exe";
 
 #[derive(Parser)]
 #[clap(name = NAME, author = AUTHOR, version = VERSION, about = ABOUT, long_about = None)]
@@ -49,7 +48,7 @@ enum Commands {
         /// Path to where the benchmark should be done.
         #[clap(short, long, default_value_t = String::from(DEFAULT_BENCHMARK_FILE_PATH))]
         file: String,
-        #[clap(short, long, default_value_t = String::from(DEFAULT_BENCHMARKER_PATH))]
+        #[clap(short, long, required = true)]
         benchmarker: String,
     },
     /// Evaluate recorded I/O accesses according to previously created benchmark.
@@ -370,7 +369,6 @@ fn create_model(model_path: &String, benchmark_file_path: &String, benchmarker_p
     let random_uncached = PerformanceBenchmark::new_random_uncached(benchmarker_path, benchmark_file_path);
     random_uncached.run_and_save_all_benchmarks(model_path)?;
 
-    //let random_uncached = PerformanceBenchmark::new_random_uncached(benchmarker_path, file_path);
     // TODO
     // - [ ] (colourful) CLI plotting for progress
     // - [x] Create folder-structure
