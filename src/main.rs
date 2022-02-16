@@ -17,6 +17,11 @@ use criterion_stats::univariate::Sample;
 
 use itertools_num::linspace;
 
+use plotlib::page::Page;
+use plotlib::repr::Plot;
+use plotlib::style::{LineStyle, LineJoin};
+use plotlib::view::ContinuousView;
+
 use serde::{Serialize, Deserialize};
 
 const NAME: &str = "io-modeller";
@@ -323,6 +328,21 @@ struct BenchmarkKde {
     xs: Vec<f64>,
     ys: Vec<f64>
 }
+
+impl BenchmarkKde {
+    fn to_svg(&self) -> String{
+        let zipped: Vec<(f64, f64)> = self.xs.iter().cloned().zip(self.ys.iter().cloned()).collect();
+        let line = Plot::new(zipped).line_style(
+            LineStyle::new()
+            .colour("burlywood")
+            .linejoin(LineJoin::Round)
+        );
+        let v = ContinuousView::new().add(line);
+        Page::single(&v).to_svg().unwrap().to_string()
+    }
+}
+
+
 
 // -------
 // main
