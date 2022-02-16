@@ -411,7 +411,30 @@ impl BenchmarkKde {
             ret.push(cluster);
         }
         ret
+    }
 
+    fn to_significant_clusters(&self) -> Vec<Cluster> {
+        let clusters = self.to_all_cluster();
+        let global_maximum = clusters.iter().fold(0.0f64, |max, new| if max > new.maximum.1 { max } else { new.maximum.1 });
+        // So a cluster is a cluster iff
+        // (maxima[i] - minima[i+1]) < 0.1 * global_maximum
+        //
+        // We join clusters together until that is true.
+        let is_significant = |cluster: &Cluster| (cluster.maximum.1 - cluster.ys[cluster.ys.len()-1]) < 0.1 * global_maximum;
+
+        let mut ret = Vec::new();
+
+        let mut curr_cluster = None;
+        for c in clusters {
+            if let None = curr_cluster {
+                curr_cluster = Some(c);
+            }
+            // can we cut here?
+            if is_significant(&curr_cluster.unwrap()) {
+
+            }
+        }
+        ret
     }
 }
 
