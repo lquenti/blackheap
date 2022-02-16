@@ -316,15 +316,19 @@ impl BenchmarkJSON {
         let (left, right): (f64, f64) = (data.min() - 5. * h, data.max() + 5. * h);
         let xs: Vec<f64> = linspace::<f64>(left,right, n).collect();
         let ys: Vec<f64> = kde.map(&xs).to_vec();
-        BenchmarkKde { left, right, xs, ys, }
+        BenchmarkKde { xs, ys, }
     }
 }
 
 struct BenchmarkKde {
-    left: f64,
-    right: f64,
     xs: Vec<f64>,
     ys: Vec<f64>
+}
+
+struct Cluster {
+    xs: Vec<f64>,
+    ys: Vec<f64>,
+    maximum: (f64, f64),
 }
 
 impl BenchmarkKde {
@@ -339,7 +343,7 @@ impl BenchmarkKde {
         );
 
         // Minima and Maxima
-        let (minima, maxima) = self.get_extrema();
+        let (minima, maxima) = self.get_all_extrema();
         let maxima_plot = Plot::new(maxima).point_style(
             PointStyle::new()
             .marker(PointMarker::Circle)
@@ -354,11 +358,13 @@ impl BenchmarkKde {
         let v = ContinuousView::new()
             .add(line_plot)
             .add(minima_plot)
-            .add(maxima_plot);
+            .add(maxima_plot)
+            .x_label("time in seconds")
+            .y_label("approximated propability");
         Page::single(&v).to_svg().unwrap().to_string()
     }
 
-    fn get_extrema(&self) -> (Vec<(f64, f64)>, Vec<(f64, f64)>){
+    fn get_all_extrema(&self) -> (Vec<(f64, f64)>, Vec<(f64, f64)>){
         let mut minima = Vec::new();
         let mut maxima = Vec::new();
         for i in 1..(self.xs.len()-1) {
@@ -374,6 +380,38 @@ impl BenchmarkKde {
             }
         }
         (minima, maxima)
+    }
+
+    fn to_all_cluster(&self) -> Vec<Cluster> {
+        let (mut minima, maxima) = self.get_all_extrema();
+
+        // We want a delimiter at the front and back
+        minima.insert(0, (self.xs[0], self.ys[0]));
+        minima.push((self.xs[self.xs.len()-1], self.ys[self.ys.len()-1]));
+
+        let mut ret = Vec::new();
+        for i in 0..maxima.len() {
+            let left_minimum = minima[i].0;
+            let maximum = maxima[i];
+            let right_minimum = minima[i+1].0;
+
+            // TODO god this is inperformant but who cares for now
+            let left_index = self.xs.iter().position(|&x| x == left_minimum).unwrap();
+            let right_index = self.xs.iter().position(|&x| x == right_minimum).unwrap();
+
+            let xs_cluster =  self.xs[left_index..right_index+1].to_vec();
+            let ys_cluster = self.ys[left_index..right_index+1].to_vec();
+
+            let cluster = Cluster {
+                xs: xs_cluster,
+                ys: ys_cluster,
+                maximum: maximum,
+            };
+
+            ret.push(cluster);
+        }
+        ret
+
     }
 }
 
@@ -455,15 +493,6 @@ fn create_model(model_path: &String, benchmark_file_path: &String, benchmarker_p
     let mut output = File::create(format!("{}/{}.html", &html_template_path, random_uncached.benchmark_type.to_string()))?;
     write!(output, "{}", html)?;
 
-
-
-
-
-    // TODO
-    // - [ ] (colourful) CLI plotting for progress
-    // - [x] Create folder-structure
-    // - [x] Run benchmarks with arguments provided
-    // - [x] Create KDEs
     Ok(())
 }
 
