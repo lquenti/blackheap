@@ -2,9 +2,8 @@
 // TODO: Replace unwraps and excepts
 // TODO: Add more typing (and a linter that rejects not completely typed code.)
 // TODO: Replace paths with AsRef<Path>
-use std::env;
 use std::fmt;
-use std::fs::{canonicalize, create_dir, DirEntry, File, read_dir, ReadDir};
+use std::fs::{canonicalize, create_dir, create_dir_all, DirEntry, File, read_dir, ReadDir};
 use std::io::BufReader;
 use std::io::prelude::*;
 use std::path::PathBuf;
@@ -196,32 +195,28 @@ impl PerformanceBenchmark {
       }
   }
 
-  // TODO: REWRITE ME FOR FOLDER STRUCTURE
-  fn create_folder_in_pwd(&self) {
-      let cwd = env::current_dir().unwrap();
-      let path: PathBuf = [cwd.to_str().unwrap(), self.benchmark_type.to_string().as_str()].iter().collect();
-      println!("path: {:?}", path);
-      create_dir(path).unwrap();
+  fn get_benchmark_folder(&self, model_path: &String) -> String {
+    format!("{}/{}", model_path, self.benchmark_type.to_string())
   }
 
-  fn run_and_save_all_benchmarks(&self) {
-    let benchmark_type_string = self.benchmark_type.to_string();
-    let benchmark_type_str = benchmark_type_string.as_str();
 
-    self.create_folder_in_pwd();
+
+  fn run_and_save_all_benchmarks(&self, model_path: &String) -> Result<(), std::io::Error> {
+    let benchmark_folder_path = self.get_benchmark_folder(model_path);
+    create_dir(&benchmark_folder_path)?;
+
     for i in 1..28 {
         let access_size = u64::pow(2, i);
-        println!("Running {} with access_size {}", benchmark_type_str, access_size);
+        println!("Running {} with access_size {}", self.benchmark_type.to_string(), access_size);
 
-        let cwd = env::current_dir().unwrap();
         let path: PathBuf = [
-            cwd.to_str().unwrap(),
-            benchmark_type_str,
-            format!("{}.json", access_size).as_str()
+            &benchmark_folder_path,
+            &format!("{}.json", access_size)
         ].iter().collect();
 
         self.run_test_and_save_to_file(&access_size, &path.to_str().unwrap());
     }
+    Ok(())
   }
 }
 
@@ -353,17 +348,9 @@ fn path_does_not_exist(path: &PathBuf) -> Result<(), std::io::Error> {
     Ok(())
 }
 
-fn validate_create_model(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Result<(), std::io::Error> {
-    // The model path should be a non-existing directory with an existing parent directory
+fn validate_create_model(model_path: &String, benchmarker_path: &String) -> Result<(), std::io::Error> {
+    // The model path should be non-existing
     path_does_not_exist(&PathBuf::from(model_path))?;
-    let mut parent = PathBuf::from(model_path);
-    parent.pop();
-    path_exists(&parent)?;
-
-    // The benchmark parent should exist in order to create the file in
-    let mut parent = PathBuf::from(benchmark_file_path);
-    parent.pop();
-    path_exists(&parent)?;
 
     // The benchmarker should obviously exist
     path_exists(&PathBuf::from(benchmarker_path))?;
@@ -371,25 +358,33 @@ fn validate_create_model(model_path: &String, benchmark_file_path: &String, benc
     Ok(())
 }
 
-fn create_model(mode_path: &String, benchmark_file_path: &String, benchmarker_path: &String) {
+fn create_model(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Result<(), std::io::Error> {
+    // create folders
+    create_dir_all(model_path)?;
+
+    let mut parent = PathBuf::from(benchmark_file_path);
+    parent.pop();
+    create_dir_all(parent)?;
+
+    // Create Benchmarks
+    let random_uncached = PerformanceBenchmark::new_random_uncached(benchmarker_path, benchmark_file_path);
+    random_uncached.run_and_save_all_benchmarks(model_path)?;
+
     //let random_uncached = PerformanceBenchmark::new_random_uncached(benchmarker_path, file_path);
     // TODO
     // - [ ] (colourful) CLI plotting for progress
-    // - [ ] Create folder-structure
-    // - [ ] Run benchmarks with arguments provided
+    // - [x] Create folder-structure
+    // - [x] Run benchmarks with arguments provided
     // - [ ] Create KDEs
+    Ok(())
 }
-
-fn use_model() {
-}
-
 
 fn main() {
     let cli = Cli::parse();
 
     match &cli.command {
         Commands::CreateModel { to, file, benchmarker } => {
-            if let Err(e) = validate_create_model(to, file, benchmarker) {
+            if let Err(e) = validate_create_model(to, benchmarker) {
                 let mut app = Cli::into_app();
                 app.error(
                     clap::ErrorKind::InvalidValue,
@@ -398,7 +393,7 @@ fn main() {
             }
             create_model(to, file, benchmarker);
         },
-        Commands::UseModel { model, file } => {
+        Commands::UseModel { .. } => {
         },
     }
     //BenchmarkJSON::new_from_dir(&PathBuf::from("/home/lquenti/code/io-modeller/RandomUncached"));
