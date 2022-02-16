@@ -367,7 +367,7 @@ fn path_does_not_exist(path: &PathBuf) -> Result<(), std::io::Error> {
 
 fn validate_create_model(model_path: &String, benchmarker_path: &String) -> Result<(), std::io::Error> {
     // The model path should be non-existing
-    path_does_not_exist(&PathBuf::from(model_path))?;
+    //path_does_not_exist(&PathBuf::from(model_path))?;
 
     // The benchmarker should obviously exist
     path_exists(&PathBuf::from(benchmarker_path))?;
@@ -392,11 +392,12 @@ fn create_model(model_path: &String, benchmark_file_path: &String, benchmarker_p
 
     // Create Benchmarks
     let random_uncached = PerformanceBenchmark::new_random_uncached(benchmarker_path, benchmark_file_path);
-    random_uncached.run_and_save_all_benchmarks(model_path)?;
+    //random_uncached.run_and_save_all_benchmarks(model_path)?;
 
     // re-read benchmarks
     let benchmark_folder = random_uncached.get_benchmark_folder(model_path);
-    let jsons = BenchmarkJSON::new_from_dir(&PathBuf::from(benchmark_folder));
+    let mut jsons = BenchmarkJSON::new_from_dir(&PathBuf::from(benchmark_folder));
+    jsons.sort_by_key(|j| j.access_size_in_bytes);
 
     // Generate KDEs
     let kdes: Vec<BenchmarkKde> = jsons.iter().map(|j| j.generate_kde_from(100)).collect();
