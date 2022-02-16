@@ -20,13 +20,16 @@ use itertools_num::linspace;
 
 use serde::{Serialize, Deserialize};
 
-// TODO: REPLACE ME
-const PATH_TO_EXECUTABLE: &str = "/home/lquenti/code/lquentin/dev/io-benchmark/build/io-benchmark.exe";
-
 const NAME: &str = "io-modeller";
 const AUTHOR: &str = "Lars Quentin <lars.quentin@gwdg.de>";
 const VERSION: &str = "0.1";
 const ABOUT: &str = "A blackbox modeller for I/O-classification";
+
+// TODO: some have to be cwd, some path of io-benchmarker
+// Probably we should use lazy_static
+const DEFAULT_MODEL_PATH: &str = "./default-model";
+const DEFAULT_BENCHMARK_FILE_PATH: &str = "/tmp/io_benchmark_test_file.dat";
+const DEFAULT_BENCHMARKER_PATH: &str = "./io-benchmarker.exe";
 
 #[derive(Parser)]
 #[clap(name = NAME, author = AUTHOR, version = VERSION, about = ABOUT, long_about = None)]
@@ -42,11 +45,13 @@ enum Commands {
     /// Create a new performance model
     CreateModel {
         /// Path to where the models will be saved.
-        #[clap(short, long, default_value_t = String::from("./default-model"))]
+        #[clap(short, long, default_value_t = String::from(DEFAULT_MODEL_PATH))]
         to: String,
         /// Path to where the benchmark should be done.
-        #[clap(short, long, default_value_t = String::from("./tmp/io_benchmark_test_file.dat"))]
+        #[clap(short, long, default_value_t = String::from(DEFAULT_BENCHMARK_FILE_PATH))]
         file: String,
+        #[clap(short, long, default_value_t = String::from(DEFAULT_BENCHMARKER_PATH))]
+        benchmarker: String,
     },
     /// Evaluate recorded I/O accesses according to previously created benchmark.
     UseModel {
@@ -83,9 +88,8 @@ impl fmt::Display for BenchmarkType {
 }
 
 
-// TODO: Add default value to path to executable
 #[derive(Debug)]
-struct PerformanceBenchmark<'a> {
+struct PerformanceBenchmark {
     benchmark_type: BenchmarkType,
 
     is_read_op: bool,
@@ -99,13 +103,14 @@ struct PerformanceBenchmark<'a> {
     reread_every_block: bool,
     delete_afterwards: bool,
 
+    benchmarker_path: String,
+
     available_ram_in_bytes: Option<i32>,
-    file_path: Option<&'a str>,
+    file_path: Option<String>,
 }
 
-// TODO: Why the anonymous lifetime
-impl PerformanceBenchmark<'_> {
-  fn new_random_uncached() -> Self {
+impl PerformanceBenchmark {
+  fn new_random_uncached(benchmarker_path: &String) -> Self {
     PerformanceBenchmark {
         benchmark_type: BenchmarkType::RandomUncached,
         is_read_op: true,
@@ -118,6 +123,8 @@ impl PerformanceBenchmark<'_> {
         drop_cache_before: true,
         reread_every_block: false,
         delete_afterwards: true,
+
+        benchmarker_path: benchmarker_path.clone(),
 
         available_ram_in_bytes: None,
         file_path: None,
@@ -140,7 +147,7 @@ impl PerformanceBenchmark<'_> {
     if let Some(bytes) = self.available_ram_in_bytes {
         params.push(format!("--free-ram={}", bytes));
     }
-    if let Some(file_path) = self.file_path {
+    if let Some(file_path) = &self.file_path {
         params.push(format!("--file={}", file_path));
     }
     if self.drop_cache_before {
@@ -156,7 +163,7 @@ impl PerformanceBenchmark<'_> {
   }
 
   fn run_test(&self, access_size: &u64) -> std::result::Result<String, String> {
-    let child = Command::new(PATH_TO_EXECUTABLE)
+    let child = Command::new(&self.benchmarker_path)
         .args(self.get_parameters(access_size))
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -191,6 +198,7 @@ impl PerformanceBenchmark<'_> {
       }
   }
 
+  // TODO: REWRITE ME FOR FOLDER STRUCTURE
   fn create_folder_in_pwd(&self) {
       let cwd = env::current_dir().unwrap();
       let path: PathBuf = [cwd.to_str().unwrap(), self.benchmark_type.to_string().as_str()].iter().collect();
@@ -326,11 +334,16 @@ struct BenchmarkKde {
 
 
 fn create_model(to: &String, file: &String) {
-    println!("create_model with to:'{}', file:'{}'", to, file);
+    println!("DEBUG: called create_model with to:'{}', file:'{}'", to, file);
+    // TODO
+    // - [ ] (colourful) CLI plotting for progress
+    // - [ ] Create folder-structure
+    // - [ ] Run benchmarks with arguments provided
+    // - [ ] Create KDEs
 }
 
 fn use_model(model: &String, file: &String) {
-    println!("use_model with model:'{}', file:'{}'", model, file);
+    println!("DEBUG: use_model with model:'{}', file:'{}'", model, file);
 }
 
 
@@ -338,7 +351,7 @@ fn main() {
     let cli = Cli::parse();
 
     match &cli.command {
-        Commands::CreateModel { to, file } => {
+        Commands::CreateModel { to, file, benchmarker } => {
             create_model(to, file);
         },
         Commands::UseModel { model, file } => {
