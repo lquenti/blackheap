@@ -15,12 +15,15 @@ use criterion_stats::univariate::Sample;
 
 use itertools_num::linspace;
 
+use linregress::{FormulaRegressionBuilder, RegressionDataBuilder};
+
 use plotlib::page::Page;
 use plotlib::repr::Plot;
 use plotlib::style::{LineStyle, LineJoin, PointMarker, PointStyle};
 use plotlib::view::ContinuousView;
 
 use sailfish::TemplateOnce;
+
 use serde::{Serialize, Deserialize};
 
 const NAME: &str = "io-modeller";
@@ -366,21 +369,6 @@ impl BenchmarkKde {
             .linejoin(LineJoin::Round)
         );
 
-        // Minima and Maxima
-        /*
-        let (minima, maxima) = self.get_all_extrema();
-        let maxima_plot = Plot::new(maxima).point_style(
-            PointStyle::new()
-            .marker(PointMarker::Circle)
-            .colour("#ff0000")
-        );
-        let minima_plot = Plot::new(minima).point_style(
-            PointStyle::new()
-            .marker(PointMarker::Circle)
-            .colour("#0000ff")
-        );
-        */
-
         // clusters
         let sig_clusters = self.to_significant_clusters();
         let mut maxima = Vec::new();
@@ -500,6 +488,11 @@ impl BenchmarkKde {
         }
         res
     }
+
+    fn get_global_maximum(&self) -> (f64,f64) {
+        let (_, maxima) = self.get_all_extrema();
+        maxima.iter().fold((0.0, 0.0), |curr_max, new| if new.1 > curr_max.1 { (new.0, new.1) } else { curr_max })
+    }
 }
 
 
@@ -546,6 +539,39 @@ struct ResultTemplate<'a> {
     jsons_kdes: Vec<(&'a BenchmarkJSON, &'a BenchmarkKde)>,
 }
 
+/// y=aX+b
+struct LinearModel {
+    a: f64,
+    b: f64,
+}
+
+impl LinearModel {
+    // TODO: A lot of double work with to_svg, rewrite me
+    fn from_jsons_kdes(jsons: &Vec<BenchmarkJSON>, kdes: &Vec<BenchmarkKde>) -> Self {
+        let mut xs = Vec::new();
+        let mut ys = Vec::new();
+        for i in 0..jsons.len() {
+            xs.push(jsons[i].access_size_in_bytes as f64);
+            ys.push(kdes[i].get_global_maximum().1);
+        }
+        let data = vec![("X", xs), ("Y", ys)];
+        let formula = "Y ~ X";
+        let data = RegressionDataBuilder::new().build_from(data).unwrap();
+        let model = FormulaRegressionBuilder::new()
+        .data(&data)
+        .formula(formula)
+        .fit().unwrap();
+
+        let parameters = model.parameters;
+        let a = parameters.regressor_values[0];
+        let b = parameters.intercept_value;
+        Self {
+            a, b
+        }
+    }
+}
+
+
 fn create_model(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Result<(), std::io::Error> {
     // create folders
     create_dir_all(model_path)?;
@@ -566,6 +592,7 @@ fn create_model(model_path: &String, benchmark_file_path: &String, benchmarker_p
     // Generate KDEs
     let kdes: Vec<BenchmarkKde> = jsons.iter().map(|j| j.generate_kde_from(100)).collect();
     let jsons_kdes: Vec<(&BenchmarkJSON, &BenchmarkKde)> = jsons.iter().zip(kdes.iter()).collect();
+
 
     // Generate HTML report
     let ctx = ResultTemplate {
