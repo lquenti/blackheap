@@ -367,6 +367,7 @@ impl BenchmarkKde {
         );
 
         // Minima and Maxima
+        /*
         let (minima, maxima) = self.get_all_extrema();
         let maxima_plot = Plot::new(maxima).point_style(
             PointStyle::new()
@@ -378,13 +379,48 @@ impl BenchmarkKde {
             .marker(PointMarker::Circle)
             .colour("#0000ff")
         );
+        */
 
-        let v = ContinuousView::new()
+        // clusters
+        let sig_clusters = self.to_significant_clusters();
+        let mut maxima = Vec::new();
+        for cluster in &sig_clusters {
+            maxima.push(cluster.maximum);
+        }
+        let maxima_plot = Plot::new(maxima).point_style(
+            PointStyle::new()
+            .marker(PointMarker::Circle)
+            .colour("#ff0000")
+        );
+        // TODO: Replace once we have good box support
+        let mut cluster_plots = Vec::new();
+        for cluster in &sig_clusters {
+            let left = cluster.xs[0];
+            let right = cluster.xs[cluster.xs.len()-1];
+            let lines = vec![
+                (left,0.0f64),
+                (left, cluster.maximum.1),
+                (right, cluster.maximum.1),
+                (right, 0.0f64),
+                (left, 0.0f64)
+            ];
+            cluster_plots.push(
+                Plot::new(lines).line_style(
+                    LineStyle::new()
+                    .colour("#3f888f")
+                    .linejoin(LineJoin::Round)
+                )
+            );
+        }
+
+
+        let mut v = ContinuousView::new()
             .add(line_plot)
-            .add(minima_plot)
-            .add(maxima_plot)
-            .x_label("time in seconds")
-            .y_label("approximated propability");
+            .add(maxima_plot);
+        for p in cluster_plots {
+            v = v.add(p);
+        }
+        v = v.x_label("time in seconds").y_label("approximated propability");
         Page::single(&v).to_svg().unwrap().to_string()
     }
 
