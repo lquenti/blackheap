@@ -331,6 +331,30 @@ struct Cluster {
     maximum: (f64, f64),
 }
 
+impl Cluster {
+    fn merge(&self, next: &Cluster) -> Cluster {
+        let global_max;
+        let mut global_xs = self.xs.clone();
+        let mut global_ys = self.ys.clone();
+        global_xs.append(&mut next.xs.clone());
+        global_ys.append(&mut next.ys.clone());
+        if self.maximum.1 > next.maximum.1 {
+            global_max = self.maximum;
+        } else {
+            global_max = next.maximum;
+        }
+        Cluster {
+            xs: global_xs,
+            ys: global_ys,
+            maximum: global_max
+        }
+    }
+
+    fn is_significant(&self, global_maximum: f64) -> bool {
+        (self.maximum.1 - self.ys[self.ys.len()-1]) >= 0.1 * global_maximum
+    }
+}
+
 impl BenchmarkKde {
     fn to_svg(&self) -> String{
         let kde_points: Vec<(f64, f64)> = self.xs.iter().cloned().zip(self.ys.iter().cloned()).collect();
@@ -415,26 +439,30 @@ impl BenchmarkKde {
 
     fn to_significant_clusters(&self) -> Vec<Cluster> {
         let clusters = self.to_all_cluster();
-        let global_maximum = clusters.iter().fold(0.0f64, |max, new| if max > new.maximum.1 { max } else { new.maximum.1 });
+        let global_maximum = clusters.iter().
+            fold(0.0f64, |max, new| if max > new.maximum.1 { max } else { new.maximum.1 });
+
         // So a cluster is a cluster iff
         // (maxima[i] - minima[i+1]) < 0.1 * global_maximum
         //
         // We join clusters together until that is true.
-        let is_significant = |cluster: &Cluster| (cluster.maximum.1 - cluster.ys[cluster.ys.len()-1]) < 0.1 * global_maximum;
 
-        let mut ret = Vec::new();
-
+        let mut res = Vec::new();
         let mut curr_cluster = None;
         for c in clusters {
-            if let None = curr_cluster {
-                curr_cluster = Some(c);
-            }
-            // can we cut here?
-            if is_significant(&curr_cluster.unwrap()) {
-
+            // If we have none, this means last was significant, i.e we cut off
+            // If we have some, this means it was not significant, so maybe our joined one will be.
+            curr_cluster = match curr_cluster {
+                None => { Some(c) },
+                Some(cluster) => { Some(cluster.merge(&c)) },
+            };
+            // At this point we __know__ it has to be Some()
+            if curr_cluster.as_ref().unwrap().is_significant(global_maximum) {
+                res.push(curr_cluster.unwrap());
+                curr_cluster = None;
             }
         }
-        ret
+        res
     }
 }
 
