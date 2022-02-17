@@ -15,6 +15,11 @@
       </div>
       <hr>
 
+      <div class="row">
+        <h4>Linear Model: <%= linear_model.a%>*x+<%= linear_model.b%></h4>
+        <%- linear_model_svg %>
+      </div>
+
       <% for (json, kde) in jsons_kdes { %>
       <div class="row">
         <h4>

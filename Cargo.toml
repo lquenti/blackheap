@@ -21,3 +21,5 @@ clap = { version = "3.0.14", features = ["derive"] }
 
 # Used for its few dependencies
 sailfish = "0.3.4"
+
+linregress = "0.4.4"

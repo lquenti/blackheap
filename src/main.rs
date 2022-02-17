@@ -15,12 +15,15 @@ use criterion_stats::univariate::Sample;
 
 use itertools_num::linspace;
 
+use linregress::{FormulaRegressionBuilder, RegressionDataBuilder};
+
 use plotlib::page::Page;
 use plotlib::repr::Plot;
 use plotlib::style::{LineStyle, LineJoin, PointMarker, PointStyle};
 use plotlib::view::ContinuousView;
 
 use sailfish::TemplateOnce;
+
 use serde::{Serialize, Deserialize};
 
 const NAME: &str = "io-modeller";
@@ -366,21 +369,6 @@ impl BenchmarkKde {
             .linejoin(LineJoin::Round)
         );
 
-        // Minima and Maxima
-        /*
-        let (minima, maxima) = self.get_all_extrema();
-        let maxima_plot = Plot::new(maxima).point_style(
-            PointStyle::new()
-            .marker(PointMarker::Circle)
-            .colour("#ff0000")
-        );
-        let minima_plot = Plot::new(minima).point_style(
-            PointStyle::new()
-            .marker(PointMarker::Circle)
-            .colour("#0000ff")
-        );
-        */
-
         // clusters
         let sig_clusters = self.to_significant_clusters();
         let mut maxima = Vec::new();
@@ -500,6 +488,11 @@ impl BenchmarkKde {
         }
         res
     }
+
+    fn get_global_maximum(&self) -> (f64,f64) {
+        let (_, maxima) = self.get_all_extrema();
+        maxima.iter().fold((0.0, 0.0), |curr_max, new| if new.1 > curr_max.1 { (new.0, new.1) } else { curr_max })
+    }
 }
 
 
@@ -544,7 +537,73 @@ fn validate_create_model(model_path: &String, benchmarker_path: &String) -> Resu
 struct ResultTemplate<'a> {
     benchmark_name: String,
     jsons_kdes: Vec<(&'a BenchmarkJSON, &'a BenchmarkKde)>,
+    linear_model: LinearModel,
+    linear_model_svg: String
 }
+
+/// y=aX+b
+struct LinearModel {
+    a: f64,
+    b: f64,
+    max_access_size: f64
+}
+
+impl LinearModel {
+    // TODO: A lot of double work with to_svg, rewrite me
+    // TODO: From next minimum instead of maximum
+    fn from_jsons_kdes(jsons: &Vec<BenchmarkJSON>, kdes: &Vec<BenchmarkKde>) -> Self {
+        let max_access_size = jsons[jsons.len()-1].access_size_in_bytes as f64;
+        let (xs, ys) = Self::get_xs_ys(jsons, kdes);
+        let data = vec![("X", xs), ("Y", ys)];
+        let formula = "Y ~ X";
+        let data = RegressionDataBuilder::new().build_from(data).unwrap();
+        let model = FormulaRegressionBuilder::new()
+        .data(&data)
+        .formula(formula)
+        .fit().unwrap();
+
+        let parameters = model.parameters;
+        let a = parameters.regressor_values[0];
+        let b = parameters.intercept_value;
+        Self {
+            a, b, max_access_size
+        }
+    }
+
+    fn get_xs_ys(jsons: &Vec<BenchmarkJSON>, kdes: &Vec<BenchmarkKde>) -> (Vec<f64>, Vec<f64>) {
+        let mut xs = Vec::new();
+        let mut ys = Vec::new();
+        for i in 0..jsons.len() {
+            xs.push(jsons[i].access_size_in_bytes as f64);
+            ys.push(kdes[i].get_global_maximum().0);
+        }
+        (xs, ys)
+    }
+
+    // TODO refactor me as well
+    fn to_svg(&self, jsons: &Vec<BenchmarkJSON>, kdes: &Vec<BenchmarkKde>) -> String {
+        let (xs, ys) = Self::get_xs_ys(jsons, kdes);
+        let mut xs_ys: Vec<(f64, f64)> = xs.iter().cloned().zip(ys.iter().cloned()).collect();
+        let pts = Plot::new(xs_ys).point_style(
+            PointStyle::new()
+            .colour("#ff0000")
+            .marker(PointMarker::Cross)
+        );
+        let line = Plot::new(vec![(0.0f64, self.b), (self.max_access_size, self.max_access_size* self.a)])
+            .line_style(
+                LineStyle::new()
+                .colour("#0000ff")
+                .linejoin(LineJoin::Round)
+            );
+        let v = ContinuousView::new()
+            .add(line)
+            .add(pts)
+            .x_label("Access Sizes in Bytes")
+            .y_label("Expected Size in sec");
+        Page::single(&v).to_svg().unwrap().to_string()
+    }
+}
+
 
 fn create_model(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Result<(), std::io::Error> {
     // create folders
@@ -567,10 +626,16 @@ fn create_model(model_path: &String, benchmark_file_path: &String, benchmarker_p
     let kdes: Vec<BenchmarkKde> = jsons.iter().map(|j| j.generate_kde_from(100)).collect();
     let jsons_kdes: Vec<(&BenchmarkJSON, &BenchmarkKde)> = jsons.iter().zip(kdes.iter()).collect();
 
+    // Create linear model
+    let linear_model = LinearModel::from_jsons_kdes(&jsons, &kdes);
+    let linear_model_svg = linear_model.to_svg(&jsons, &kdes);
+
     // Generate HTML report
     let ctx = ResultTemplate {
         benchmark_name: random_uncached.benchmark_type.to_string(),
-        jsons_kdes: jsons_kdes,
+        jsons_kdes,
+        linear_model,
+        linear_model_svg,
     };
     let html: String = ctx.render_once().unwrap();
 
