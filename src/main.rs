@@ -17,7 +17,7 @@ use itertools_num::linspace;
 
 use plotlib::page::Page;
 use plotlib::repr::Plot;
-use plotlib::style::{LineStyle, LineJoin};
+use plotlib::style::{LineStyle, LineJoin, PointMarker, PointStyle};
 use plotlib::view::ContinuousView;
 
 use sailfish::TemplateOnce;
@@ -316,27 +316,189 @@ impl BenchmarkJSON {
         let (left, right): (f64, f64) = (data.min() - 5. * h, data.max() + 5. * h);
         let xs: Vec<f64> = linspace::<f64>(left,right, n).collect();
         let ys: Vec<f64> = kde.map(&xs).to_vec();
-        BenchmarkKde { left, right, xs, ys, }
+        BenchmarkKde { xs, ys, }
     }
 }
 
 struct BenchmarkKde {
-    left: f64,
-    right: f64,
     xs: Vec<f64>,
     ys: Vec<f64>
 }
 
+struct Cluster {
+    xs: Vec<f64>,
+    ys: Vec<f64>,
+    maximum: (f64, f64),
+}
+
+impl Cluster {
+    fn merge(&self, next: &Cluster) -> Cluster {
+        let global_max;
+        let mut global_xs = self.xs.clone();
+        let mut global_ys = self.ys.clone();
+        global_xs.append(&mut next.xs.clone());
+        global_ys.append(&mut next.ys.clone());
+        if self.maximum.1 > next.maximum.1 {
+            global_max = self.maximum;
+        } else {
+            global_max = next.maximum;
+        }
+        Cluster {
+            xs: global_xs,
+            ys: global_ys,
+            maximum: global_max
+        }
+    }
+
+    fn is_significant(&self, global_maximum: f64) -> bool {
+        (self.maximum.1 - self.ys[self.ys.len()-1]) >= 0.1 * global_maximum
+    }
+}
+
 impl BenchmarkKde {
     fn to_svg(&self) -> String{
-        let zipped: Vec<(f64, f64)> = self.xs.iter().cloned().zip(self.ys.iter().cloned()).collect();
-        let line = Plot::new(zipped).line_style(
+        let kde_points: Vec<(f64, f64)> = self.xs.iter().cloned().zip(self.ys.iter().cloned()).collect();
+
+        // KDE itself
+        let line_plot = Plot::new(kde_points).line_style(
             LineStyle::new()
-            .colour("burlywood")
+            .colour("#e1c16e")
             .linejoin(LineJoin::Round)
         );
-        let v = ContinuousView::new().add(line);
+
+        // Minima and Maxima
+        /*
+        let (minima, maxima) = self.get_all_extrema();
+        let maxima_plot = Plot::new(maxima).point_style(
+            PointStyle::new()
+            .marker(PointMarker::Circle)
+            .colour("#ff0000")
+        );
+        let minima_plot = Plot::new(minima).point_style(
+            PointStyle::new()
+            .marker(PointMarker::Circle)
+            .colour("#0000ff")
+        );
+        */
+
+        // clusters
+        let sig_clusters = self.to_significant_clusters();
+        let mut maxima = Vec::new();
+        for cluster in &sig_clusters {
+            maxima.push(cluster.maximum);
+        }
+        let maxima_plot = Plot::new(maxima).point_style(
+            PointStyle::new()
+            .marker(PointMarker::Circle)
+            .colour("#ff0000")
+        );
+        // TODO: Replace once we have good box support
+        let mut cluster_plots = Vec::new();
+        for cluster in &sig_clusters {
+            let left = cluster.xs[0];
+            let right = cluster.xs[cluster.xs.len()-1];
+            let lines = vec![
+                (left,0.0f64),
+                (left, cluster.maximum.1),
+                (right, cluster.maximum.1),
+                (right, 0.0f64),
+                (left, 0.0f64)
+            ];
+            cluster_plots.push(
+                Plot::new(lines).line_style(
+                    LineStyle::new()
+                    .colour("#3f888f")
+                    .linejoin(LineJoin::Round)
+                )
+            );
+        }
+
+
+        let mut v = ContinuousView::new()
+            .add(line_plot)
+            .add(maxima_plot);
+        for p in cluster_plots {
+            v = v.add(p);
+        }
+        v = v.x_label("time in seconds").y_label("approximated propability");
         Page::single(&v).to_svg().unwrap().to_string()
+    }
+
+    fn get_all_extrema(&self) -> (Vec<(f64, f64)>, Vec<(f64, f64)>){
+        let mut minima = Vec::new();
+        let mut maxima = Vec::new();
+        for i in 1..(self.xs.len()-1) {
+            let is_increasing_before = self.ys[i-1] <= self.ys[i];
+            let is_increasing_after = self.ys[i] <= self.ys[i+1];
+            if is_increasing_before == is_increasing_after {
+                continue
+            }
+            if is_increasing_before && !is_increasing_after {
+                maxima.push((self.xs[i], self.ys[i]));
+            } else {
+                minima.push((self.xs[i], self.ys[i]));
+            }
+        }
+        (minima, maxima)
+    }
+
+    fn to_all_cluster(&self) -> Vec<Cluster> {
+        let (mut minima, maxima) = self.get_all_extrema();
+
+        // We want a delimiter at the front and back
+        minima.insert(0, (self.xs[0], self.ys[0]));
+        minima.push((self.xs[self.xs.len()-1], self.ys[self.ys.len()-1]));
+
+        let mut ret = Vec::new();
+        for i in 0..maxima.len() {
+            let left_minimum = minima[i].0;
+            let maximum = maxima[i];
+            let right_minimum = minima[i+1].0;
+
+            // TODO god this is inperformant but who cares for now
+            let left_index = self.xs.iter().position(|&x| x == left_minimum).unwrap();
+            let right_index = self.xs.iter().position(|&x| x == right_minimum).unwrap();
+
+            let xs_cluster =  self.xs[left_index..right_index+1].to_vec();
+            let ys_cluster = self.ys[left_index..right_index+1].to_vec();
+
+            let cluster = Cluster {
+                xs: xs_cluster,
+                ys: ys_cluster,
+                maximum: maximum,
+            };
+
+            ret.push(cluster);
+        }
+        ret
+    }
+
+    fn to_significant_clusters(&self) -> Vec<Cluster> {
+        let clusters = self.to_all_cluster();
+        let global_maximum = clusters.iter().
+            fold(0.0f64, |max, new| if max > new.maximum.1 { max } else { new.maximum.1 });
+
+        // So a cluster is a cluster iff
+        // (maxima[i] - minima[i+1]) < 0.1 * global_maximum
+        //
+        // We join clusters together until that is true.
+
+        let mut res = Vec::new();
+        let mut curr_cluster = None;
+        for c in clusters {
+            // If we have none, this means last was significant, i.e we cut off
+            // If we have some, this means it was not significant, so maybe our joined one will be.
+            curr_cluster = match curr_cluster {
+                None => { Some(c) },
+                Some(cluster) => { Some(cluster.merge(&c)) },
+            };
+            // At this point we __know__ it has to be Some()
+            if curr_cluster.as_ref().unwrap().is_significant(global_maximum) {
+                res.push(curr_cluster.unwrap());
+                curr_cluster = None;
+            }
+        }
+        res
     }
 }
 
@@ -367,10 +529,12 @@ fn path_does_not_exist(path: &PathBuf) -> Result<(), std::io::Error> {
 
 fn validate_create_model(model_path: &String, benchmarker_path: &String) -> Result<(), std::io::Error> {
     // The model path should be non-existing
-    path_does_not_exist(&PathBuf::from(model_path))?;
+    //TODO
+    //path_does_not_exist(&PathBuf::from(model_path))?;
 
     // The benchmarker should obviously exist
-    path_exists(&PathBuf::from(benchmarker_path))?;
+    //TODO
+    //path_exists(&PathBuf::from(benchmarker_path))?;
 
     Ok(())
 }
@@ -392,7 +556,7 @@ fn create_model(model_path: &String, benchmark_file_path: &String, benchmarker_p
 
     // Create Benchmarks
     let random_uncached = PerformanceBenchmark::new_random_uncached(benchmarker_path, benchmark_file_path);
-    random_uncached.run_and_save_all_benchmarks(model_path)?;
+    //random_uncached.run_and_save_all_benchmarks(model_path)?;
 
     // re-read benchmarks
     let benchmark_folder = random_uncached.get_benchmark_folder(model_path);
@@ -416,15 +580,6 @@ fn create_model(model_path: &String, benchmark_file_path: &String, benchmarker_p
     let mut output = File::create(format!("{}/{}.html", &html_template_path, random_uncached.benchmark_type.to_string()))?;
     write!(output, "{}", html)?;
 
-
-
-
-
-    // TODO
-    // - [ ] (colourful) CLI plotting for progress
-    // - [x] Create folder-structure
-    // - [x] Run benchmarks with arguments provided
-    // - [x] Create KDEs
     Ok(())
 }
 
@@ -448,5 +603,4 @@ fn main() {
         Commands::UseModel { .. } => {
         },
     }
-    //BenchmarkJSON::new_from_dir(&PathBuf::from("/home/lquenti/code/io-modeller/RandomUncached"));
 }
