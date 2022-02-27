@@ -20,7 +20,15 @@ typedef struct state_t {
 
 static state_t *current_state = NULL;
 
+static void cleanup_state() {
+  char debug_str[] = "Hello Cleanup\n";
+  current_state->orig_write(current_state->fp, debug_str, strlen(debug_str));
+  close(current_state->fp);
+  free(current_state);
+}
+
 static void init_state() {
+  atexit(cleanup_state);
   current_state = malloc(sizeof(state_t));
 
   int timestamp = (int)time(NULL);
@@ -31,7 +39,6 @@ static void init_state() {
   current_state->orig_read = dlsym(RTLD_NEXT, "read");
   current_state->orig_write = dlsym(RTLD_NEXT, "write");
 }
-
 
 ssize_t read(int fd, void *buf, size_t count) {
   if (unlikely(current_state == NULL)) {
