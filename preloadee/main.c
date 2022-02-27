@@ -7,8 +7,16 @@
 
 int main() {
   int fd = open("./test.txt", O_CREAT | O_WRONLY, 0644);
-  printf("Before:\n");
   char str[] = "lorem ipsum";
-  write(fd, str, 11);
+  printf("to write:%s\n", str);
+  write(fd, str, strlen(str));
+  close(fd);
+
+  fd = open("./test.txt", O_RDONLY, 0644);
+  char buf[51];
+  ssize_t res = read(fd, buf, 51);
+  buf[res] = '\0';
+  printf("res: %lld\n", (long long int)res);
+  printf("main: %s\n", buf);
   close(fd);
 }
