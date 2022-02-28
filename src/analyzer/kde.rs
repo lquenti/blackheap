@@ -5,8 +5,8 @@ use plotlib::view::ContinuousView;
 
 
 pub struct BenchmarkKde {
-    xs: Vec<f64>,
-    ys: Vec<f64>
+    pub xs: Vec<f64>,
+    pub ys: Vec<f64>
 }
 
 struct Cluster {
@@ -40,7 +40,7 @@ impl Cluster {
 }
 
 impl BenchmarkKde {
-    fn to_svg(&self) -> String{
+    pub fn to_svg(&self) -> String{
         let kde_points: Vec<(f64, f64)> = self.xs.iter().cloned().zip(self.ys.iter().cloned()).collect();
 
         // KDE itself

@@ -1,5 +1,6 @@
 use std::fs::{create_dir, create_dir_all, File};
 use std::path::PathBuf;
+use std::io::Write;
 
 use crate::subprograms::helper::{path_exists, path_does_not_exist};
 use crate::benchmark_wrapper::PerformanceBenchmark;
