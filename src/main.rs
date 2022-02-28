@@ -11,15 +11,15 @@ mod subprograms;
 mod html_templater;
 
 use cli::{Cli, Commands};
-use subprograms::use_model::use_model;
-use subprograms::create_model::{validate_create_model, create_model};
+use subprograms::use_model;
+use subprograms::create_model;
 
 fn main() {
     let cli = Cli::parse();
 
     match &cli.command {
         Commands::CreateModel { to, file, benchmarker } => {
-            if let Err(e) = validate_create_model(to, benchmarker) {
+            if let Err(e) = create_model::validate(to, benchmarker) {
                 let mut app = cli::Cli::into_app();
                 app.error(
                     clap::ErrorKind::InvalidValue,
@@ -32,7 +32,7 @@ fn main() {
             }
         },
         Commands::UseModel { model, file } => {
-            match use_model(model, file) {
+            match use_model::use_model(model, file) {
                 Ok(_) => { },
                 Err(e) => eprintln!("{:?}", e),
             }
