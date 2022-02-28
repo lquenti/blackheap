@@ -1,7 +1,7 @@
 // TODO: Replace unwraps and excepts
 // TODO: Replace paths with AsRef<Path>
 use std::fmt;
-use std::fs::{canonicalize, create_dir, create_dir_all, DirEntry, File, read_dir, ReadDir};
+use std::fs::{canonicalize, create_dir, create_dir_all, DirEntry, File, read_dir, ReadDir, read_to_string};
 use std::io::BufReader;
 use std::io::prelude::*;
 use std::path::PathBuf;
@@ -661,6 +661,35 @@ fn create_model(model_path: &String, benchmark_file_path: &String, benchmarker_p
     Ok(())
 }
 
+#[derive(Debug, Deserialize)]
+struct CsvLine {
+    io_type: char,
+    bytes: u64,
+    sec: f64
+}
+
+impl CsvLine {
+    fn from_file(file: &String) -> Result<Vec<CsvLine>, std::io::Error> {
+        let mut rdr = csv::Reader::from_path(file)?;
+        let mut res = Vec::new();
+        for result in rdr.deserialize::<CsvLine>() {
+            let record = result?;
+            res.push(record);
+        }
+        Ok(res)
+    }
+}
+
+fn use_model(model: &String, file: &String) -> Result<(), std::io::Error> {
+    // TODO: validate
+
+    let measurements: Vec<CsvLine> = CsvLine::from_file(file)?;
+    for m in measurements {
+        println!("{:?}", m);
+    }
+    Ok(())
+}
+
 fn main() {
     let cli = Cli::parse();
 
@@ -678,7 +707,11 @@ fn main() {
                 Err(e) => eprintln!("{:?}", e),
             }
         },
-        Commands::UseModel { .. } => {
+        Commands::UseModel { model, file } => {
+            match use_model(model, file) {
+                Ok(_) => { },
+                Err(e) => eprintln!("{:?}", e),
+            }
         },
     }
 }
