@@ -25,6 +25,7 @@ use plotlib::view::ContinuousView;
 use sailfish::TemplateOnce;
 
 use serde::{Serialize, Deserialize};
+use serde_json::json;
 
 const NAME: &str = "io-modeller";
 const AUTHOR: &str = "Lars Quentin <lars.quentin@gwdg.de>";
@@ -602,6 +603,14 @@ impl LinearModel {
             .y_label("Expected Size in sec");
         Page::single(&v).to_svg().unwrap().to_string()
     }
+
+    fn to_json(&self) -> String {
+        let ret = json!({
+            "a": self.a,
+            "b": self.b
+        });
+        ret.to_string()
+    }
 }
 
 
@@ -629,6 +638,10 @@ fn create_model(model_path: &String, benchmark_file_path: &String, benchmarker_p
     // Create linear model
     let linear_model = LinearModel::from_jsons_kdes(&jsons, &kdes);
     let linear_model_svg = linear_model.to_svg(&jsons, &kdes);
+
+    // save linear model
+    let mut model_file = File::create(format!("{}/LinearModel.json", model_path))?;
+    write!(model_file, "{}", linear_model.to_json())?;
 
     // Generate HTML report
     let ctx = ResultTemplate {
