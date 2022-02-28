@@ -26,7 +26,7 @@ fn main() {
                     format!("{:?}", e)
                 ).exit();
             }
-            match create_model(to, file, benchmarker)  {
+            match create_model::create_model(to, file, benchmarker)  {
                 Ok(_) => { },
                 Err(e) => eprintln!("{:?}", e),
             }

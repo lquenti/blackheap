@@ -1,15 +1,14 @@
 use clap::{AppSettings, Parser, Subcommand};
 
-// TODO: PUT ME SOMEWHERE ELSE
 // TODO: some have to be cwd, some path of io-benchmarker
 // Probably we should use lazy_static
-const DEFAULT_MODEL_PATH: &str = "./default-model";
-const DEFAULT_BENCHMARK_FILE_PATH: &str = "/tmp/io_benchmark_test_file.dat";
+pub const DEFAULT_MODEL_PATH: &str = "./default-model";
+pub const DEFAULT_BENCHMARK_FILE_PATH: &str = "/tmp/io_benchmark_test_file.dat";
 
-const NAME: &str = "io-modeller";
-const AUTHOR: &str = "Lars Quentin <lars.quentin@gwdg.de>";
-const VERSION: &str = "0.1";
-const ABOUT: &str = "A blackbox modeller for I/O-classification";
+pub const NAME: &str = "io-modeller";
+pub const AUTHOR: &str = "Lars Quentin <lars.quentin@gwdg.de>";
+pub const VERSION: &str = "0.1";
+pub const ABOUT: &str = "A blackbox modeller for I/O-classification";
 
 #[derive(Parser)]
 #[clap(name = NAME, author = AUTHOR, version = VERSION, about = ABOUT, long_about = None)]

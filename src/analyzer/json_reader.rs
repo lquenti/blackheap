@@ -1,4 +1,4 @@
-use std::fs::{canonicalize, DirEntry, File, read_dir, ReadDir};
+use std::fs::{self, DirEntry, File, ReadDir};
 use std::path::PathBuf;
 use std::io::BufReader;
 
@@ -10,13 +10,12 @@ use criterion_stats::univariate::Sample;
 
 use itertools_num::linspace;
 
-// TODO remove me after
 use crate::analyzer::kde::BenchmarkKde;
 
 
 fn get_all_jsons_from_directory(folder: &PathBuf) -> Vec<PathBuf> {
-    let folder: PathBuf = canonicalize(&folder).unwrap();
-    let dir: ReadDir = read_dir(&folder).unwrap();
+    let folder: PathBuf = fs::canonicalize(&folder).unwrap();
+    let dir: ReadDir = fs::read_dir(&folder).unwrap();
 
     let mut valid_dir_entries: Vec<DirEntry> = Vec::new();
     for dir_entry in dir {
