@@ -2,7 +2,7 @@ use std::fmt;
 use std::process::{Command, Stdio};
 use std::fs::{create_dir, File};
 use std::path::PathBuf;
-use std::io::prelude::*;
+use std::io::prelude::Write;
 
 #[derive(Debug)]
 #[allow(dead_code)]
