@@ -23,3 +23,5 @@ clap = { version = "3.0.14", features = ["derive"] }
 sailfish = "0.3.4"
 
 linregress = "0.4.4"
+
+csv = "1.1"

@@ -1,7 +1,7 @@
 // TODO: Replace unwraps and excepts
 // TODO: Replace paths with AsRef<Path>
 use std::fmt;
-use std::fs::{canonicalize, create_dir, create_dir_all, DirEntry, File, read_dir, ReadDir};
+use std::fs::{canonicalize, create_dir, create_dir_all, DirEntry, File, read_dir, ReadDir, read_to_string};
 use std::io::BufReader;
 use std::io::prelude::*;
 use std::path::PathBuf;
@@ -543,17 +543,19 @@ struct ResultTemplate<'a> {
 }
 
 /// y=aX+b
+#[derive(Serialize, Deserialize, Debug)]
 struct LinearModel {
     a: f64,
     b: f64,
-    max_access_size: f64
+    // Just needed for plotting when creating the model
+    max_access_size: Option<f64>
 }
 
 impl LinearModel {
     // TODO: A lot of double work with to_svg, rewrite me
     // TODO: From next minimum instead of maximum
     fn from_jsons_kdes(jsons: &Vec<BenchmarkJSON>, kdes: &Vec<BenchmarkKde>) -> Self {
-        let max_access_size = jsons[jsons.len()-1].access_size_in_bytes as f64;
+        let max_access_size = Some(jsons[jsons.len()-1].access_size_in_bytes as f64);
         let (xs, ys) = Self::get_xs_ys(jsons, kdes);
         let data = vec![("X", xs), ("Y", ys)];
         let formula = "Y ~ X";
@@ -583,6 +585,7 @@ impl LinearModel {
 
     // TODO refactor me as well
     fn to_svg(&self, jsons: &Vec<BenchmarkJSON>, kdes: &Vec<BenchmarkKde>) -> String {
+        let max_access_size = self.max_access_size.expect("max_access_size was None");
         let (xs, ys) = Self::get_xs_ys(jsons, kdes);
         let mut xs_ys: Vec<(f64, f64)> = xs.iter().cloned().zip(ys.iter().cloned()).collect();
         let pts = Plot::new(xs_ys).point_style(
@@ -590,7 +593,7 @@ impl LinearModel {
             .colour("#ff0000")
             .marker(PointMarker::Cross)
         );
-        let line = Plot::new(vec![(0.0f64, self.b), (self.max_access_size, self.max_access_size* self.a)])
+        let line = Plot::new(vec![(0.0f64, self.b), (max_access_size, max_access_size* self.a)])
             .line_style(
                 LineStyle::new()
                 .colour("#0000ff")
@@ -610,6 +613,13 @@ impl LinearModel {
             "b": self.b
         });
         ret.to_string()
+    }
+
+    fn from_file(model_path: &String) -> Result<Self, std::io::Error> {
+        let file = File::open(model_path)?;
+        let reader = BufReader::new(file);
+        let res: LinearModel = serde_json::from_reader(reader)?;
+        Ok(res)
     }
 }
 
@@ -661,6 +671,40 @@ fn create_model(model_path: &String, benchmark_file_path: &String, benchmarker_p
     Ok(())
 }
 
+#[derive(Debug, Deserialize)]
+struct CsvLine {
+    io_type: char,
+    bytes: u64,
+    sec: f64
+}
+
+impl CsvLine {
+    fn from_file(file: &String) -> Result<Vec<CsvLine>, std::io::Error> {
+        let mut rdr = csv::Reader::from_path(file)?;
+        let mut res = Vec::new();
+        for result in rdr.deserialize::<CsvLine>() {
+            let record = result?;
+            res.push(record);
+        }
+        Ok(res)
+    }
+}
+
+fn use_model(model: &String, file: &String) -> Result<(), std::io::Error> {
+    // TODO: validate
+
+    // get measurements
+    let measurements: Vec<CsvLine> = CsvLine::from_file(file)?;
+    for m in measurements {
+        println!("{:?}", m);
+    }
+    // get model
+    let model: LinearModel = LinearModel::from_file(model)?;
+    println!("{:?}", model);
+
+    Ok(())
+}
+
 fn main() {
     let cli = Cli::parse();
 
@@ -678,7 +722,11 @@ fn main() {
                 Err(e) => eprintln!("{:?}", e),
             }
         },
-        Commands::UseModel { .. } => {
+        Commands::UseModel { model, file } => {
+            match use_model(model, file) {
+                Ok(_) => { },
+                Err(e) => eprintln!("{:?}", e),
+            }
         },
     }
 }

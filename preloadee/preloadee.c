@@ -13,7 +13,7 @@
 #include<string.h>
 
 
-#define CSV_HEADER "\"IO Type\",\"Bytes\",\"sec\"\n"
+#define CSV_HEADER "io_type,bytes,sec\n"
 
 typedef ssize_t (*io_operation_t)(int fd, void *buf, size_t count);
 
