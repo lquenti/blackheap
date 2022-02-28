@@ -1,7 +1,7 @@
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
 
-use std::fs::{File};
+use std::fs::File;
 use std::io::BufReader;
 
 use serde::{Serialize, Deserialize};

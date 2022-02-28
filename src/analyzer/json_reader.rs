@@ -4,14 +4,6 @@ use std::io::BufReader;
 
 use serde::{Serialize, Deserialize};
 
-use criterion_stats::univariate::kde::kernel::Gaussian;
-use criterion_stats::univariate::kde::{Bandwidth, Kde};
-use criterion_stats::univariate::Sample;
-
-use itertools_num::linspace;
-
-use crate::analyzer::kde::BenchmarkKde;
-
 
 fn get_all_jsons_from_directory(folder: &PathBuf) -> Vec<PathBuf> {
     let folder: PathBuf = fs::canonicalize(&folder).unwrap();
@@ -81,7 +73,7 @@ pub struct BenchmarkJSON {
     drop_cache_first: bool,
     reread_every_block: bool,
     delete_afterwards: bool,
-    durations: Vec<f64>,
+    pub durations: Vec<f64>,
 }
 
 impl BenchmarkJSON {
@@ -95,14 +87,5 @@ impl BenchmarkJSON {
         jsons
     }
 
-    pub fn generate_kde_from(&self, n: usize) -> BenchmarkKde {
-        let slice = &self.durations[..];
-        let data = Sample::new(slice);
-        let kde = Kde::new(data, Gaussian, Bandwidth::Silverman);
-        let h = kde.bandwidth();
-        let (left, right): (f64, f64) = (data.min() - 5. * h, data.max() + 5. * h);
-        let xs: Vec<f64> = linspace::<f64>(left,right, n).collect();
-        let ys: Vec<f64> = kde.map(&xs).to_vec();
-        BenchmarkKde { xs, ys, }
-    }
+
 }

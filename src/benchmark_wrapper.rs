@@ -1,6 +1,6 @@
 use std::fmt;
 use std::process::{Command, Stdio};
-use std::fs::{create_dir, File};
+use std::fs::{self, File};
 use std::path::PathBuf;
 use std::io::prelude::Write;
 
@@ -146,7 +146,7 @@ impl PerformanceBenchmark {
 
   pub fn run_and_save_all_benchmarks(&self, model_path: &String) -> Result<(), std::io::Error> {
     let benchmark_folder_path = self.get_benchmark_folder(model_path);
-    create_dir(&benchmark_folder_path)?;
+    fs::create_dir(&benchmark_folder_path)?;
 
     for i in 1..28 {
         let access_size = u64::pow(2, i);

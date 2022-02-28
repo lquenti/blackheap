@@ -3,6 +3,13 @@ use plotlib::repr::Plot;
 use plotlib::style::{LineStyle, LineJoin, PointMarker, PointStyle};
 use plotlib::view::ContinuousView;
 
+use criterion_stats::univariate::kde::kernel::Gaussian;
+use criterion_stats::univariate::kde::{Bandwidth, Kde};
+use criterion_stats::univariate::Sample;
+
+use itertools_num::linspace;
+
+use crate::analyzer::json_reader::BenchmarkJSON;
 
 pub struct BenchmarkKde {
     pub xs: Vec<f64>,
@@ -40,6 +47,17 @@ impl Cluster {
 }
 
 impl BenchmarkKde {
+    pub fn from_benchmark(b: &BenchmarkJSON, n: usize) -> BenchmarkKde {
+        let slice = &b.durations[..];
+        let data = Sample::new(slice);
+        let kde = Kde::new(data, Gaussian, Bandwidth::Silverman);
+        let h = kde.bandwidth();
+        let (left, right): (f64, f64) = (data.min() - 5. * h, data.max() + 5. * h);
+        let xs: Vec<f64> = linspace::<f64>(left,right, n).collect();
+        let ys: Vec<f64> = kde.map(&xs).to_vec();
+        BenchmarkKde { xs, ys, }
+    }
+
     pub fn to_svg(&self) -> String{
         let kde_points: Vec<(f64, f64)> = self.xs.iter().cloned().zip(self.ys.iter().cloned()).collect();
 

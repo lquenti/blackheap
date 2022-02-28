@@ -9,7 +9,6 @@ use crate::analyzer::kde::BenchmarkKde;
 use crate::analyzer::linear_model::LinearModel;
 use crate::html_templater::ResultTemplate;
 
-// TODO this one shouldnt be here
 use sailfish::TemplateOnce;
 
 pub fn validate(model_path: &String, benchmarker_path: &String) -> Result<(), std::io::Error> {
@@ -44,7 +43,7 @@ pub fn create_model(model_path: &String, benchmark_file_path: &String, benchmark
     jsons.sort_by_key(|j| j.access_size_in_bytes);
 
     // Generate KDEs
-    let kdes: Vec<BenchmarkKde> = jsons.iter().map(|j| j.generate_kde_from(100)).collect();
+    let kdes: Vec<BenchmarkKde> = jsons.iter().map(|j| BenchmarkKde::from_benchmark(j, 100)).collect();
     let jsons_kdes: Vec<(&BenchmarkJSON, &BenchmarkKde)> = jsons.iter().zip(kdes.iter()).collect();
 
     // Create linear model
