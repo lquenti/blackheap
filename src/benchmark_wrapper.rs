@@ -87,7 +87,7 @@ impl PerformanceBenchmark {
   pub fn new_random_uncached_write(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Self {
     PerformanceBenchmark {
         benchmark_type: BenchmarkType::RandomUncached,
-        is_read_op: true,
+        is_read_op: false,
         mem_pattern: AccessPattern::Rnd,
         file_pattern: AccessPattern::Rnd,
         repeats: 1000,
