@@ -34,7 +34,7 @@ pub fn create_model(model_path: &String, benchmark_file_path: &String, benchmark
     fs::create_dir_all(parent)?;
 
     // Create Benchmarks
-    let random_uncached = PerformanceBenchmark::new_random_uncached(benchmarker_path, benchmark_file_path);
+    let random_uncached = PerformanceBenchmark::new_random_uncached_read(benchmarker_path, benchmark_file_path);
     random_uncached.run_and_save_all_benchmarks(model_path)?;
 
     // re-read benchmarks

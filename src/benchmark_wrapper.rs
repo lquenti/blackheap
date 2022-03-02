@@ -52,7 +52,7 @@ pub struct PerformanceBenchmark {
 }
 
 impl PerformanceBenchmark {
-  pub fn new_random_uncached(benchmarker_path: &String, file_path: &String) -> Self {
+  pub fn new_random_uncached_read(benchmarker_path: &String, file_path: &String) -> Self {
     PerformanceBenchmark {
         benchmark_type: BenchmarkType::RandomUncached,
         is_read_op: true,
@@ -139,14 +139,14 @@ impl PerformanceBenchmark {
   }
 
   pub fn get_benchmark_folder(&self, model_path: &String) -> String {
-    format!("{}/{}", model_path, self.benchmark_type.to_string())
+    format!("{}/{}/{}", model_path, self.benchmark_type.to_string(), if self.is_read_op {"read"} else {"write"})
   }
 
 
 
   pub fn run_and_save_all_benchmarks(&self, model_path: &String) -> Result<(), std::io::Error> {
     let benchmark_folder_path = self.get_benchmark_folder(model_path);
-    fs::create_dir(&benchmark_folder_path)?;
+    fs::create_dir_all(&benchmark_folder_path)?;
 
     for i in 1..28 {
         let access_size = u64::pow(2, i);
