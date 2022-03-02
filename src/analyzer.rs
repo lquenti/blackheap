@@ -3,19 +3,20 @@ pub mod kde;
 pub mod linear_model;
 
 use std::path::Path;
-use std::io;
+use std::io::{self, Write};
 use std::fs::{self, File};
 
 use crate::benchmark_wrapper::PerformanceBenchmark;
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
 use crate::analyzer::linear_model::LinearModel;
+use crate::html_templater::ResultTemplate;
 
 pub struct Analysis {
-    benchmark: PerformanceBenchmark,
-    jsons: Vec<BenchmarkJSON>,
-    kdes: Vec<BenchmarkKde>,
-    linear_model: LinearModel,
+    pub benchmark: PerformanceBenchmark,
+    pub jsons: Vec<BenchmarkJSON>,
+    pub kdes: Vec<BenchmarkKde>,
+    pub linear_model: LinearModel,
 }
 
 impl Analysis {
@@ -32,12 +33,8 @@ impl Analysis {
         Analysis { benchmark, jsons, kdes, linear_model }
     }
 
-    pub fn create_html_report(&self) -> String {
-        String::new()
-    }
-
     pub fn save_html_report(&self) -> Result<(), io::Error> {
-        let html_report = self.create_html_report();
+        let html_report = ResultTemplate::from_analysis(self).to_html_string();
         let html_template_path = format!("{}/{}", self.benchmark.model_path, String::from("html"));
 
         // A previous Analysis could have already created it.
@@ -55,7 +52,7 @@ impl Analysis {
                 self.benchmark.benchmark_type.to_string(),
                 if self.benchmark.is_read_op { "read" } else { "write" }
             )
-        );
+        )?;
         write!(output, "{}", html_report)?;
 
         Ok(())

@@ -20,7 +20,7 @@
         <%- linear_model_svg %>
       </div>
 
-      <% for (json, kde) in jsons_kdes { %>
+      <% for (json, kde) in jsons.iter().zip(kdes.iter()) { %>
       <div class="row">
         <h4>
           Access Size: <%= json.access_size_in_bytes %>
