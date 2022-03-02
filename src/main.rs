@@ -1,5 +1,3 @@
-// TODO: Replace unwraps and excepts
-// TODO: Replace paths with AsRef<Path>
 use clap::{IntoApp, Parser};
 
 

@@ -44,24 +44,25 @@ pub struct PerformanceBenchmark {
     reread_every_block: bool,
     delete_afterwards: bool,
 
-    benchmarker_path: String,
+    model_path: String,
     file_path: String,
+    benchmarker_path: String,
 
     available_ram_in_bytes: Option<i32>,
 }
 
 impl PerformanceBenchmark {
-  pub fn get_all_benchmarks(benchmarker_path: &String, file_path: &String) -> Vec<Self> {
-    let all_benchmarks: Vec<fn(&String, &String) -> Self> = vec![
+  pub fn get_all_benchmarks(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Vec<Self> {
+    let all_benchmarks: Vec<fn(&String, &String, &String) -> Self> = vec![
         Self::new_random_uncached_read,
         Self::new_random_uncached_write,
         Self::new_same_offset_read,
         Self::new_same_offset_write,
     ];
-    all_benchmarks.iter().map(|f| f(benchmarker_path, file_path)).collect()
+    all_benchmarks.iter().map(|f| f(model_path, benchmark_file_path, benchmarker_path)).collect()
   }
 
-  pub fn new_random_uncached_read(benchmarker_path: &String, file_path: &String) -> Self {
+  pub fn new_random_uncached_read(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Self {
     PerformanceBenchmark {
         benchmark_type: BenchmarkType::RandomUncached,
         is_read_op: true,
@@ -76,13 +77,14 @@ impl PerformanceBenchmark {
         delete_afterwards: true,
 
         benchmarker_path: benchmarker_path.clone(),
-        file_path: file_path.clone(),
+        file_path: benchmark_file_path.clone(),
+        model_path: model_path.clone(),
 
         available_ram_in_bytes: None,
     }
   }
 
-  pub fn new_random_uncached_write(benchmarker_path: &String, file_path: &String) -> Self {
+  pub fn new_random_uncached_write(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Self {
     PerformanceBenchmark {
         benchmark_type: BenchmarkType::RandomUncached,
         is_read_op: true,
@@ -97,13 +99,14 @@ impl PerformanceBenchmark {
         delete_afterwards: true,
 
         benchmarker_path: benchmarker_path.clone(),
-        file_path: file_path.clone(),
+        file_path: benchmark_file_path.clone(),
+        model_path: model_path.clone(),
 
         available_ram_in_bytes: None,
     }
   }
 
-  pub fn new_same_offset_read(benchmarker_path: &String, file_path: &String) -> Self {
+  pub fn new_same_offset_read(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Self {
     PerformanceBenchmark {
         benchmark_type: BenchmarkType::SameOffset,
         is_read_op: true,
@@ -118,13 +121,14 @@ impl PerformanceBenchmark {
         delete_afterwards: false,
 
         benchmarker_path: benchmarker_path.clone(),
-        file_path: file_path.clone(),
+        file_path: benchmark_file_path.clone(),
+        model_path: model_path.clone(),
 
         available_ram_in_bytes: None,
     }
   }
 
-  pub fn new_same_offset_write(benchmarker_path: &String, file_path: &String) -> Self {
+  pub fn new_same_offset_write(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Self {
     PerformanceBenchmark {
         benchmark_type: BenchmarkType::SameOffset,
         is_read_op: false,
@@ -139,7 +143,8 @@ impl PerformanceBenchmark {
         delete_afterwards: false,
 
         benchmarker_path: benchmarker_path.clone(),
-        file_path: file_path.clone(),
+        file_path: benchmark_file_path.clone(),
+        model_path: model_path.clone(),
 
         available_ram_in_bytes: None,
     }

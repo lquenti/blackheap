@@ -33,7 +33,7 @@ pub fn create_model(model_path: &String, benchmark_file_path: &String, benchmark
     parent.pop();
     fs::create_dir_all(parent)?;
 
-    let all_benchmarks = PerformanceBenchmark::get_all_benchmarks(benchmarker_path, benchmark_file_path);
+    let all_benchmarks = PerformanceBenchmark::get_all_benchmarks(model_path, benchmark_file_path, benchmarker_path);
     for benchmark in all_benchmarks {
         // run benchmark
         benchmark.run_and_save_all_benchmarks(model_path)?;
