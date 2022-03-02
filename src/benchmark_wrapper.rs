@@ -33,7 +33,7 @@ impl fmt::Display for BenchmarkType {
 pub struct PerformanceBenchmark {
     pub benchmark_type: BenchmarkType,
 
-    is_read_op: bool,
+    pub is_read_op: bool,
     mem_pattern: AccessPattern,
     file_pattern: AccessPattern,
     repeats: u32,
@@ -44,7 +44,7 @@ pub struct PerformanceBenchmark {
     reread_every_block: bool,
     delete_afterwards: bool,
 
-    model_path: String,
+    pub model_path: String,
     file_path: String,
     benchmarker_path: String,
 
@@ -215,14 +215,14 @@ impl PerformanceBenchmark {
       }
   }
 
-  pub fn get_benchmark_folder(&self, model_path: &String) -> String {
-    format!("{}/{}/{}", model_path, self.benchmark_type.to_string(), if self.is_read_op {"read"} else {"write"})
+  pub fn get_benchmark_folder(&self) -> String {
+    format!("{}/{}/{}", self.model_path, self.benchmark_type.to_string(), if self.is_read_op {"read"} else {"write"})
   }
 
 
 
-  pub fn run_and_save_all_benchmarks(&self, model_path: &String) -> Result<(), std::io::Error> {
-    let benchmark_folder_path = self.get_benchmark_folder(model_path);
+  pub fn run_and_save_all_benchmarks(&self) -> Result<(), std::io::Error> {
+    let benchmark_folder_path = self.get_benchmark_folder();
     fs::create_dir_all(&benchmark_folder_path)?;
 
     for i in 1..28 {

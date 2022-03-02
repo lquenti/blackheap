@@ -4,6 +4,7 @@ use std::io::Write;
 
 use crate::subprograms::helper;
 use crate::benchmark_wrapper::PerformanceBenchmark;
+use crate::analyzer::Analysis;
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
 use crate::analyzer::linear_model::LinearModel;
@@ -33,15 +34,16 @@ pub fn create_model(model_path: &String, benchmark_file_path: &String, benchmark
     parent.pop();
     fs::create_dir_all(parent)?;
 
+    let mut analyzed: Vec<Analysis> = Vec::new();
+
     let all_benchmarks = PerformanceBenchmark::get_all_benchmarks(model_path, benchmark_file_path, benchmarker_path);
     for benchmark in all_benchmarks {
         // run benchmark
-        benchmark.run_and_save_all_benchmarks(model_path)?;
+        benchmark.run_and_save_all_benchmarks()?;
 
-        // re-read benchmarks
-        let benchmark_folder = benchmark.get_benchmark_folder(model_path);
-        let mut jsons = BenchmarkJSON::new_from_dir(&PathBuf::from(benchmark_folder));
-        jsons.sort_by_key(|j| j.access_size_in_bytes);
+        // Run analysis
+        let res = Analysis::new_from_finished_benchmark(benchmark);
+        analyzed.push(res);
     }
 
     /*

@@ -2,6 +2,8 @@ use std::fs::{self, DirEntry, File, ReadDir};
 use std::path::PathBuf;
 use std::io::BufReader;
 
+use crate::benchmark_wrapper::PerformanceBenchmark;
+
 use serde::{Serialize, Deserialize};
 
 
@@ -86,6 +88,8 @@ impl BenchmarkJSON {
             .collect();
         jsons
     }
-
+    pub fn new_from_performance_benchmark(benchmark: &PerformanceBenchmark) -> Vec<Self> {
+        Self::new_from_dir(&PathBuf::from(benchmark.get_benchmark_folder()))
+    }
 
 }
