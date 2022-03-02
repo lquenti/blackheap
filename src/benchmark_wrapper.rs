@@ -222,7 +222,8 @@ impl PerformanceBenchmark {
 
     for i in 1..28 {
         let access_size = u64::pow(2, i);
-        println!("Running {} with access_size {}", self.benchmark_type.to_string(), access_size);
+        let io_type = if self.is_read_op { "read" } else { "write" };
+        println!("Running {} ({}) with access_size {}", self.benchmark_type.to_string(), io_type, access_size);
 
         let path: PathBuf = [
             &benchmark_folder_path,
