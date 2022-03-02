@@ -5,10 +5,8 @@ use std::path::PathBuf;
 use std::io::prelude::Write;
 
 #[derive(Debug)]
-#[allow(dead_code)]
 enum AccessPattern {
     Off0,
-    Seq,
     Rnd,
 }
 
@@ -21,6 +19,7 @@ impl fmt::Display for AccessPattern {
 #[derive(Debug)]
 pub enum BenchmarkType {
     RandomUncached,
+    SameOffset,
 }
 
 impl fmt::Display for BenchmarkType {
@@ -52,6 +51,16 @@ pub struct PerformanceBenchmark {
 }
 
 impl PerformanceBenchmark {
+  pub fn get_all_benchmarks(benchmarker_path: &String, file_path: &String) -> Vec<Self> {
+    let all_benchmarks: Vec<fn(&String, &String) -> Self> = vec![
+        Self::new_random_uncached_read,
+        Self::new_random_uncached_write,
+        Self::new_same_offset_read,
+        Self::new_same_offset_write,
+    ];
+    all_benchmarks.iter().map(|f| f(benchmarker_path, file_path)).collect()
+  }
+
   pub fn new_random_uncached_read(benchmarker_path: &String, file_path: &String) -> Self {
     PerformanceBenchmark {
         benchmark_type: BenchmarkType::RandomUncached,
@@ -65,6 +74,69 @@ impl PerformanceBenchmark {
         drop_cache_before: true,
         reread_every_block: false,
         delete_afterwards: true,
+
+        benchmarker_path: benchmarker_path.clone(),
+        file_path: file_path.clone(),
+
+        available_ram_in_bytes: None,
+    }
+  }
+
+  pub fn new_random_uncached_write(benchmarker_path: &String, file_path: &String) -> Self {
+    PerformanceBenchmark {
+        benchmark_type: BenchmarkType::RandomUncached,
+        is_read_op: true,
+        mem_pattern: AccessPattern::Rnd,
+        file_pattern: AccessPattern::Rnd,
+        repeats: 1000,
+        memory_buffer_size_in_bytes: 4 * u64::pow(1024, 3),
+        file_buffer_size_in_bytes: 25 * u64::pow(1024, 3),
+        use_o_direct: false,
+        drop_cache_before: true,
+        reread_every_block: false,
+        delete_afterwards: true,
+
+        benchmarker_path: benchmarker_path.clone(),
+        file_path: file_path.clone(),
+
+        available_ram_in_bytes: None,
+    }
+  }
+
+  pub fn new_same_offset_read(benchmarker_path: &String, file_path: &String) -> Self {
+    PerformanceBenchmark {
+        benchmark_type: BenchmarkType::SameOffset,
+        is_read_op: true,
+        mem_pattern: AccessPattern::Off0,
+        file_pattern: AccessPattern::Off0,
+        repeats: 1000,
+        memory_buffer_size_in_bytes: 4 * u64::pow(1024, 3),
+        file_buffer_size_in_bytes: 25 * u64::pow(1024, 3),
+        use_o_direct: false,
+        drop_cache_before: false,
+        reread_every_block: true,
+        delete_afterwards: false,
+
+        benchmarker_path: benchmarker_path.clone(),
+        file_path: file_path.clone(),
+
+        available_ram_in_bytes: None,
+    }
+  }
+
+  pub fn new_same_offset_write(benchmarker_path: &String, file_path: &String) -> Self {
+    PerformanceBenchmark {
+        benchmark_type: BenchmarkType::SameOffset,
+        is_read_op: false,
+        mem_pattern: AccessPattern::Off0,
+        file_pattern: AccessPattern::Off0,
+        repeats: 1000,
+        memory_buffer_size_in_bytes: 4 * u64::pow(1024, 3),
+        file_buffer_size_in_bytes: 25 * u64::pow(1024, 3),
+        use_o_direct: false,
+        drop_cache_before: false,
+        reread_every_block: true,
+        delete_afterwards: false,
 
         benchmarker_path: benchmarker_path.clone(),
         file_path: file_path.clone(),

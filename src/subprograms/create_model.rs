@@ -33,6 +33,18 @@ pub fn create_model(model_path: &String, benchmark_file_path: &String, benchmark
     parent.pop();
     fs::create_dir_all(parent)?;
 
+    let all_benchmarks = PerformanceBenchmark::get_all_benchmarks(benchmarker_path, benchmark_file_path);
+    for benchmark in all_benchmarks {
+        // run benchmark
+        benchmark.run_and_save_all_benchmarks(model_path)?;
+
+        // re-read benchmarks
+        let benchmark_folder = benchmark.get_benchmark_folder(model_path);
+        let mut jsons = BenchmarkJSON::new_from_dir(&PathBuf::from(benchmark_folder));
+        jsons.sort_by_key(|j| j.access_size_in_bytes);
+    }
+
+    /*
     // Create Benchmarks
     let random_uncached = PerformanceBenchmark::new_random_uncached_read(benchmarker_path, benchmark_file_path);
     random_uncached.run_and_save_all_benchmarks(model_path)?;
@@ -69,5 +81,6 @@ pub fn create_model(model_path: &String, benchmark_file_path: &String, benchmark
     let mut output = File::create(format!("{}/{}.html", &html_template_path, random_uncached.benchmark_type.to_string()))?;
     write!(output, "{}", html)?;
 
+    */
     Ok(())
 }
