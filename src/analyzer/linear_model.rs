@@ -1,13 +1,9 @@
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
 
-use std::fs::File;
-use std::io::BufReader;
-
 use crate::benchmark_wrapper::BenchmarkType;
 
 use serde::{Serialize, Deserialize};
-use serde_json::json;
 
 use linregress::{FormulaRegressionBuilder, RegressionDataBuilder};
 

@@ -1,5 +1,3 @@
-use crate::analyzer::linear_model::LinearModel;
-
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -30,11 +28,6 @@ pub fn use_model(model: &String, file: &String) -> Result<(), std::io::Error> {
     for m in measurements {
         println!("{:?}", m);
     }
-    // get model
-    /*
-    let model: LinearModel = LinearModel::from_file(model)?;
-    println!("{:?}", model);
-    */
 
     Ok(())
 }

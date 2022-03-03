@@ -9,7 +9,8 @@ use crate::analyzer::linear_model::LinearModelJSON;
 
 use serde_json::json;
 
-pub fn validate(model_path: &String, benchmarker_path: &String) -> Result<(), std::io::Error> {
+// TODO refactor
+pub fn validate(benchmarker_path: &String) -> Result<(), std::io::Error> {
     // The benchmarker should obviously exist
     helper::path_exists(&PathBuf::from(benchmarker_path))?;
 
