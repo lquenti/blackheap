@@ -31,8 +31,10 @@ pub fn use_model(model: &String, file: &String) -> Result<(), std::io::Error> {
         println!("{:?}", m);
     }
     // get model
+    /*
     let model: LinearModel = LinearModel::from_file(model)?;
     println!("{:?}", model);
+    */
 
     Ok(())
 }

@@ -4,6 +4,8 @@ use std::fs::{self, File};
 use std::path::PathBuf;
 use std::io::prelude::Write;
 
+use serde::{Serialize, Deserialize};
+
 #[derive(Debug)]
 enum AccessPattern {
     Off0,
@@ -16,7 +18,7 @@ impl fmt::Display for AccessPattern {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum BenchmarkType {
     RandomUncached,
     SameOffset,
