@@ -11,7 +11,7 @@
   <body>
     <main class="container">
       <div class="row">
-        <h1><%= benchmark_name %></h1>
+        <h1><%= benchmark_name %>: <%= op %></h1>
       </div>
       <hr>
 

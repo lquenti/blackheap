@@ -10,6 +10,7 @@ use sailfish::TemplateOnce;
 #[template(path = "result.stpl")]
 pub struct ResultTemplate<'a> {
     pub benchmark_name: String,
+    pub op: String,
     pub jsons: &'a Vec<BenchmarkJSON>,
     pub kdes: &'a Vec<BenchmarkKde>,
     pub linear_model: &'a LinearModel,
@@ -20,6 +21,7 @@ impl<'a> ResultTemplate<'a> {
     pub fn from_analysis(a: &'a Analysis) -> Self {
         ResultTemplate {
             benchmark_name: a.benchmark.benchmark_type.to_string(),
+            op: String::from(if a.benchmark.is_read_op { "read" } else { "write" }),
             jsons: &a.jsons,
             kdes: &a.kdes,
             linear_model: &a.linear_model,
