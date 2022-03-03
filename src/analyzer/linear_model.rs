@@ -33,15 +33,17 @@ impl LinearModels {
         }
     }
 
-    fn find_lowest_upper_bound(&self, line: &CsvLine) -> Option<&LinearModelJSON> {
+    pub fn find_lowest_upper_bound(&self, line: &CsvLine) -> Option<&LinearModelJSON> {
         let mut res = None;
         for lm in self.0.iter() {
             // Apples and oranges
             if lm.is_read_op != (line.io_type == 'r') {
                 continue;
             }
+            println!("{:?}", lm);
 
             let approximated_time = lm.model.evaluate(line.bytes);
+            println!("{:?} -> {}", lm, approximated_time);
 
             // we are looking for an upper bound. Thus if it is lower, we can instantly reject it.
             if approximated_time < line.sec {
@@ -57,6 +59,11 @@ impl LinearModels {
             }
         }
         res
+    }
+
+    // TODO debug
+    pub fn iter(&self) -> std::slice::Iter<LinearModelJSON>{
+        self.0.iter()
     }
 }
 
