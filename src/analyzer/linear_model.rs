@@ -5,7 +5,7 @@ use std::error::Error;
 
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
-
+use crate::subprograms::use_model::CsvLine;
 use crate::benchmark_wrapper::BenchmarkType;
 
 use serde::{Serialize, Deserialize};
@@ -13,12 +13,10 @@ use serde_json;
 
 use linregress::{FormulaRegressionBuilder, RegressionDataBuilder};
 
-
 use plotlib::page::Page;
 use plotlib::repr::Plot;
 use plotlib::style::{LineStyle, LineJoin, PointMarker, PointStyle};
 use plotlib::view::ContinuousView;
-
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LinearModels(Vec<LinearModelJSON>);
@@ -33,6 +31,32 @@ impl LinearModels {
             Ok(v) => Ok(v),
             Err(e) => Err(Box::new(e)),
         }
+    }
+
+    fn find_lowest_upper_bound(&self, line: &CsvLine) -> Option<&LinearModelJSON> {
+        let mut res = None;
+        for lm in self.0.iter() {
+            // Apples and oranges
+            if lm.is_read_op != (line.io_type == 'r') {
+                continue;
+            }
+
+            let approximated_time = lm.model.evaluate(line.bytes);
+
+            // we are looking for an upper bound. Thus if it is lower, we can instantly reject it.
+            if approximated_time < line.sec {
+                continue
+            }
+
+            // do we have a upper bound already?
+            res = match res {
+                // if not, this is the best until now
+                None => Some(lm),
+                // if so, lets choose the tighter bound
+                Some(lm2) => Some(if lm2.model.evaluate(line.bytes) < approximated_time { lm2 } else { lm }),
+            }
+        }
+        res
     }
 }
 
@@ -105,5 +129,9 @@ impl LinearModel {
             .x_label("Access Sizes in Bytes")
             .y_label("Expected Size in sec");
         Page::single(&v).to_svg().unwrap().to_string()
+    }
+
+    pub fn evaluate(&self, bytes: u64) -> f64 {
+        self.a * (bytes as f64) + self.b
     }
 }

@@ -1,15 +1,16 @@
 use std::path::PathBuf;
 
+use crate::benchmark_wrapper::BenchmarkType;
 use crate::analyzer::linear_model::LinearModels;
 
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
-struct CsvLine {
-    io_type: char,
-    bytes: u64,
-    sec: f64
+pub struct CsvLine {
+    pub io_type: char,
+    pub bytes: u64,
+    pub sec: f64
 }
 
 impl CsvLine {
