@@ -4,11 +4,11 @@ use std::fs::{self, File};
 use std::path::PathBuf;
 use std::io::prelude::Write;
 
+use serde::{Serialize, Deserialize};
+
 #[derive(Debug)]
-#[allow(dead_code)]
 enum AccessPattern {
     Off0,
-    Seq,
     Rnd,
 }
 
@@ -18,9 +18,10 @@ impl fmt::Display for AccessPattern {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum BenchmarkType {
     RandomUncached,
+    SameOffset,
 }
 
 impl fmt::Display for BenchmarkType {
@@ -34,7 +35,7 @@ impl fmt::Display for BenchmarkType {
 pub struct PerformanceBenchmark {
     pub benchmark_type: BenchmarkType,
 
-    is_read_op: bool,
+    pub is_read_op: bool,
     mem_pattern: AccessPattern,
     file_pattern: AccessPattern,
     repeats: u32,
@@ -45,14 +46,25 @@ pub struct PerformanceBenchmark {
     reread_every_block: bool,
     delete_afterwards: bool,
 
-    benchmarker_path: String,
+    pub model_path: String,
     file_path: String,
+    benchmarker_path: String,
 
     available_ram_in_bytes: Option<i32>,
 }
 
 impl PerformanceBenchmark {
-  pub fn new_random_uncached(benchmarker_path: &String, file_path: &String) -> Self {
+  pub fn get_all_benchmarks(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Vec<Self> {
+    let all_benchmarks: Vec<fn(&String, &String, &String) -> Self> = vec![
+        Self::new_random_uncached_read,
+        Self::new_random_uncached_write,
+        Self::new_same_offset_read,
+        Self::new_same_offset_write,
+    ];
+    all_benchmarks.iter().map(|f| f(model_path, benchmark_file_path, benchmarker_path)).collect()
+  }
+
+  pub fn new_random_uncached_read(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Self {
     PerformanceBenchmark {
         benchmark_type: BenchmarkType::RandomUncached,
         is_read_op: true,
@@ -67,7 +79,74 @@ impl PerformanceBenchmark {
         delete_afterwards: true,
 
         benchmarker_path: benchmarker_path.clone(),
-        file_path: file_path.clone(),
+        file_path: benchmark_file_path.clone(),
+        model_path: model_path.clone(),
+
+        available_ram_in_bytes: None,
+    }
+  }
+
+  pub fn new_random_uncached_write(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Self {
+    PerformanceBenchmark {
+        benchmark_type: BenchmarkType::RandomUncached,
+        is_read_op: false,
+        mem_pattern: AccessPattern::Rnd,
+        file_pattern: AccessPattern::Rnd,
+        repeats: 1000,
+        memory_buffer_size_in_bytes: 4 * u64::pow(1024, 3),
+        file_buffer_size_in_bytes: 25 * u64::pow(1024, 3),
+        use_o_direct: false,
+        drop_cache_before: true,
+        reread_every_block: false,
+        delete_afterwards: true,
+
+        benchmarker_path: benchmarker_path.clone(),
+        file_path: benchmark_file_path.clone(),
+        model_path: model_path.clone(),
+
+        available_ram_in_bytes: None,
+    }
+  }
+
+  pub fn new_same_offset_read(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Self {
+    PerformanceBenchmark {
+        benchmark_type: BenchmarkType::SameOffset,
+        is_read_op: true,
+        mem_pattern: AccessPattern::Off0,
+        file_pattern: AccessPattern::Off0,
+        repeats: 1000,
+        memory_buffer_size_in_bytes: 4 * u64::pow(1024, 3),
+        file_buffer_size_in_bytes: 25 * u64::pow(1024, 3),
+        use_o_direct: false,
+        drop_cache_before: false,
+        reread_every_block: true,
+        delete_afterwards: false,
+
+        benchmarker_path: benchmarker_path.clone(),
+        file_path: benchmark_file_path.clone(),
+        model_path: model_path.clone(),
+
+        available_ram_in_bytes: None,
+    }
+  }
+
+  pub fn new_same_offset_write(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Self {
+    PerformanceBenchmark {
+        benchmark_type: BenchmarkType::SameOffset,
+        is_read_op: false,
+        mem_pattern: AccessPattern::Off0,
+        file_pattern: AccessPattern::Off0,
+        repeats: 1000,
+        memory_buffer_size_in_bytes: 4 * u64::pow(1024, 3),
+        file_buffer_size_in_bytes: 25 * u64::pow(1024, 3),
+        use_o_direct: false,
+        drop_cache_before: false,
+        reread_every_block: true,
+        delete_afterwards: false,
+
+        benchmarker_path: benchmarker_path.clone(),
+        file_path: benchmark_file_path.clone(),
+        model_path: model_path.clone(),
 
         available_ram_in_bytes: None,
     }
@@ -138,19 +217,20 @@ impl PerformanceBenchmark {
       }
   }
 
-  pub fn get_benchmark_folder(&self, model_path: &String) -> String {
-    format!("{}/{}", model_path, self.benchmark_type.to_string())
+  pub fn get_benchmark_folder(&self) -> String {
+    format!("{}/{}/{}", self.model_path, self.benchmark_type.to_string(), if self.is_read_op {"read"} else {"write"})
   }
 
 
 
-  pub fn run_and_save_all_benchmarks(&self, model_path: &String) -> Result<(), std::io::Error> {
-    let benchmark_folder_path = self.get_benchmark_folder(model_path);
-    fs::create_dir(&benchmark_folder_path)?;
+  pub fn run_and_save_all_benchmarks(&self) -> Result<(), std::io::Error> {
+    let benchmark_folder_path = self.get_benchmark_folder();
+    fs::create_dir_all(&benchmark_folder_path)?;
 
     for i in 1..28 {
         let access_size = u64::pow(2, i);
-        println!("Running {} with access_size {}", self.benchmark_type.to_string(), access_size);
+        let io_type = if self.is_read_op { "read" } else { "write" };
+        println!("Running {} ({}) with access_size {}", self.benchmark_type.to_string(), io_type, access_size);
 
         let path: PathBuf = [
             &benchmark_folder_path,

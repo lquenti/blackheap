@@ -1,5 +1,3 @@
-// TODO: Replace unwraps and excepts
-// TODO: Replace paths with AsRef<Path>
 use clap::{IntoApp, Parser};
 
 
@@ -19,7 +17,7 @@ fn main() {
 
     match &cli.command {
         Commands::CreateModel { to, file, benchmarker } => {
-            if let Err(e) = create_model::validate(to, benchmarker) {
+            if let Err(e) = create_model::validate(benchmarker) {
                 let mut app = cli::Cli::into_app();
                 app.error(
                     clap::ErrorKind::InvalidValue,
