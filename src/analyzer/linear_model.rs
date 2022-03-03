@@ -21,18 +21,14 @@ use plotlib::view::ContinuousView;
 
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct LinearModelJSON {
-    pub benchmark_type: BenchmarkType,
-    pub is_read_op: bool,
-    pub model: LinearModel,
-}
+pub struct LinearModels(Vec<LinearModelJSON>);
 
-impl LinearModelJSON {
+impl LinearModels {
     // TODO: Definitely need anyhow or Either or alike
-    pub fn from_file(file_path: &PathBuf) -> Result<Vec<Self>, Box<dyn Error>> {
+    pub fn from_file(file_path: &PathBuf) -> Result<Self, Box<dyn Error>> {
         let file: File = File::open(file_path)?;
         let reader = BufReader::new(file);
-        let x: Result<Vec<Self>, serde_json::Error> = serde_json::from_reader(reader);
+        let x: Result<Self, serde_json::Error> = serde_json::from_reader(reader);
         match x {
             Ok(v) => Ok(v),
             Err(e) => Err(Box::new(e)),
@@ -40,6 +36,14 @@ impl LinearModelJSON {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct LinearModelJSON {
+    pub benchmark_type: BenchmarkType,
+    pub is_read_op: bool,
+    pub model: LinearModel,
+}
+
+// TODO Probably refactor me away
 /// y=aX+b
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct LinearModel {
