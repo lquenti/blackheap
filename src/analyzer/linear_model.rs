@@ -1,18 +1,71 @@
+use std::io::BufReader;
+use std::fs::File;
+use std::path::PathBuf;
+use std::error::Error;
+
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
-
+use crate::subprograms::use_model::CsvLine;
 use crate::benchmark_wrapper::BenchmarkType;
 
 use serde::{Serialize, Deserialize};
+use serde_json;
 
 use linregress::{FormulaRegressionBuilder, RegressionDataBuilder};
-
 
 use plotlib::page::Page;
 use plotlib::repr::Plot;
 use plotlib::style::{LineStyle, LineJoin, PointMarker, PointStyle};
 use plotlib::view::ContinuousView;
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct LinearModels(Vec<LinearModelJSON>);
+
+impl LinearModels {
+    // TODO: Definitely need anyhow or Either or alike
+    pub fn from_file(file_path: &PathBuf) -> Result<Self, Box<dyn Error>> {
+        let file: File = File::open(file_path)?;
+        let reader = BufReader::new(file);
+        let x: Result<Self, serde_json::Error> = serde_json::from_reader(reader);
+        match x {
+            Ok(v) => Ok(v),
+            Err(e) => Err(Box::new(e)),
+        }
+    }
+
+    pub fn find_lowest_upper_bound(&self, line: &CsvLine) -> Option<&LinearModelJSON> {
+        let mut res = None;
+        for lm in self.0.iter() {
+            // Apples and oranges
+            if lm.is_read_op != (line.io_type == 'r') {
+                continue;
+            }
+            println!("{:?}", lm);
+
+            let approximated_time = lm.model.evaluate(line.bytes);
+            println!("{:?} -> {}", lm, approximated_time);
+
+            // we are looking for an upper bound. Thus if it is lower, we can instantly reject it.
+            if approximated_time < line.sec {
+                continue
+            }
+
+            // do we have a upper bound already?
+            res = match res {
+                // if not, this is the best until now
+                None => Some(lm),
+                // if so, lets choose the tighter bound
+                Some(lm2) => Some(if lm2.model.evaluate(line.bytes) < approximated_time { lm2 } else { lm }),
+            }
+        }
+        res
+    }
+
+    // TODO debug
+    pub fn iter(&self) -> std::slice::Iter<LinearModelJSON>{
+        self.0.iter()
+    }
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LinearModelJSON {
@@ -21,6 +74,7 @@ pub struct LinearModelJSON {
     pub model: LinearModel,
 }
 
+// TODO Probably refactor me away
 /// y=aX+b
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct LinearModel {
@@ -82,5 +136,9 @@ impl LinearModel {
             .x_label("Access Sizes in Bytes")
             .y_label("Expected Size in sec");
         Page::single(&v).to_svg().unwrap().to_string()
+    }
+
+    pub fn evaluate(&self, bytes: u64) -> f64 {
+        self.a * (bytes as f64) + self.b
     }
 }
