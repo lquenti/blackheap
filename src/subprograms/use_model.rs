@@ -1,3 +1,7 @@
+use std::path::PathBuf;
+
+use crate::analyzer::linear_model::LinearModelJSON;
+
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -28,6 +32,10 @@ pub fn use_model(model: &String, file: &String) -> Result<(), std::io::Error> {
     for m in measurements {
         println!("{:?}", m);
     }
+
+    // load LinearModel
+    let model = LinearModelJSON::from_file(&PathBuf::from(model));
+    println!("{:?}", model.unwrap());
 
     Ok(())
 }
