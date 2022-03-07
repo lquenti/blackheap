@@ -14,9 +14,15 @@
 #include<stdarg.h>
 
 
-#define CSV_HEADER "io_type,bytes,sec\n"
+#define CSV_HEADER "filename,io_type,bytes,sec\n"
 
 typedef ssize_t (*io_operation_t)(int fd, void *buf, size_t count);
+
+typedef struct fd_table_t {
+  size_t n;
+  int *fds;
+  char **filenames;
+} fd_table_t;
 
 typedef struct state_t {
   int fp;
@@ -24,6 +30,7 @@ typedef struct state_t {
   ssize_t (*orig_write)(int fd, const void *buf, size_t count);
   int (*orig_open)(const char *path, int oflag, ...);
   int (*orig_close)(int fd);
+  fd_table_t fd_table;
 } state_t;
 
 static state_t *current_state = NULL;
@@ -32,12 +39,17 @@ static void cleanup_state() {
   // current_state is never a nullptr since this just gets
   // called if init_state() got called first
   close(current_state->fp);
+  free(current_state->fd_table.fds);
+  free(current_state->fd_table.filenames);
   free(current_state);
 }
 
 static void init_state() {
   atexit(cleanup_state);
   current_state = malloc(sizeof(state_t));
+  current_state->fd_table.n = 1;
+  current_state->fd_table.filenames = malloc(sizeof(char *));
+  current_state->fd_table.fds = malloc(sizeof(int));
 
   int timestamp = (int)time(NULL);
   char filename[256];
@@ -46,13 +58,12 @@ static void init_state() {
   current_state->orig_read = dlsym(RTLD_NEXT, "read");
   current_state->orig_write = dlsym(RTLD_NEXT, "write");
   current_state->orig_open = dlsym(RTLD_NEXT, "open");
-  if ((msg = dlerror())) {
-    fprintf(stderr, "dlsym error:%s\n", msg);
-    exit(1);
-  }
   current_state->orig_close = dlsym(RTLD_NEXT, "close");
 
   current_state->fp = current_state->orig_open(filename, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+  current_state->fd_table.fds[0] = current_state->fp;
+  current_state->fd_table.filenames[0] = malloc(sizeof(char) * strlen(filename));
+  strcpy(current_state->fd_table.filenames[0],  filename);
 
 
   // write CSV header
@@ -93,8 +104,8 @@ static ssize_t do_io(bool is_read, int fd, void *buf, size_t count) {
 
   // record results
   char result_buf[128];
-  sprintf(result_buf, "%c,%zu,%.17g\n", is_read ? 'r' : 'w', res, duration);
-  printf("%s", result_buf); // TODO remove me
+  //sprintf(result_buf, "%c,%zu,%.17g\n", is_read ? 'r' : 'w', res, duration);
+  //printf("%s", result_buf); // TODO remove me
   current_state->orig_write(current_state->fp, result_buf, strlen(result_buf));
 
   // return actual result
