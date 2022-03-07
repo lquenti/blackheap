@@ -38,10 +38,20 @@ static state_t *current_state = NULL;
 static void cleanup_state() {
   // current_state is never a nullptr since this just gets
   // called if init_state() got called first
-  close(current_state->fp);
   free(current_state->fd_table.fds);
   free(current_state->fd_table.filenames);
   free(current_state);
+}
+
+static ssize_t get_filename_index_from_fd(int fd) {
+  for (size_t i=0; i<current_state->fd_table.n; ++i) {
+    if (current_state->fd_table.fds[i] == fd) {
+      return i;
+    }
+  }
+  fprintf(stderr, "ERROR: COULD NOT FIND fd: %d\n",fd);
+  // TODO better error handling if even possible
+  return -1;
 }
 
 static void add_to_lookup_table(int fd, const char *str) {
@@ -63,17 +73,9 @@ static void add_to_lookup_table(int fd, const char *str) {
 static void remove_from_lookup_table(int fd) {
   // expected to be called after init_state
 
-  // find the element in Table (in O(n) lol)
-  int fd_index = -1;
-  for (size_t i=0; i<current_state->fd_table.n; ++i) {
-    if (current_state->fd_table.fds[i] == fd) {
-      fd_index = i;
-      break;
-    }
-  }
+  // get the element in Table (in O(n) lol)
+  ssize_t fd_index = get_filename_index_from_fd(fd);
   if (fd_index == -1) {
-    fprintf(stderr, "ERROR: COULD NOT FIND fd: %d\n",fd);
-    // TODO better error handling if even possible
     return;
   }
 
@@ -92,6 +94,7 @@ static void remove_from_lookup_table(int fd) {
   realloc(current_state->fd_table.filenames, sizeof(int) * current_state->fd_table.n);
 }
 
+
 static void init_state() {
   atexit(cleanup_state);
   current_state = malloc(sizeof(state_t));
@@ -101,7 +104,6 @@ static void init_state() {
 
   int timestamp = (int)time(NULL);
   char filename[256];
-  char *msg;
   sprintf(filename, "./io_recordings_%d.csv", timestamp);
   current_state->orig_read = dlsym(RTLD_NEXT, "read");
   current_state->orig_write = dlsym(RTLD_NEXT, "write");
@@ -109,6 +111,7 @@ static void init_state() {
   current_state->orig_close = dlsym(RTLD_NEXT, "close");
 
   current_state->fp = current_state->orig_open(filename, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+  printf("DEBUG: opened %s as %d\n", filename, current_state->fp);
   current_state->fd_table.fds[0] = current_state->fp;
   current_state->fd_table.filenames[0] = malloc(sizeof(char) * strlen(filename));
   strcpy(current_state->fd_table.filenames[0],  filename);
@@ -151,10 +154,25 @@ static ssize_t do_io(bool is_read, int fd, void *buf, size_t count) {
   duration = get_duration(&start, &end);
 
   // record results
-  char result_buf[128];
-  //sprintf(result_buf, "%c,%zu,%.17g\n", is_read ? 'r' : 'w', res, duration);
-  //printf("%s", result_buf); // TODO remove me
-  current_state->orig_write(current_state->fp, result_buf, strlen(result_buf));
+  // (Don't record our recording)
+  if (fd != current_state->fp) {
+    ssize_t fd_index = get_filename_index_from_fd(fd);
+    if (fd_index == -1) {
+      // TODO error handling
+      return res;
+    }
+
+    char result_buf[256];
+    sprintf(result_buf,
+        "%s,%c,%zu,%.17g\n",
+        current_state->fd_table.filenames[fd_index],
+        is_read ? 'r' : 'w',
+        res,
+        duration
+    );
+    printf("%s", result_buf); // TODO remove me
+    current_state->orig_write(current_state->fp, result_buf, strlen(result_buf));
+  }
 
   // return actual result
   return res;
@@ -176,7 +194,6 @@ int open(const char *path, int oflag, ...) {
   if (unlikely(current_state == NULL)) {
     init_state();
   }
-  char *msg;
   va_list args;
   int mflag;
 
