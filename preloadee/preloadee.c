@@ -11,6 +11,7 @@
 #include<unistd.h>
 #include<dlfcn.h>
 #include<string.h>
+#include<stdarg.h>
 
 
 #define CSV_HEADER "io_type,bytes,sec\n"
@@ -21,6 +22,8 @@ typedef struct state_t {
   int fp;
   ssize_t (*orig_read)(int fd, void *buf, size_t count);
   ssize_t (*orig_write)(int fd, const void *buf, size_t count);
+  int (*orig_open)(const char *path, int oflag, ...);
+  int (*orig_close)(int fd);
 } state_t;
 
 static state_t *current_state = NULL;
@@ -38,11 +41,19 @@ static void init_state() {
 
   int timestamp = (int)time(NULL);
   char filename[256];
+  char *msg;
   sprintf(filename, "./io_recordings_%d.csv", timestamp);
-  current_state->fp = open(filename, O_CREAT | O_WRONLY | O_TRUNC, 0644);
-
   current_state->orig_read = dlsym(RTLD_NEXT, "read");
   current_state->orig_write = dlsym(RTLD_NEXT, "write");
+  current_state->orig_open = dlsym(RTLD_NEXT, "open");
+  if ((msg = dlerror())) {
+    fprintf(stderr, "dlsym error:%s\n", msg);
+    exit(1);
+  }
+  current_state->orig_close = dlsym(RTLD_NEXT, "close");
+
+  current_state->fp = current_state->orig_open(filename, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+
 
   // write CSV header
   current_state->orig_write(current_state->fp, CSV_HEADER, strlen(CSV_HEADER));
@@ -96,4 +107,31 @@ ssize_t read(int fd, void *buf, size_t count) {
 
 ssize_t write(int fd, const void *buf, size_t count) {
   return do_io(false, fd, (void *)buf, count);
+}
+
+// See: https://elixir.bootlin.com/glibc/latest/source/io/bits/fcntl2.h#L41
+// But we know that we either have 2 or 3 arguments.
+// Thus we don't have to do the Vararg magic described in
+// https://gcc.gnu.org/onlinedocs/gcc-4.7.2/gcc/Constructing-Calls.html
+int open(const char *path, int oflag, ...) {
+  if (unlikely(current_state == NULL)) {
+    init_state();
+  }
+  char *msg;
+  va_list args;
+  int mflag;
+
+  va_start(args, oflag);
+  mflag = va_arg(args, int);
+  int ret = current_state->orig_open(path, oflag, mflag);
+  printf("open: %s -> %d\n", path, ret);
+  return ret;
+}
+
+int close(int fd) {
+  if (unlikely(current_state == NULL)) {
+    init_state();
+  }
+  printf("%d closed.\n", fd);
+  return current_state->orig_close(fd);
 }
