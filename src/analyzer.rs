@@ -2,7 +2,6 @@ pub mod json_reader;
 pub mod kde;
 pub mod linear_model;
 
-use std::path::Path;
 use std::io::{self, Write};
 use std::fs::{self, File};
 
@@ -10,7 +9,12 @@ use crate::benchmark_wrapper::PerformanceBenchmark;
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
 use crate::analyzer::linear_model::LinearModel;
-use crate::html_templater::ResultTemplate;
+use crate::html_templater::SingleModelTemplate;
+
+use plotlib::page::Page;
+use plotlib::repr::Plot;
+use plotlib::style::{LineStyle, LineJoin};
+use plotlib::view::ContinuousView;
 
 pub struct Analysis {
     pub benchmark: PerformanceBenchmark,
@@ -20,11 +24,6 @@ pub struct Analysis {
 }
 
 impl Analysis {
-    #[allow(dead_code)]
-    fn new_from_dir<T: AsRef<Path>>(_path: T) {
-        panic!("Not yet implemented");
-    }
-
     pub fn new_from_finished_benchmark(benchmark: PerformanceBenchmark) -> Self {
         let mut jsons: Vec<BenchmarkJSON> = BenchmarkJSON::new_from_performance_benchmark(&benchmark);
         jsons.sort_by_key(|j| j.access_size_in_bytes);
@@ -34,7 +33,7 @@ impl Analysis {
     }
 
     pub fn save_html_report(&self) -> Result<(), io::Error> {
-        let html_report = ResultTemplate::from_analysis(self).to_html_string();
+        let html_report = SingleModelTemplate::from_analysis(self).to_html_string();
         let html_template_path = format!("{}/{}", self.benchmark.model_path, String::from("html"));
 
         // A previous Analysis could have already created it.

@@ -134,7 +134,7 @@ impl LinearModel {
             .add(line)
             .add(pts)
             .x_label("Access Sizes in Bytes")
-            .y_label("Expected Size in sec");
+            .y_label("Expected Speed in sec");
         Page::single(&v).to_svg().unwrap().to_string()
     }
 

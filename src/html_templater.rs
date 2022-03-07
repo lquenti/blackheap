@@ -7,8 +7,8 @@ use crate::analyzer::Analysis;
 use sailfish::TemplateOnce;
 
 #[derive(TemplateOnce)]
-#[template(path = "result.stpl")]
-pub struct ResultTemplate<'a> {
+#[template(path = "single_model.stpl")]
+pub struct SingleModelTemplate<'a> {
     pub benchmark_name: String,
     pub op: String,
     pub jsons: &'a Vec<BenchmarkJSON>,
@@ -17,9 +17,9 @@ pub struct ResultTemplate<'a> {
     pub linear_model_svg: String
 }
 
-impl<'a> ResultTemplate<'a> {
+impl<'a> SingleModelTemplate<'a> {
     pub fn from_analysis(a: &'a Analysis) -> Self {
-        ResultTemplate {
+        SingleModelTemplate {
             benchmark_name: a.benchmark.benchmark_type.to_string(),
             op: String::from(if a.benchmark.is_read_op { "read" } else { "write" }),
             jsons: &a.jsons,
@@ -28,6 +28,19 @@ impl<'a> ResultTemplate<'a> {
             linear_model_svg: a.linear_model.to_svg(&a.jsons, &a.kdes),
         }
     }
+    pub fn to_html_string(self) -> String {
+        self.render_once().unwrap()
+    }
+}
+
+#[derive(TemplateOnce)]
+#[template(path = "model_summary.stpl")]
+pub struct ModelSummary<'a> {
+    pub analyzed: &'a Vec<Analysis>,
+    pub svg_all: String,
+}
+
+impl<'a> ModelSummary<'a> {
     pub fn to_html_string(self) -> String {
         self.render_once().unwrap()
     }
