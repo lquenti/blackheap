@@ -44,6 +44,54 @@ static void cleanup_state() {
   free(current_state);
 }
 
+static void add_to_lookup_table(int fd, const char *str) {
+  // expected to be called after init_state
+
+  // copy
+  size_t len = strlen(str);
+  char *str_heap = malloc(sizeof(char) * len);
+  strcpy(str_heap, str);
+
+  // add to table
+  current_state->fd_table.n += 1;
+  realloc(current_state->fd_table.fds, sizeof(int) * current_state->fd_table.n);
+  realloc(current_state->fd_table.filenames, sizeof(int) * current_state->fd_table.n);
+  current_state->fd_table.fds[current_state->fd_table.n - 1] = fd;
+  current_state->fd_table.filenames[current_state->fd_table.n - 1] = str_heap;
+}
+
+static void remove_from_lookup_table(int fd) {
+  // expected to be called after init_state
+
+  // find the element in Table (in O(n) lol)
+  int fd_index = -1;
+  for (size_t i=0; i<current_state->fd_table.n; ++i) {
+    if (current_state->fd_table.fds[i] == fd) {
+      fd_index = i;
+      break;
+    }
+  }
+  if (fd_index == -1) {
+    fprintf(stderr, "ERROR: COULD NOT FIND fd: %d\n",fd);
+    // TODO better error handling if even possible
+    return;
+  }
+
+  // remove the filename not used anymore
+  free(current_state->fd_table.filenames[fd_index]);
+
+  // fill the gap resulted by deletion
+  for (size_t i=fd_index; i<(current_state->fd_table.n -1); ++i) {
+    current_state->fd_table.fds[i] = current_state->fd_table.fds[i+1];
+    current_state->fd_table.filenames[i] = current_state->fd_table.filenames[i+1];
+  }
+
+  // reduce size
+  current_state->fd_table.n -= 1;
+  realloc(current_state->fd_table.fds, sizeof(int) * current_state->fd_table.n);
+  realloc(current_state->fd_table.filenames, sizeof(int) * current_state->fd_table.n);
+}
+
 static void init_state() {
   atexit(cleanup_state);
   current_state = malloc(sizeof(state_t));
@@ -136,6 +184,7 @@ int open(const char *path, int oflag, ...) {
   mflag = va_arg(args, int);
   int ret = current_state->orig_open(path, oflag, mflag);
   printf("open: %s -> %d\n", path, ret);
+  add_to_lookup_table(ret, path);
   return ret;
 }
 
@@ -143,8 +192,7 @@ int close(int fd) {
   if (unlikely(current_state == NULL)) {
     init_state();
   }
-  if (fd != current_state->fp) {
-    printf("%d closed.\n", fd);
-  }
+  remove_from_lookup_table(fd);
+  printf("%d closed.\n", fd);
   return current_state->orig_close(fd);
 }
