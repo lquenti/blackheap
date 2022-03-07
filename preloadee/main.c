@@ -12,7 +12,7 @@ int main() {
   write(fd, str, strlen(str));
   close(fd);
 
-  fd = open("./test.txt", O_RDONLY, 0644);
+  fd = open("./test.txt", O_RDONLY);
   char buf[51];
   ssize_t res = read(fd, buf, 51);
   buf[res] = '\0';
