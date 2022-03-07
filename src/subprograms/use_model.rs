@@ -7,6 +7,7 @@ use serde::Deserialize;
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
 pub struct CsvLine {
+    pub filename: String,
     pub io_type: char,
     pub bytes: u64,
     pub sec: f64
