@@ -132,6 +132,8 @@ int close(int fd) {
   if (unlikely(current_state == NULL)) {
     init_state();
   }
-  printf("%d closed.\n", fd);
+  if (fd != current_state->fp) {
+    printf("%d closed.\n", fd);
+  }
   return current_state->orig_close(fd);
 }
