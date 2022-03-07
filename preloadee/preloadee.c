@@ -111,7 +111,6 @@ static void init_state() {
   current_state->orig_close = dlsym(RTLD_NEXT, "close");
 
   current_state->fp = current_state->orig_open(filename, O_CREAT | O_WRONLY | O_TRUNC, 0644);
-  printf("DEBUG: opened %s as %d\n", filename, current_state->fp);
   current_state->fd_table.fds[0] = current_state->fp;
   current_state->fd_table.filenames[0] = malloc(sizeof(char) * strlen(filename));
   strcpy(current_state->fd_table.filenames[0],  filename);
@@ -170,7 +169,6 @@ static ssize_t do_io(bool is_read, int fd, void *buf, size_t count) {
         res,
         duration
     );
-    printf("%s", result_buf); // TODO remove me
     current_state->orig_write(current_state->fp, result_buf, strlen(result_buf));
   }
 
@@ -200,7 +198,6 @@ int open(const char *path, int oflag, ...) {
   va_start(args, oflag);
   mflag = va_arg(args, int);
   int ret = current_state->orig_open(path, oflag, mflag);
-  printf("open: %s -> %d\n", path, ret);
   add_to_lookup_table(ret, path);
   return ret;
 }
@@ -210,6 +207,5 @@ int close(int fd) {
     init_state();
   }
   remove_from_lookup_table(fd);
-  printf("%d closed.\n", fd);
   return current_state->orig_close(fd);
 }
