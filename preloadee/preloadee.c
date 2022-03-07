@@ -164,7 +164,7 @@ static ssize_t do_io(bool is_read, int fd, void *buf, size_t count) {
 
     char result_buf[256];
     sprintf(result_buf,
-        "%s,%c,%zu,%.17g\n",
+        "\"%s\",%c,%zu,%.17g\n",
         current_state->fd_table.filenames[fd_index],
         is_read ? 'r' : 'w',
         res,
