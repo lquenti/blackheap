@@ -87,7 +87,7 @@ fn save_html_report_for_analysis_models(analyzed: &Vec<Analysis>) -> Result<(), 
 }
 
 
-pub fn create_model(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Result<(), std::io::Error> {
+pub fn create_model(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String, root: &bool) -> Result<(), std::io::Error> {
     // create folders
     fs::create_dir_all(model_path)?;
 
@@ -97,7 +97,7 @@ pub fn create_model(model_path: &String, benchmark_file_path: &String, benchmark
 
     let mut analyzed: Vec<Analysis> = Vec::new();
 
-    let all_benchmarks = PerformanceBenchmark::get_all_benchmarks(model_path, benchmark_file_path, benchmarker_path);
+    let all_benchmarks = PerformanceBenchmark::get_all_benchmarks(model_path, benchmark_file_path, benchmarker_path, root);
     for benchmark in all_benchmarks {
         // run benchmark
         benchmark.run_and_save_all_benchmarks()?;

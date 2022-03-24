@@ -16,7 +16,7 @@ fn main() {
     let cli = Cli::parse();
 
     match &cli.command {
-        Commands::CreateModel { to, file, benchmarker } => {
+        Commands::CreateModel { to, file, benchmarker, root } => {
             if let Err(e) = create_model::validate(benchmarker) {
                 let mut app = cli::Cli::into_app();
                 app.error(
@@ -24,7 +24,7 @@ fn main() {
                     format!("{:?}", e)
                 ).exit();
             }
-            match create_model::create_model(to, file, benchmarker)  {
+            match create_model::create_model(to, file, benchmarker, root)  {
                 Ok(_) => { },
                 Err(e) => eprintln!("{:?}", e),
             }

@@ -54,17 +54,16 @@ pub struct PerformanceBenchmark {
 }
 
 impl PerformanceBenchmark {
-  pub fn get_all_benchmarks(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Vec<Self> {
-    let all_benchmarks: Vec<fn(&String, &String, &String) -> Self> = vec![
-        Self::new_random_uncached_read,
-        Self::new_random_uncached_write,
-        Self::new_same_offset_read,
-        Self::new_same_offset_write,
-    ];
-    all_benchmarks.iter().map(|f| f(model_path, benchmark_file_path, benchmarker_path)).collect()
+  pub fn get_all_benchmarks(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String, root: &bool) -> Vec<Self> {
+    vec![
+        Self::new_random_uncached_read(model_path, benchmark_file_path, benchmarker_path, root),
+        Self::new_random_uncached_write(model_path, benchmark_file_path, benchmarker_path, root),
+        Self::new_same_offset_read(model_path, benchmark_file_path, benchmarker_path),
+        Self::new_same_offset_write(model_path, benchmark_file_path, benchmarker_path),
+    ]
   }
 
-  pub fn new_random_uncached_read(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Self {
+  pub fn new_random_uncached_read(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String, root: &bool) -> Self {
     PerformanceBenchmark {
         benchmark_type: BenchmarkType::RandomUncached,
         is_read_op: true,
@@ -74,7 +73,7 @@ impl PerformanceBenchmark {
         memory_buffer_size_in_bytes: 4 * u64::pow(1024, 3),
         file_buffer_size_in_bytes: 25 * u64::pow(1024, 3),
         use_o_direct: false,
-        drop_cache_before: true,
+        drop_cache_before: *root,
         reread_every_block: false,
         delete_afterwards: true,
 
@@ -86,7 +85,7 @@ impl PerformanceBenchmark {
     }
   }
 
-  pub fn new_random_uncached_write(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String) -> Self {
+  pub fn new_random_uncached_write(model_path: &String, benchmark_file_path: &String, benchmarker_path: &String, root: &bool) -> Self {
     PerformanceBenchmark {
         benchmark_type: BenchmarkType::RandomUncached,
         is_read_op: false,
@@ -96,7 +95,7 @@ impl PerformanceBenchmark {
         memory_buffer_size_in_bytes: 4 * u64::pow(1024, 3),
         file_buffer_size_in_bytes: 25 * u64::pow(1024, 3),
         use_o_direct: false,
-        drop_cache_before: true,
+        drop_cache_before: *root,
         reread_every_block: false,
         delete_afterwards: true,
 
