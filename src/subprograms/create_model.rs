@@ -10,7 +10,7 @@ use crate::html_templater::ModelSummary;
 
 use plotlib::page::Page;
 use plotlib::repr::Plot;
-use plotlib::style::{LineStyle, LineJoin, PointMarker, PointStyle};
+use plotlib::style::{LineStyle, LineJoin};
 use plotlib::view::ContinuousView;
 
 use serde_json::json;
@@ -100,7 +100,7 @@ pub fn create_model(model_path: &String, benchmark_file_path: &String, benchmark
     let all_benchmarks = PerformanceBenchmark::get_all_benchmarks(model_path, benchmark_file_path, benchmarker_path);
     for benchmark in all_benchmarks {
         // run benchmark
-        //benchmark.run_and_save_all_benchmarks()?;
+        benchmark.run_and_save_all_benchmarks()?;
 
         // Run analysis
         let res = Analysis::new_from_finished_benchmark(benchmark);
