@@ -29,8 +29,12 @@ pub enum Commands {
         /// Path to where the benchmark should be done.
         #[clap(short, long, default_value_t = String::from(DEFAULT_BENCHMARK_FILE_PATH))]
         file: String,
+        /// Path to the used benchmarker
         #[clap(short, long, required = true)]
         benchmarker: String,
+        /// Whether root is required or not (used to drop caches)
+        #[clap(short, long)]
+        root: bool,
     },
     /// Evaluate recorded I/O accesses according to previously created benchmark.
     UseModel {
