@@ -11,11 +11,6 @@ use crate::analyzer::kde::BenchmarkKde;
 use crate::analyzer::linear_model::LinearModel;
 use crate::html_templater::SingleModelTemplate;
 
-use plotlib::page::Page;
-use plotlib::repr::Plot;
-use plotlib::style::{LineStyle, LineJoin};
-use plotlib::view::ContinuousView;
-
 pub struct Analysis {
     pub benchmark: PerformanceBenchmark,
     pub jsons: Vec<BenchmarkJSON>,

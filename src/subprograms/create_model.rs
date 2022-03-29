@@ -2,7 +2,6 @@ use std::fs::{self, File};
 use std::io::{self, Write};
 use std::path::PathBuf;
 
-use crate::subprograms::helper;
 use crate::benchmark_wrapper::PerformanceBenchmark;
 use crate::analyzer::Analysis;
 use crate::analyzer::linear_model::LinearModelJSON;
@@ -14,15 +13,6 @@ use plotlib::style::{LineStyle, LineJoin};
 use plotlib::view::ContinuousView;
 
 use serde_json::json;
-
-// TODO refactor
-pub fn validate(benchmarker_path: &String) -> Result<(), std::io::Error> {
-    // The benchmarker should obviously exist
-    helper::path_exists(&PathBuf::from(benchmarker_path))?;
-
-    Ok(())
-}
-
 
 // TODO move me
 // TODO dont copy

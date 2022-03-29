@@ -1,4 +1,4 @@
-use clap::{AppSettings, Parser, Subcommand};
+use clap::{Parser, Subcommand};
 
 // TODO: some have to be cwd, some path of io-benchmarker
 // Probably we should use lazy_static
@@ -12,8 +12,6 @@ pub const ABOUT: &str = "A blackbox modeller for I/O-classification";
 
 #[derive(Parser)]
 #[clap(name = NAME, author = AUTHOR, version = VERSION, about = ABOUT, long_about = None)]
-#[clap(global_setting(AppSettings::InferLongArgs))]
-#[clap(global_setting(AppSettings::PropagateVersion))]
 pub struct Cli {
     #[clap(subcommand)]
     pub command: Commands,
