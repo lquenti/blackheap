@@ -31,7 +31,7 @@ impl<'a> SingleModelTemplate<'a> {
             linear_model_svg: a.linear_model.to_svg(&a.jsons, &a.kdes),
         }
     }
-    pub fn to_html_string(self) -> String {
+    pub fn into_html_string(self) -> String {
         self.render_once().unwrap()
     }
 }
@@ -39,12 +39,12 @@ impl<'a> SingleModelTemplate<'a> {
 #[derive(TemplateOnce)]
 #[template(path = "model_summary.stpl")]
 pub struct ModelSummaryTemplate<'a> {
-    pub analyzed: &'a Vec<Analysis>,
+    pub analyzed: &'a [Analysis],
     pub svg_all: String,
 }
 
 impl<'a> ModelSummaryTemplate<'a> {
-    pub fn to_html_string(self) -> String {
+    pub fn into_html_string(self) -> String {
         self.render_once().unwrap()
     }
 }

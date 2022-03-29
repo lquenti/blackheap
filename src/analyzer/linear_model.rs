@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
-use std::path::PathBuf;
+use std::path::Path;
 
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
@@ -23,7 +23,7 @@ pub struct LinearModels(Vec<LinearModelJSON>);
 
 impl LinearModels {
     // TODO: Definitely need anyhow or Either or alike
-    pub fn from_file(file_path: &PathBuf) -> Result<Self, Box<dyn Error>> {
+    pub fn from_file(file_path: &Path) -> Result<Self, Box<dyn Error>> {
         let file: File = File::open(file_path)?;
         let reader = BufReader::new(file);
         let x: Result<Self, serde_json::Error> = serde_json::from_reader(reader);
@@ -89,7 +89,7 @@ pub struct LinearModel {
 impl LinearModel {
     // TODO: A lot of double work with to_svg, rewrite me
     // TODO: From next minimum instead of maximum
-    pub fn from_jsons_kdes(jsons: &Vec<BenchmarkJSON>, kdes: &Vec<BenchmarkKde>) -> Self {
+    pub fn from_jsons_kdes(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde]) -> Self {
         let (xs, ys) = Self::get_xs_ys(jsons, kdes);
         let data = vec![("X", xs), ("Y", ys)];
         let formula = "Y ~ X";
@@ -106,7 +106,7 @@ impl LinearModel {
         Self { a, b }
     }
 
-    fn get_xs_ys(jsons: &Vec<BenchmarkJSON>, kdes: &Vec<BenchmarkKde>) -> (Vec<f64>, Vec<f64>) {
+    fn get_xs_ys(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde]) -> (Vec<f64>, Vec<f64>) {
         let mut xs = Vec::new();
         let mut ys = Vec::new();
         for i in 0..jsons.len() {
@@ -117,7 +117,7 @@ impl LinearModel {
     }
 
     // TODO refactor me as well
-    pub fn to_svg(&self, jsons: &Vec<BenchmarkJSON>, kdes: &Vec<BenchmarkKde>) -> String {
+    pub fn to_svg(&self, jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde]) -> String {
         // they are expected to be ordered TODO validate
         let max_access_size = jsons[jsons.len() - 1].access_size_in_bytes as f64;
         let (xs, ys) = Self::get_xs_ys(jsons, kdes);

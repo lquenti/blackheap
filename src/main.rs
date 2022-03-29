@@ -13,17 +13,17 @@ use subprograms::use_model;
 fn main() {
     let cli = Cli::parse();
 
-    match &cli.command {
+    match cli.command {
         Commands::CreateModel {
             to,
             file,
             benchmarker,
             root,
-        } => match create_model::create_model(to, file, benchmarker, root) {
+        } => match create_model::create_model(&to, &file, &benchmarker, root) {
             Ok(_) => {}
             Err(e) => eprintln!("{:?}", e),
         },
-        Commands::UseModel { model, file } => match use_model::use_model(model, file) {
+        Commands::UseModel { model, file } => match use_model::use_model(&model, &file) {
             Ok(_) => {}
             Err(e) => eprintln!("{:?}", e),
         },

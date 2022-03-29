@@ -24,16 +24,15 @@ struct Cluster {
 
 impl Cluster {
     fn merge(&self, next: &Cluster) -> Cluster {
-        let global_max;
         let mut global_xs = self.xs.clone();
         let mut global_ys = self.ys.clone();
         global_xs.append(&mut next.xs.clone());
         global_ys.append(&mut next.ys.clone());
-        if self.maximum.1 > next.maximum.1 {
-            global_max = self.maximum;
+        let global_max = if self.maximum.1 > next.maximum.1 {
+            self.maximum
         } else {
-            global_max = next.maximum;
-        }
+            next.maximum
+        };
         Cluster {
             xs: global_xs,
             ys: global_ys,
@@ -109,6 +108,8 @@ impl BenchmarkKde {
         Page::single(&v).to_svg().unwrap().to_string()
     }
 
+    // TODO: REFACTOR THIS
+    #[allow(clippy::type_complexity)] // for now
     fn get_all_extrema(&self) -> (Vec<(f64, f64)>, Vec<(f64, f64)>) {
         let mut minima = Vec::new();
         let mut maxima = Vec::new();
@@ -144,13 +145,13 @@ impl BenchmarkKde {
             let left_index = self.xs.iter().position(|&x| x == left_minimum).unwrap();
             let right_index = self.xs.iter().position(|&x| x == right_minimum).unwrap();
 
-            let xs_cluster = self.xs[left_index..right_index + 1].to_vec();
-            let ys_cluster = self.ys[left_index..right_index + 1].to_vec();
+            let xs = self.xs[left_index..right_index + 1].to_vec();
+            let ys = self.ys[left_index..right_index + 1].to_vec();
 
             let cluster = Cluster {
-                xs: xs_cluster,
-                ys: ys_cluster,
-                maximum: maximum,
+                xs,
+                ys,
+                maximum,
             };
 
             ret.push(cluster);

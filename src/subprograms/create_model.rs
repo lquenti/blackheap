@@ -16,7 +16,7 @@ use serde_json::json;
 
 // TODO move me
 // TODO dont copy
-fn model_to_json(analyzed: &Vec<Analysis>) -> String {
+fn model_to_json(analyzed: &[Analysis]) -> String {
     json![analyzed
         .iter()
         .map(|a| LinearModelJSON {
@@ -28,7 +28,7 @@ fn model_to_json(analyzed: &Vec<Analysis>) -> String {
     .to_string()
 }
 
-fn save_analysis_model(analyzed: &Vec<Analysis>) -> Result<(), io::Error> {
+fn save_analysis_model(analyzed: &[Analysis]) -> Result<(), io::Error> {
     let json_str = model_to_json(analyzed);
     let path = format!("{}/LinearModel.json", analyzed[0].benchmark.model_path);
     println!("{}", path);
@@ -38,7 +38,7 @@ fn save_analysis_model(analyzed: &Vec<Analysis>) -> Result<(), io::Error> {
     Ok(())
 }
 
-fn create_html_report_for_analysis_models(analyzed: &Vec<Analysis>) -> String {
+fn create_html_report_for_analysis_models(analyzed: &[Analysis]) -> String {
     let mut v = ContinuousView::new()
         .x_label("Access Sizes in Bytes")
         .y_label("Expected Speed in sec");
@@ -72,22 +72,22 @@ fn create_html_report_for_analysis_models(analyzed: &Vec<Analysis>) -> String {
     Page::single(&v).to_svg().unwrap().to_string()
 }
 
-fn save_html_report_for_analysis_models(analyzed: &Vec<Analysis>) -> Result<(), io::Error> {
+fn save_html_report_for_analysis_models(analyzed: &[Analysis]) -> Result<(), io::Error> {
     let html = ModelSummaryTemplate {
-        analyzed: analyzed,
+        analyzed,
         svg_all: create_html_report_for_analysis_models(analyzed),
     };
     let path = format!("{}/html/index.html", analyzed[0].benchmark.model_path);
     let mut output = File::create(path)?;
-    write!(output, "{}", html.to_html_string())?;
+    write!(output, "{}", html.into_html_string())?;
     Ok(())
 }
 
 pub fn create_model(
-    model_path: &String,
-    benchmark_file_path: &String,
-    benchmarker_path: &String,
-    root: &bool,
+    model_path: &str,
+    benchmark_file_path: &str,
+    benchmarker_path: &str,
+    root: bool,
 ) -> Result<(), std::io::Error> {
     // create folders
     fs::create_dir_all(model_path)?;

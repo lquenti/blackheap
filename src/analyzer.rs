@@ -37,7 +37,7 @@ impl Analysis {
     }
 
     pub fn save_html_report(&self) -> Result<(), io::Error> {
-        let html_report = SingleModelTemplate::from_analysis(self).to_html_string();
+        let html_report = SingleModelTemplate::from_analysis(self).into_html_string();
         let html_template_path = format!("{}/{}", self.benchmark.model_path, String::from("html"));
 
         // A previous Analysis could have already created it.
@@ -53,7 +53,7 @@ impl Analysis {
         let mut output = File::create(format!(
             "{}/{}_{}.html",
             &html_template_path,
-            self.benchmark.benchmark_type.to_string(),
+            self.benchmark.benchmark_type,
             if self.benchmark.is_read_op {
                 "read"
             } else {
