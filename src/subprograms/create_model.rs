@@ -6,7 +6,7 @@ use crate::subprograms::helper;
 use crate::benchmark_wrapper::PerformanceBenchmark;
 use crate::analyzer::Analysis;
 use crate::analyzer::linear_model::LinearModelJSON;
-use crate::html_templater::ModelSummary;
+use crate::html_templater::ModelSummaryTemplate;
 
 use plotlib::page::Page;
 use plotlib::repr::Plot;
@@ -76,7 +76,7 @@ fn create_html_report_for_analysis_models(analyzed: &Vec<Analysis>) -> String {
 }
 
 fn save_html_report_for_analysis_models(analyzed: &Vec<Analysis>) -> Result<(), io::Error>{
-    let html = ModelSummary {
+    let html = ModelSummaryTemplate {
         analyzed: analyzed,
         svg_all: create_html_report_for_analysis_models(analyzed),
     };

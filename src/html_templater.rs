@@ -1,4 +1,3 @@
-
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
 use crate::analyzer::linear_model::LinearModel;
@@ -35,12 +34,12 @@ impl<'a> SingleModelTemplate<'a> {
 
 #[derive(TemplateOnce)]
 #[template(path = "model_summary.stpl")]
-pub struct ModelSummary<'a> {
+pub struct ModelSummaryTemplate<'a> {
     pub analyzed: &'a Vec<Analysis>,
     pub svg_all: String,
 }
 
-impl<'a> ModelSummary<'a> {
+impl<'a> ModelSummaryTemplate<'a> {
     pub fn to_html_string(self) -> String {
         self.render_once().unwrap()
     }
