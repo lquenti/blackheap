@@ -259,9 +259,7 @@ impl PerformanceBenchmark {
             let io_type = if self.is_read_op { "read" } else { "write" };
             println!(
                 "Running {} ({}) with access_size {}",
-                self.benchmark_type,
-                io_type,
-                access_size
+                self.benchmark_type, io_type, access_size
             );
 
             let path: PathBuf = [&benchmark_folder_path, &format!("{}.json", access_size)]

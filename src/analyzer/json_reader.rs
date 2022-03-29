@@ -1,6 +1,6 @@
 use std::fs::{self, DirEntry, File, ReadDir};
 use std::io::BufReader;
-use std::path::{PathBuf, Path};
+use std::path::{Path, PathBuf};
 
 use crate::benchmark_wrapper::PerformanceBenchmark;
 

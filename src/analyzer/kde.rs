@@ -148,11 +148,7 @@ impl BenchmarkKde {
             let xs = self.xs[left_index..right_index + 1].to_vec();
             let ys = self.ys[left_index..right_index + 1].to_vec();
 
-            let cluster = Cluster {
-                xs,
-                ys,
-                maximum,
-            };
+            let cluster = Cluster { xs, ys, maximum };
 
             ret.push(cluster);
         }
