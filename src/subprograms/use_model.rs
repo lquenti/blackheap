@@ -10,7 +10,7 @@ pub struct CsvLine {
     pub filename: String,
     pub io_type: char,
     pub bytes: u64,
-    pub sec: f64
+    pub sec: f64,
 }
 
 impl CsvLine {
@@ -45,27 +45,26 @@ pub fn use_model(model: &String, file: &String) -> Result<(), std::io::Error> {
     // debug
     for m in &measurements {
         let olm = models.find_lowest_upper_bound(m);
-        println!("{}: {} bytes in {} took less than {} ({} {})",
-                 if m.io_type == 'r' { "read" } else { "write" },
-                m.bytes,
-                m.sec,
-                match &olm {
-                    None => String::from("<NONE>"),
-                    Some(lm) => lm.model.evaluate(m.bytes).to_string(),
-                },
-                match &olm {
-                    None => String::from(""),
-                    Some(lm) => format!("{}", lm.benchmark_type),
-                },
-                match &olm {
-                    None => String::from(""),
-                    Some(lm) => String::from(if lm.is_read_op { "read" } else { "write" }),
-                },
-
+        println!(
+            "{}: {} bytes in {} took less than {} ({} {})",
+            if m.io_type == 'r' { "read" } else { "write" },
+            m.bytes,
+            m.sec,
+            match &olm {
+                None => String::from("<NONE>"),
+                Some(lm) => lm.model.evaluate(m.bytes).to_string(),
+            },
+            match &olm {
+                None => String::from(""),
+                Some(lm) => format!("{}", lm.benchmark_type),
+            },
+            match &olm {
+                None => String::from(""),
+                Some(lm) => String::from(if lm.is_read_op { "read" } else { "write" }),
+            },
         );
         println!("----------");
     }
-
 
     Ok(())
 }

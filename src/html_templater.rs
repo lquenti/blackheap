@@ -13,14 +13,18 @@ pub struct SingleModelTemplate<'a> {
     pub jsons: &'a Vec<BenchmarkJSON>,
     pub kdes: &'a Vec<BenchmarkKde>,
     pub linear_model: &'a LinearModel,
-    pub linear_model_svg: String
+    pub linear_model_svg: String,
 }
 
 impl<'a> SingleModelTemplate<'a> {
     pub fn from_analysis(a: &'a Analysis) -> Self {
         SingleModelTemplate {
             benchmark_name: a.benchmark.benchmark_type.to_string(),
-            op: String::from(if a.benchmark.is_read_op { "read" } else { "write" }),
+            op: String::from(if a.benchmark.is_read_op {
+                "read"
+            } else {
+                "write"
+            }),
             jsons: &a.jsons,
             kdes: &a.kdes,
             linear_model: &a.linear_model,

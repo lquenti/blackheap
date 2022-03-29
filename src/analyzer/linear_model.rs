@@ -1,21 +1,21 @@
-use std::io::BufReader;
-use std::fs::File;
-use std::path::PathBuf;
 use std::error::Error;
+use std::fs::File;
+use std::io::BufReader;
+use std::path::PathBuf;
 
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
-use crate::subprograms::use_model::CsvLine;
 use crate::benchmark_wrapper::BenchmarkType;
+use crate::subprograms::use_model::CsvLine;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use serde_json;
 
 use linregress::{FormulaRegressionBuilder, RegressionDataBuilder};
 
 use plotlib::page::Page;
 use plotlib::repr::Plot;
-use plotlib::style::{LineStyle, LineJoin, PointMarker, PointStyle};
+use plotlib::style::{LineJoin, LineStyle, PointMarker, PointStyle};
 use plotlib::view::ContinuousView;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -47,7 +47,7 @@ impl LinearModels {
 
             // we are looking for an upper bound. Thus if it is lower, we can instantly reject it.
             if approximated_time < line.sec {
-                continue
+                continue;
             }
 
             // do we have a upper bound already?
@@ -55,14 +55,18 @@ impl LinearModels {
                 // if not, this is the best until now
                 None => Some(lm),
                 // if so, lets choose the tighter bound
-                Some(lm2) => Some(if lm2.model.evaluate(line.bytes) < approximated_time { lm2 } else { lm }),
+                Some(lm2) => Some(if lm2.model.evaluate(line.bytes) < approximated_time {
+                    lm2
+                } else {
+                    lm
+                }),
             }
         }
         res
     }
 
     // TODO debug
-    pub fn iter(&self) -> std::slice::Iter<LinearModelJSON>{
+    pub fn iter(&self) -> std::slice::Iter<LinearModelJSON> {
         self.0.iter()
     }
 }
@@ -91,16 +95,15 @@ impl LinearModel {
         let formula = "Y ~ X";
         let data = RegressionDataBuilder::new().build_from(data).unwrap();
         let model = FormulaRegressionBuilder::new()
-        .data(&data)
-        .formula(formula)
-        .fit().unwrap();
+            .data(&data)
+            .formula(formula)
+            .fit()
+            .unwrap();
 
         let parameters = model.parameters;
         let a = parameters.regressor_values[0];
         let b = parameters.intercept_value;
-        Self {
-            a, b
-        }
+        Self { a, b }
     }
 
     fn get_xs_ys(jsons: &Vec<BenchmarkJSON>, kdes: &Vec<BenchmarkKde>) -> (Vec<f64>, Vec<f64>) {
@@ -116,20 +119,19 @@ impl LinearModel {
     // TODO refactor me as well
     pub fn to_svg(&self, jsons: &Vec<BenchmarkJSON>, kdes: &Vec<BenchmarkKde>) -> String {
         // they are expected to be ordered TODO validate
-        let max_access_size = jsons[jsons.len()-1].access_size_in_bytes as f64;
+        let max_access_size = jsons[jsons.len() - 1].access_size_in_bytes as f64;
         let (xs, ys) = Self::get_xs_ys(jsons, kdes);
         let xs_ys: Vec<(f64, f64)> = xs.iter().cloned().zip(ys.iter().cloned()).collect();
         let pts = Plot::new(xs_ys).point_style(
             PointStyle::new()
-            .colour("#ff0000")
-            .marker(PointMarker::Cross)
+                .colour("#ff0000")
+                .marker(PointMarker::Cross),
         );
-        let line = Plot::new(vec![(0.0f64, self.b), (max_access_size, max_access_size* self.a)])
-            .line_style(
-                LineStyle::new()
-                .colour("#0000ff")
-                .linejoin(LineJoin::Round)
-            );
+        let line = Plot::new(vec![
+            (0.0f64, self.b),
+            (max_access_size, max_access_size * self.a),
+        ])
+        .line_style(LineStyle::new().colour("#0000ff").linejoin(LineJoin::Round));
         let v = ContinuousView::new()
             .add(line)
             .add(pts)
