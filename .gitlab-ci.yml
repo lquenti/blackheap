@@ -12,7 +12,7 @@ clippy:
   stage: lint
   script:
     - rustup component add clippy
-    - cargo clippy
+    - cargo clippy -- -D warnings
   only:
     - master
     - merge_requests
