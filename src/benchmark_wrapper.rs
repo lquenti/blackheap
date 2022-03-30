@@ -31,7 +31,7 @@ impl fmt::Display for BenchmarkType {
 }
 
 #[derive(Debug)]
-pub struct PerformanceBenchmark {
+pub struct PerformanceBenchmark<'a> {
     pub benchmark_type: BenchmarkType,
 
     pub is_read_op: bool,
@@ -45,18 +45,18 @@ pub struct PerformanceBenchmark {
     reread_every_block: bool,
     delete_afterwards: bool,
 
-    pub model_path: String,
-    file_path: String,
-    benchmarker_path: String,
+    pub model_path: &'a str,
+    file_path: &'a str,
+    benchmarker_path: &'a str,
 
     available_ram_in_bytes: Option<i32>,
 }
 
-impl PerformanceBenchmark {
+impl<'a> PerformanceBenchmark<'a> {
     pub fn get_all_benchmarks(
-        model_path: &str,
-        benchmark_file_path: &str,
-        benchmarker_path: &str,
+        model_path: &'a str,
+        benchmark_file_path: &'a str,
+        benchmarker_path: &'a str,
         root: bool,
     ) -> Vec<Self> {
         vec![
@@ -73,9 +73,9 @@ impl PerformanceBenchmark {
     }
 
     pub fn new_random_uncached_read(
-        model_path: &str,
-        benchmark_file_path: &str,
-        benchmarker_path: &str,
+        model_path: &'a str,
+        file_path: &'a str,
+        benchmarker_path: &'a str,
         root: bool,
     ) -> Self {
         PerformanceBenchmark {
@@ -91,18 +91,18 @@ impl PerformanceBenchmark {
             reread_every_block: false,
             delete_afterwards: true,
 
-            benchmarker_path: benchmarker_path.to_string(),
-            file_path: benchmark_file_path.to_string(),
-            model_path: model_path.to_string(),
+            benchmarker_path,
+            file_path,
+            model_path,
 
             available_ram_in_bytes: None,
         }
     }
 
     pub fn new_random_uncached_write(
-        model_path: &str,
-        benchmark_file_path: &str,
-        benchmarker_path: &str,
+        model_path: &'a str,
+        file_path: &'a str,
+        benchmarker_path: &'a str,
         root: bool,
     ) -> Self {
         PerformanceBenchmark {
@@ -118,18 +118,18 @@ impl PerformanceBenchmark {
             reread_every_block: false,
             delete_afterwards: true,
 
-            benchmarker_path: benchmarker_path.to_string(),
-            file_path: benchmark_file_path.to_string(),
-            model_path: model_path.to_string(),
+            benchmarker_path,
+            file_path,
+            model_path,
 
             available_ram_in_bytes: None,
         }
     }
 
     pub fn new_same_offset_read(
-        model_path: &str,
-        benchmark_file_path: &str,
-        benchmarker_path: &str,
+        model_path: &'a str,
+        file_path: &'a str,
+        benchmarker_path: &'a str,
     ) -> Self {
         PerformanceBenchmark {
             benchmark_type: BenchmarkType::SameOffset,
@@ -144,19 +144,18 @@ impl PerformanceBenchmark {
             reread_every_block: true,
             delete_afterwards: false,
 
-            // TODO
-            benchmarker_path: benchmarker_path.to_string(),
-            file_path: benchmark_file_path.to_string(),
-            model_path: model_path.to_string(),
+            benchmarker_path,
+            file_path,
+            model_path,
 
             available_ram_in_bytes: None,
         }
     }
 
     pub fn new_same_offset_write(
-        model_path: &str,
-        benchmark_file_path: &str,
-        benchmarker_path: &str,
+        model_path: &'a str,
+        file_path: &'a str,
+        benchmarker_path: &'a str,
     ) -> Self {
         PerformanceBenchmark {
             benchmark_type: BenchmarkType::SameOffset,
@@ -171,9 +170,9 @@ impl PerformanceBenchmark {
             reread_every_block: true,
             delete_afterwards: false,
 
-            benchmarker_path: benchmarker_path.to_string(),
-            file_path: benchmark_file_path.to_string(),
-            model_path: model_path.to_string(),
+            benchmarker_path,
+            file_path,
+            model_path,
 
             available_ram_in_bytes: None,
         }

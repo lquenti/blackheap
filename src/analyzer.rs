@@ -11,15 +11,15 @@ use crate::analyzer::linear_model::LinearModel;
 use crate::benchmark_wrapper::PerformanceBenchmark;
 use crate::html_templater::SingleModelTemplate;
 
-pub struct Analysis {
-    pub benchmark: PerformanceBenchmark,
+pub struct Analysis<'a> {
+    pub benchmark: PerformanceBenchmark<'a>,
     pub jsons: Vec<BenchmarkJSON>,
     pub kdes: Vec<BenchmarkKde>,
     pub linear_model: LinearModel,
 }
 
-impl Analysis {
-    pub fn new_from_finished_benchmark(benchmark: PerformanceBenchmark) -> Self {
+impl<'a> Analysis<'a> {
+    pub fn new_from_finished_benchmark(benchmark: PerformanceBenchmark<'a>) -> Self {
         let mut jsons: Vec<BenchmarkJSON> =
             BenchmarkJSON::new_from_performance_benchmark(&benchmark);
         jsons.sort_by_key(|j| j.access_size_in_bytes);

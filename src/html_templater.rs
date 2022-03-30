@@ -39,7 +39,7 @@ impl<'a> SingleModelTemplate<'a> {
 #[derive(TemplateOnce)]
 #[template(path = "model_summary.stpl")]
 pub struct ModelSummaryTemplate<'a> {
-    pub analyzed: &'a [Analysis],
+    pub analyzed: &'a [Analysis<'a>],
     pub svg_all: String,
 }
 
