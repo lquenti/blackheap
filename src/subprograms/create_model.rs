@@ -89,7 +89,6 @@ pub fn create_model(
     benchmarker_path: &str,
     root: bool,
 ) -> Result<(), std::io::Error> {
-    let mut analyzed: Vec<Analysis>;
     // create folders
     fs::create_dir_all(model_path)?;
 
@@ -97,7 +96,7 @@ pub fn create_model(
     parent.pop();
     fs::create_dir_all(parent)?;
 
-    analyzed = Vec::new();
+    let mut analyzed: Vec<Analysis> = Vec::new();
 
     let all_benchmarks = PerformanceBenchmark::get_all_benchmarks(
         model_path,
