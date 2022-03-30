@@ -1,0 +1,28 @@
+image: "rust:latest"
+
+default:
+  before_script:
+    - rustc --version
+    - cargo --version
+
+stages:
+  - lint
+
+clippy:
+  stage: lint
+  script:
+    - rustup component add clippy
+    - cargo clippy -- -D warnings
+  only:
+    - master
+    - merge_requests
+
+
+rustfmt:
+  stage: lint
+  script:
+    - rustup component add rustfmt
+    - cargo fmt -- --check
+  only:
+    - master
+    - merge_requests

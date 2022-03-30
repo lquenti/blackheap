@@ -1,21 +1,25 @@
 use std::fs::{self, DirEntry, File, ReadDir};
-use std::path::PathBuf;
 use std::io::BufReader;
+use std::path::{Path, PathBuf};
 
 use crate::benchmark_wrapper::PerformanceBenchmark;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-
-fn get_all_jsons_from_directory(folder: &PathBuf) -> Vec<PathBuf> {
+// TODO: How do i get a pathbuf from a path?
+fn get_all_jsons_from_directory(folder: &Path) -> Vec<PathBuf> {
     let folder: PathBuf = fs::canonicalize(&folder).unwrap();
     let dir: ReadDir = fs::read_dir(&folder).unwrap();
 
     let mut valid_dir_entries: Vec<DirEntry> = Vec::new();
     for dir_entry in dir {
         match dir_entry {
-            Ok(d) => { valid_dir_entries.push(d); },
-            Err(e) => { println!("Warning: Could not read '{:?}' because '{}'", folder, e); }
+            Ok(d) => {
+                valid_dir_entries.push(d);
+            }
+            Err(e) => {
+                println!("Warning: Could not read '{:?}' because '{}'", folder, e);
+            }
         }
     }
 
@@ -26,8 +30,10 @@ fn get_all_jsons_from_directory(folder: &PathBuf) -> Vec<PathBuf> {
                 if !file_type.is_file() {
                     continue;
                 }
-            },
-            Err(_) => { continue; },
+            }
+            Err(_) => {
+                continue;
+            }
         }
 
         let path: PathBuf = dir_entry.path();
@@ -36,8 +42,10 @@ fn get_all_jsons_from_directory(folder: &PathBuf) -> Vec<PathBuf> {
                 if ext.to_ascii_lowercase() != "json" {
                     continue;
                 }
-            },
-            None => { continue; },
+            }
+            None => {
+                continue;
+            }
         }
         valid_jsons.push(path);
     }
@@ -45,17 +53,20 @@ fn get_all_jsons_from_directory(folder: &PathBuf) -> Vec<PathBuf> {
 }
 
 // TODO: scream louder when something goes wrong
-fn benchmark_json_to_struct(file_path: &PathBuf) -> Option<BenchmarkJSON> {
+fn benchmark_json_to_struct(file_path: &Path) -> Option<BenchmarkJSON> {
     let file = File::open(file_path);
 
-    if let Err(_) = file {
+    if file.is_err() {
         return None;
     }
     let file = file.unwrap();
     let reader = BufReader::new(file);
     match serde_json::from_reader(reader) {
-        Ok(json) => { json },
-        Err(e) => { println!("{}", e); return None; },
+        Ok(json) => json,
+        Err(e) => {
+            println!("{}", e);
+            None
+        }
     }
 }
 
@@ -79,17 +90,15 @@ pub struct BenchmarkJSON {
 }
 
 impl BenchmarkJSON {
-    pub fn new_from_dir(folder: &PathBuf) -> Vec<Self> {
-        let json_paths: Vec<PathBuf> = get_all_jsons_from_directory(&folder);
-        let jsons: Vec<BenchmarkJSON> = json_paths.iter()
-            .map(|path| benchmark_json_to_struct(path))
-            .filter(|x| x.is_some())
-            .map(|x| x.unwrap())
+    pub fn new_from_dir(folder: &Path) -> Vec<Self> {
+        let json_paths: Vec<PathBuf> = get_all_jsons_from_directory(folder);
+        let jsons: Vec<BenchmarkJSON> = json_paths
+            .iter()
+            .filter_map(|path| benchmark_json_to_struct(path))
             .collect();
         jsons
     }
     pub fn new_from_performance_benchmark(benchmark: &PerformanceBenchmark) -> Vec<Self> {
         Self::new_from_dir(&PathBuf::from(benchmark.get_benchmark_folder()))
     }
-
 }

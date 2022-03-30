@@ -10,11 +10,11 @@ pub struct CsvLine {
     pub filename: String,
     pub io_type: char,
     pub bytes: u64,
-    pub sec: f64
+    pub sec: f64,
 }
 
 impl CsvLine {
-    fn from_file(file: &String) -> Result<Vec<CsvLine>, std::io::Error> {
+    fn from_file(file: &str) -> Result<Vec<CsvLine>, std::io::Error> {
         let mut rdr = csv::Reader::from_path(file)?;
         let mut res = Vec::new();
         for result in rdr.deserialize::<CsvLine>() {
@@ -25,7 +25,7 @@ impl CsvLine {
     }
 }
 
-pub fn use_model(model: &String, file: &String) -> Result<(), std::io::Error> {
+pub fn use_model(model: &str, file: &str) -> Result<(), std::io::Error> {
     // TODO: validate
 
     // get measurements
@@ -45,27 +45,26 @@ pub fn use_model(model: &String, file: &String) -> Result<(), std::io::Error> {
     // debug
     for m in &measurements {
         let olm = models.find_lowest_upper_bound(m);
-        println!("{}: {} bytes in {} took less than {} ({} {})",
-                 if m.io_type == 'r' { "read" } else { "write" },
-                m.bytes,
-                m.sec,
-                match &olm {
-                    None => String::from("<NONE>"),
-                    Some(lm) => lm.model.evaluate(m.bytes).to_string(),
-                },
-                match &olm {
-                    None => String::from(""),
-                    Some(lm) => format!("{}", lm.benchmark_type),
-                },
-                match &olm {
-                    None => String::from(""),
-                    Some(lm) => String::from(if lm.is_read_op { "read" } else { "write" }),
-                },
-
+        println!(
+            "{}: {} bytes in {} took less than {} ({} {})",
+            if m.io_type == 'r' { "read" } else { "write" },
+            m.bytes,
+            m.sec,
+            match &olm {
+                None => String::from("<NONE>"),
+                Some(lm) => lm.model.evaluate(m.bytes).to_string(),
+            },
+            match &olm {
+                None => String::from(""),
+                Some(lm) => format!("{}", lm.benchmark_type),
+            },
+            match &olm {
+                None => String::from(""),
+                Some(lm) => String::from(if lm.is_read_op { "read" } else { "write" }),
+            },
         );
         println!("----------");
     }
-
 
     Ok(())
 }
