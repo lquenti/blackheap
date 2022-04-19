@@ -122,18 +122,21 @@ impl LinearModel {
         let max_access_size = jsons[jsons.len() - 1].access_size_in_bytes as f64;
         let (xs, ys) = Self::get_xs_ys(jsons, kdes);
         // TODO: Replace with proper plotting function
-        let xs: Vec<f64> = xs.iter().map(|x| x.log2()).collect();
-        let ys: Vec<f64> = ys.iter().map(|y| y.log2()).collect();
+        let xs: Vec<f64> = xs.iter().map(|x| (x + 1.0f64).log2()).collect();
+        let ys: Vec<f64> = ys.iter().map(|y| (y + 1.0f64).log2()).collect();
 
         let xs_ys: Vec<(f64, f64)> = xs.iter().cloned().zip(ys.iter().cloned()).collect();
+        for (x, y) in xs_ys.iter() {
+            println!("({},{})", x,y);
+        }
         let pts = Plot::new(xs_ys).point_style(
             PointStyle::new()
                 .colour("#ff0000")
                 .marker(PointMarker::Cross),
         );
         let line = Plot::new(vec![
-            (0.0f64, self.b.log2()),
-            (max_access_size.log2(), (max_access_size * self.a).log2()),
+            (0.0f64, (self.b + 1.0f64).log2()),
+            ((max_access_size+1.0f64).log2(), ((max_access_size * self.a) + 1.0f64).log2()),
         ])
         .line_style(LineStyle::new().colour("#0000ff").linejoin(LineJoin::Round));
         let v = ContinuousView::new()
