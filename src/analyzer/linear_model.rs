@@ -106,7 +106,7 @@ impl LinearModel {
         Self { a, b }
     }
 
-    fn get_xs_ys(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde]) -> (Vec<f64>, Vec<f64>) {
+    pub fn get_xs_ys(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde]) -> (Vec<f64>, Vec<f64>) {
         let mut xs = Vec::new();
         let mut ys = Vec::new();
         for i in 0..jsons.len() {
