@@ -17,6 +17,7 @@
 
       <div class="row">
         <h4>Linear Model: <%= linear_model.a%>*x+<%= linear_model.b%></h4>
+        <aside>Plotted logarithmically (log2)</aside>
         <%- linear_model_svg %>
       </div>
 
