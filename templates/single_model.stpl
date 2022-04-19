@@ -21,6 +21,30 @@
         <%- linear_model_svg %>
       </div>
 
+      <div class="row">
+        <h4>Raw Data:</h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Access size in Bytes</th>
+              <th scope="col">Time in seconds</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% let (xs, ys) = LinearModel::get_xs_ys(jsons, kdes);
+              // TODO refactor me
+              for (x,y) in xs.iter().cloned().zip(ys.iter().cloned()) {
+            %>
+            <tr>
+              <th><%= x %></th>
+              <%# I use format to force non-scientific notation for easier comparison %>
+              <th><%= format!("{}", y) %></th>
+            </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
       <% for (json, kde) in jsons.iter().zip(kdes.iter()) { %>
       <div class="row">
         <h4>
