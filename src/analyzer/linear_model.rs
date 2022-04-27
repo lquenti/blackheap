@@ -13,16 +13,12 @@ use serde_json;
 
 use linregress::{FormulaRegressionBuilder, RegressionDataBuilder};
 
-use plotlib::page::Page;
-use plotlib::repr::Plot;
-use plotlib::style::{LineJoin, LineStyle, PointMarker, PointStyle};
-use plotlib::view::ContinuousView;
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LinearModels(Vec<LinearModelJSON>);
 
 impl LinearModels {
     // TODO: Definitely need anyhow or Either or alike
+    /*
     pub fn from_file(file_path: &Path) -> Result<Self, Box<dyn Error>> {
         let file: File = File::open(file_path)?;
         let reader = BufReader::new(file);
@@ -32,6 +28,7 @@ impl LinearModels {
             Err(e) => Err(Box::new(e)),
         }
     }
+    */
 
     pub fn find_lowest_upper_bound(&self, line: &CsvLine) -> Option<&LinearModelJSON> {
         let mut res = None;
@@ -111,11 +108,12 @@ impl LinearModel {
         let mut ys = Vec::new();
         for i in 0..jsons.len() {
             xs.push(jsons[i].access_size_in_bytes as f64);
-            ys.push(kdes[i].get_global_maximum().0);
+            ys.push(kdes[i].global_maximum.0);
         }
         (xs, ys)
     }
 
+    /*
     // TODO refactor me as well
     pub fn to_svg(&self, jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde]) -> String {
         // they are expected to be ordered TODO validate
@@ -146,6 +144,7 @@ impl LinearModel {
             .y_label("Expected Speed in sec");
         Page::single(&v).to_svg().unwrap().to_string()
     }
+    */
 
     pub fn evaluate(&self, bytes: u64) -> f64 {
         self.a * (bytes as f64) + self.b

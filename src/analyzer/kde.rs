@@ -1,8 +1,3 @@
-use plotlib::page::Page;
-use plotlib::repr::Plot;
-use plotlib::style::{LineJoin, LineStyle, PointMarker, PointStyle};
-use plotlib::view::ContinuousView;
-
 use criterion_stats::univariate::kde::kernel::Gaussian;
 use criterion_stats::univariate::kde::{Bandwidth, Kde};
 use criterion_stats::univariate::Sample;
@@ -12,11 +7,14 @@ use itertools_num::linspace;
 use crate::analyzer::json_reader::BenchmarkJSON;
 
 pub struct BenchmarkKde {
+    pub access_size: u64, // TODO: If not needed remove me
     pub xs: Vec<f64>,
     pub ys: Vec<f64>,
+    pub significant_clusters: Vec<Cluster>,
+    pub global_maximum: (f64, f64)
 }
 
-struct Cluster {
+pub struct Cluster {
     xs: Vec<f64>,
     ys: Vec<f64>,
     maximum: (f64, f64),
@@ -47,6 +45,7 @@ impl Cluster {
 
 impl BenchmarkKde {
     pub fn from_benchmark(b: &BenchmarkJSON, n: usize) -> BenchmarkKde {
+        // Generate kde values
         let slice = &b.durations[..];
         let data = Sample::new(slice);
         let kde = Kde::new(data, Gaussian, Bandwidth::Silverman);
@@ -54,86 +53,40 @@ impl BenchmarkKde {
         let (left, right): (f64, f64) = (data.min() - 5. * h, data.max() + 5. * h);
         let xs: Vec<f64> = linspace::<f64>(left, right, n).collect();
         let ys: Vec<f64> = kde.map(&xs).to_vec();
-        BenchmarkKde { xs, ys }
-    }
 
-    pub fn to_svg(&self) -> String {
-        let kde_points: Vec<(f64, f64)> = self
-            .xs
-            .iter()
-            .cloned()
-            .zip(self.ys.iter().cloned())
-            .collect();
-
-        // KDE itself
-        let line_plot = Plot::new(kde_points)
-            .line_style(LineStyle::new().colour("#e1c16e").linejoin(LineJoin::Round));
-
-        // clusters
-        let sig_clusters = self.to_significant_clusters();
-        let mut maxima = Vec::new();
-        for cluster in &sig_clusters {
-            maxima.push(cluster.maximum);
-        }
-        let maxima_plot = Plot::new(maxima).point_style(
-            PointStyle::new()
-                .marker(PointMarker::Circle)
-                .colour("#ff0000"),
-        );
-        // TODO: Replace once we have good box support
-        let mut cluster_plots = Vec::new();
-        for cluster in &sig_clusters {
-            let left = cluster.xs[0];
-            let right = cluster.xs[cluster.xs.len() - 1];
-            let lines = vec![
-                (left, 0.0f64),
-                (left, cluster.maximum.1),
-                (right, cluster.maximum.1),
-                (right, 0.0f64),
-                (left, 0.0f64),
-            ];
-            cluster_plots.push(
-                Plot::new(lines)
-                    .line_style(LineStyle::new().colour("#3f888f").linejoin(LineJoin::Round)),
-            );
-        }
-
-        let mut v = ContinuousView::new().add(line_plot).add(maxima_plot);
-        for p in cluster_plots {
-            v = v.add(p);
-        }
-        v = v
-            .x_label("time in seconds")
-            .y_label("approximated propability");
-        Page::single(&v).to_svg().unwrap().to_string()
+        // compute significant clusters
+        let (minima, maxima) = Self::get_all_extrema(&xs, &ys);
+        let global_maximum = Self::get_global_maximum(&xs, &ys, &maxima);
+        let significant_clusters = Self::to_significant_clusters(&xs, &ys, minima, maxima);
+        let access_size = b.access_size_in_bytes;
+        BenchmarkKde { xs, ys, significant_clusters, global_maximum, access_size}
     }
 
     // TODO: REFACTOR THIS
     #[allow(clippy::type_complexity)] // for now
-    fn get_all_extrema(&self) -> (Vec<(f64, f64)>, Vec<(f64, f64)>) {
+    fn get_all_extrema(xs: &Vec<f64>, ys: &Vec<f64>) -> (Vec<(f64, f64)>, Vec<(f64, f64)>) {
         let mut minima = Vec::new();
         let mut maxima = Vec::new();
-        for i in 1..(self.xs.len() - 1) {
-            let is_increasing_before = self.ys[i - 1] <= self.ys[i];
-            let is_increasing_after = self.ys[i] <= self.ys[i + 1];
+        for i in 1..(xs.len() - 1) {
+            let is_increasing_before = ys[i - 1] <= ys[i];
+            let is_increasing_after = ys[i] <= ys[i + 1];
             if is_increasing_before == is_increasing_after {
                 continue;
             }
             if is_increasing_before && !is_increasing_after {
-                maxima.push((self.xs[i], self.ys[i]));
+                maxima.push((xs[i], ys[i]));
             } else {
-                minima.push((self.xs[i], self.ys[i]));
+                minima.push((xs[i], ys[i]));
             }
         }
         (minima, maxima)
     }
 
-    fn to_all_cluster(&self) -> Vec<Cluster> {
-        let (mut minima, maxima) = self.get_all_extrema();
+    fn to_all_cluster(xs: &Vec<f64>, ys: &Vec<f64>, mut minima: Vec<(f64, f64)>, maxima: Vec<(f64, f64)>) -> Vec<Cluster> {
 
         // We want a delimiter at the front and back
-        minima.insert(0, (self.xs[0], self.ys[0]));
-        minima.push((self.xs[self.xs.len() - 1], self.ys[self.ys.len() - 1]));
+        minima.insert(0, (xs[0], ys[0]));
+        minima.push((xs[xs.len() - 1], ys[ys.len() - 1]));
 
         let mut ret = Vec::new();
         for i in 0..maxima.len() {
@@ -142,11 +95,11 @@ impl BenchmarkKde {
             let right_minimum = minima[i + 1].0;
 
             // TODO god this is inperformant but who cares for now
-            let left_index = self.xs.iter().position(|&x| x == left_minimum).unwrap();
-            let right_index = self.xs.iter().position(|&x| x == right_minimum).unwrap();
+            let left_index = xs.iter().position(|&x| x == left_minimum).unwrap();
+            let right_index = xs.iter().position(|&x| x == right_minimum).unwrap();
 
-            let xs = self.xs[left_index..right_index + 1].to_vec();
-            let ys = self.ys[left_index..right_index + 1].to_vec();
+            let xs = xs[left_index..right_index + 1].to_vec();
+            let ys = ys[left_index..right_index + 1].to_vec();
 
             let cluster = Cluster { xs, ys, maximum };
 
@@ -155,8 +108,8 @@ impl BenchmarkKde {
         ret
     }
 
-    fn to_significant_clusters(&self) -> Vec<Cluster> {
-        let clusters = self.to_all_cluster();
+    fn to_significant_clusters(xs: &Vec<f64>, ys: &Vec<f64>, minima: Vec<(f64, f64)>, maxima: Vec<(f64, f64)>) -> Vec<Cluster> {
+        let clusters = Self::to_all_cluster(xs, ys, minima, maxima);
         let global_maximum = clusters.iter().fold(0.0f64, |max, new| {
             if max > new.maximum.1 {
                 max
@@ -192,8 +145,7 @@ impl BenchmarkKde {
         res
     }
 
-    pub fn get_global_maximum(&self) -> (f64, f64) {
-        let (_, maxima) = self.get_all_extrema();
+    fn get_global_maximum(xs: &Vec<f64>, ys: &Vec<f64>, maxima: &Vec<(f64, f64)>) -> (f64, f64) {
         maxima.iter().fold((0.0, 0.0), |curr_max, new| {
             if new.1 > curr_max.1 {
                 (new.0, new.1)

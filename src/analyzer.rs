@@ -2,15 +2,20 @@ pub mod json_reader;
 pub mod kde;
 pub mod linear_model;
 
-use std::fs::{self, File};
-use std::io::{self, Write};
-
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
+use crate::benchmark_wrapper::BenchmarkType;
 use crate::analyzer::linear_model::LinearModel;
 use crate::benchmark_wrapper::PerformanceBenchmark;
-use crate::html_templater::SingleModelTemplate;
 
+pub struct Analysis {
+    benchmark_type: BenchmarkType,
+    is_read_op: bool,
+    kdes: Vec<BenchmarkKde>,
+    model: LinearModel,
+}
+
+/*
 pub struct Analysis<'a> {
     pub benchmark: PerformanceBenchmark<'a>,
     pub jsons: Vec<BenchmarkJSON>,
@@ -36,6 +41,11 @@ impl<'a> Analysis<'a> {
         }
     }
 
+    pub fn to_json(xs: Vec<Self>) -> String {
+        json![xs].to_string()
+    }
+
+    /*
     pub fn save_html_report(&self) -> Result<(), io::Error> {
         let html_report = SingleModelTemplate::from_analysis(self).into_html_string();
         let html_template_path = format!("{}/{}", self.benchmark.model_path, String::from("html"));
@@ -64,4 +74,6 @@ impl<'a> Analysis<'a> {
 
         Ok(())
     }
+    */
 }
+*/

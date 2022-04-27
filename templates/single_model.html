@@ -107,8 +107,9 @@
         });
       };
 
-      const create_kde = (k, row) => {
-        row.appendChild(document.createTextNode("test123"));
+      const create_kde = ({xs, ys, access_size, cluster}, row) => {
+        // cluster: {x_min, x_max, y_max}
+        row.appendChild(document.createTextNode("test"));
       };
 
       const xs_data = [

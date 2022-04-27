@@ -1,3 +1,4 @@
+/*
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
 use crate::analyzer::linear_model::LinearModel;
@@ -48,3 +49,4 @@ impl<'a> ModelSummaryTemplate<'a> {
         self.render_once().unwrap()
     }
 }
+*/

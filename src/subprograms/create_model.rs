@@ -2,18 +2,13 @@ use std::fs::{self, File};
 use std::io::{self, Write};
 use std::path::PathBuf;
 
-use crate::analyzer::linear_model::LinearModelJSON;
-use crate::analyzer::Analysis;
+//use crate::analyzer::linear_model::LinearModelJSON;
+//use crate::analyzer::Analysis;
 use crate::benchmark_wrapper::PerformanceBenchmark;
-use crate::html_templater::ModelSummaryTemplate;
-
-use plotlib::page::Page;
-use plotlib::repr::Plot;
-use plotlib::style::{LineJoin, LineStyle};
-use plotlib::view::ContinuousView;
 
 use serde_json::json;
 
+/*
 // TODO move me
 // TODO dont copy
 fn model_to_json(analyzed: &[Analysis]) -> String {
@@ -27,6 +22,7 @@ fn model_to_json(analyzed: &[Analysis]) -> String {
         .collect::<Vec<LinearModelJSON>>()]
     .to_string()
 }
+
 
 fn save_analysis_model(analyzed: &[Analysis]) -> Result<(), io::Error> {
     let json_str = model_to_json(analyzed);
@@ -82,6 +78,7 @@ fn save_html_report_for_analysis_models(analyzed: &[Analysis]) -> Result<(), io:
     write!(output, "{}", html.into_html_string())?;
     Ok(())
 }
+*/
 
 pub fn create_model(
     model_path: &str,
@@ -96,7 +93,7 @@ pub fn create_model(
     parent.pop();
     fs::create_dir_all(parent)?;
 
-    let mut analyzed: Vec<Analysis> = Vec::new();
+    //let mut analyzed: Vec<Analysis> = Vec::new();
 
     let all_benchmarks = PerformanceBenchmark::get_all_benchmarks(
         model_path,
@@ -106,15 +103,16 @@ pub fn create_model(
     );
     for benchmark in all_benchmarks {
         // run benchmark
-        //benchmark.run_and_save_all_benchmarks()?;
+        benchmark.run_and_save_all_benchmarks()?;
 
         // Run analysis
-        let res = Analysis::new_from_finished_benchmark(benchmark);
-        res.save_html_report()?;
-        analyzed.push(res);
+        //let res = Analysis::new_from_finished_benchmark(benchmark);
+        //res.save_html_report()?;
+        //analyzed.push(res);
     }
-    save_analysis_model(&analyzed)?;
-    save_html_report_for_analysis_models(&analyzed)?;
+    //save_analysis_model(&analyzed)?;
+    //save_html_report_for_analysis_models(&analyzed)?;
+    //println!("{}", Analysis::to_json(analyzed));
 
     Ok(())
 }
