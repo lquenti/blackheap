@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<!-- TODOS:
+  - font
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Report</title>
+    <meta name="description" content="An automatic IO report created by io-modeller">
+    <meta name="author" content="io-modeller">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/skeleton.css">
+  </head>
+  <body>
+    <div class="container">
+      <!-- Headline -->
+      <div class="row">
+        <h1>SameOffset: Write</h1>
+      </div>
+      <!-- Overview Plot -->
+      <div class="row">
+        <h4>Linear Model: 3.4629473401924405e-10*x+-0.0002418145594537236</h4>
+        <div id="overview">
+        </div>
+      </div>
+      <!-- Raw Data -->
+      <div class="row">
+        <h4>Raw Data</h4>
+        <div id="raw-data">
+        </div>
+      </div>
+      <!-- KDEs -->
+      <div id="kdes">
+      </div>
+    </div>
+    <script src="js/plotly.1.33.1.min.js"></script>
+    <script>
+      const plot_overview = (xs, ys, slope, intercept, div_name) => {
+        const f = x => slope * x + intercept;
+        const scatter = {
+          x: xs,
+          y: ys,
+          mode: 'markers',
+          name: 'Maxima of all KDEs',
+        };
+        const [biggest_access_size] = xs.slice(-1);
+        // TODO: Verify if it actually looks like that by linspacing it
+        const line = {
+          x: [1,biggest_access_size],
+          y: [f(1),f(biggest_access_size)],
+          mode: 'lines+markers',
+        };
+        const data = [scatter, line];
+        const layout = {
+          xaxis: {
+            text: 'Access Size in Bytes',
+            type: 'log',
+            autorange: 'true',
+            rangemode: 'tozero',
+            tickformat: 'f',
+          },
+          yaxis: {
+            text: 'Expected Speed in sec',
+            type: 'log',
+            autorange: 'true',
+            tickformat: 'e',
+          },
+          title: 'Model Overview',
+        };
+        Plotly.newPlot(div_name, data, layout);
+      };
+
+      const create_table = (xs, ys, div_name) => {
+        const parent_div = document.getElementById(div_name);
+        const table = document.createElement('table');
+        const thead = document.createElement('thead');
+
+        // create header
+        const head_xs = document.createElement('th');
+        head_xs.appendChild(document.createTextNode('Access size in Bytes'));
+        const head_ys = document.createElement('th');
+        head_ys.appendChild(document.createTextNode('Time in Seconds'));
+        thead.appendChild(head_xs);
+        thead.appendChild(head_ys);
+        table.appendChild(thead);
+
+        // create body
+        for (let row=0; row < xs.length; row++) {
+          const tr = table.insertRow();
+          const access_size = tr.insertCell();
+          const time = tr.insertCell();
+          access_size.appendChild(document.createTextNode(xs[row]));
+          time.appendChild(document.createTextNode(ys[row]));
+        }
+        parent_div.appendChild(table);
+      };
+
+      const create_kdes = (kdes, div_name) => {
+        const parent_div = document.getElementById(div_name);
+        kdes.forEach(k => {
+          const row = document.createElement('div');
+          row.classList.add('row');
+          parent_div.appendChild(row);
+          create_kde(k, row);
+        });
+      };
+
+      const create_kde = (k, row) => {
+        row.appendChild(document.createTextNode("test123"));
+      };
+
+      const xs_data = [
+        2,
+        4,
+        8,
+        16,
+        32,
+        64,
+        128,
+        256,
+        512,
+        1024,
+        2048,
+        4096,
+        8192,
+        16384,
+        32768,
+        65536,
+        131072,
+        262144,
+        524288,
+        1048576,
+        2097152,
+        4194304,
+        8388608,
+        16777216,
+        33554432,
+        67108864,
+        134217728
+      ];
+      const ys_data = [
+        0.00008932071511107086,
+        0.0000047792594908834684,
+        0.00012213719432931878,
+        0.000004061171011520849,
+        0.0001309916928711705,
+        0.00011344915798020597,
+        0.00011510105305292327,
+        0.00012190507141972481,
+        0.00013009892380135197,
+        0.000004864117078565348,
+        0.0000016180632892362484,
+        0.0000017593763958377508,
+        0.00018944491989934952,
+        0.000009291753569820534,
+        0.000009216611251128043,
+        0.000016909784572373957,
+        0.0005359701963595838,
+        0.0008173141311682788,
+        0.001555297384467223,
+        0.0026838510892729346,
+        0.006969143935949282,
+        0.011052284088126306,
+        0.018836571642956008,
+        0.033348215725570424,
+        0.06316671041993883,
+        0.12123421860028796,
+        0.23690994829685746
+      ];
+
+      // main
+      plot_overview(xs_data, ys_data, 0.00000000034629473401924405, 0.0002418145594537236, 'overview');
+      create_table(xs_data, ys_data, 'raw-data');
+      create_kdes([1,2,3], 'kdes');
+</script>
+  </body>
+</html>
