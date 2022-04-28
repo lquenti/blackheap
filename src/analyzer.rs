@@ -11,6 +11,7 @@ use crate::benchmark_wrapper::BenchmarkType;
 use crate::analyzer::linear_model::LinearModel;
 use crate::benchmark_wrapper::PerformanceBenchmark;
 use crate::use_model::CsvLine;
+use crate::frontend;
 
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -46,19 +47,14 @@ impl Analysis {
     }
 
     pub fn all_to_file(xs: &Vec<Self>, to_folder: &str) -> Result<(), io::Error> {
-        // A previous Analysis could have already created it.
-        if let Err(e) = fs::create_dir(to_folder) {
-            match e.kind() {
-                io::ErrorKind::AlreadyExists => {}
-                _ => {
-                    return Err(e);
-                }
-            }
-        }
-
+        println!("all to file");
+        let path = format!("{}/finished", to_folder);
+        frontend::create_frontend(to_folder)?;
         // write file
-        let mut output = File::create(format!("{}/Model.json", to_folder))?;
+        let mut output = File::create(format!("{}/Model.json", path))?;
         write!(output, "{}", Self::all_to_json(xs))?;
+
+
 
         Ok(())
     }

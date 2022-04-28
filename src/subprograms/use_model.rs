@@ -1,5 +1,6 @@
 use serde::Deserialize;
 
+// TODO move me somewhere else
 #[derive(Debug, Deserialize)]
 pub struct CsvLine {
     pub filename: String,

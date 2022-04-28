@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::PathBuf;
+use std::io;
 
 use crate::analyzer::Analysis;
 use crate::benchmark_wrapper::PerformanceBenchmark;
@@ -9,7 +10,7 @@ pub fn create_model(
     benchmark_file_path: &str,
     benchmarker_path: &str,
     root: bool,
-) -> Result<(), std::io::Error> {
+) -> Result<(), io::Error> {
     // create folders
     fs::create_dir_all(model_path)?;
 
@@ -27,14 +28,14 @@ pub fn create_model(
     );
     for benchmark in all_benchmarks {
         // run benchmark
-        benchmark.run_and_save_all_benchmarks()?;
+        //benchmark.run_and_save_all_benchmarks()?;
 
         // Run analysis
         let res = Analysis::new_from_finished_benchmark(benchmark);
         analyzed.push(res);
     }
     Analysis::all_to_file(&analyzed, model_path)?;
-    println!("{}", Analysis::all_to_json(&analyzed));
+    //println!("{}", Analysis::all_to_json(&analyzed));
 
     Ok(())
 }
