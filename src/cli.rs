@@ -1,7 +1,5 @@
 use clap::{Parser, Subcommand};
 
-// TODO: some have to be cwd, some path of io-benchmarker
-// Probably we should use lazy_static
 pub const DEFAULT_MODEL_PATH: &str = "./default-model";
 pub const DEFAULT_BENCHMARK_FILE_PATH: &str = "/tmp/io_benchmark_test_file.dat";
 

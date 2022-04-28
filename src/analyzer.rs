@@ -2,24 +2,30 @@ pub mod json_reader;
 pub mod kde;
 pub mod linear_model;
 
-use std::fs::{self, File};
+use std::fs::File;
 use std::io::{self, Write};
 
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
 use crate::analyzer::linear_model::LinearModel;
+use crate::benchmark_wrapper::BenchmarkType;
 use crate::benchmark_wrapper::PerformanceBenchmark;
-use crate::html_templater::SingleModelTemplate;
+use crate::frontend;
+use crate::use_model::CsvLine;
 
-pub struct Analysis<'a> {
-    pub benchmark: PerformanceBenchmark<'a>,
-    pub jsons: Vec<BenchmarkJSON>,
+use serde::{Deserialize, Serialize};
+use serde_json::json;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Analysis {
+    pub benchmark_type: BenchmarkType,
+    pub is_read_op: bool,
     pub kdes: Vec<BenchmarkKde>,
     pub linear_model: LinearModel,
 }
 
-impl<'a> Analysis<'a> {
-    pub fn new_from_finished_benchmark(benchmark: PerformanceBenchmark<'a>) -> Self {
+impl Analysis {
+    pub fn new_from_finished_benchmark(benchmark: PerformanceBenchmark<'_>) -> Self {
         let mut jsons: Vec<BenchmarkJSON> =
             BenchmarkJSON::new_from_performance_benchmark(&benchmark);
         jsons.sort_by_key(|j| j.access_size_in_bytes);
@@ -28,40 +34,63 @@ impl<'a> Analysis<'a> {
             .map(|j| BenchmarkKde::from_benchmark(j, 100))
             .collect();
         let linear_model = LinearModel::from_jsons_kdes(&jsons, &kdes);
-        Analysis {
-            benchmark,
-            jsons,
+        Self {
+            benchmark_type: benchmark.benchmark_type,
+            is_read_op: benchmark.is_read_op,
             kdes,
             linear_model,
         }
     }
 
-    pub fn save_html_report(&self) -> Result<(), io::Error> {
-        let html_report = SingleModelTemplate::from_analysis(self).into_html_string();
-        let html_template_path = format!("{}/{}", self.benchmark.model_path, String::from("html"));
+    pub fn all_to_json(xs: &[Self]) -> String {
+        json![xs].to_string()
+    }
 
-        // A previous Analysis could have already created it.
-        if let Err(e) = fs::create_dir(&html_template_path) {
-            match e.kind() {
-                io::ErrorKind::AlreadyExists => {}
-                _ => {
-                    return Err(e);
-                }
-            }
-        }
-
-        let mut output = File::create(format!(
-            "{}/{}_{}.html",
-            &html_template_path,
-            self.benchmark.benchmark_type,
-            if self.benchmark.is_read_op {
-                "read"
-            } else {
-                "write"
-            }
-        ))?;
-        write!(output, "{}", html_report)?;
+    pub fn all_to_file(xs: &[Self], to_folder: &str) -> Result<(), io::Error> {
+        let path = format!("{}/finished", to_folder);
+        frontend::create_frontend(xs, to_folder)?;
+        // write file
+        let mut output = File::create(format!("{}/Model.json", path))?;
+        write!(output, "{}", Self::all_to_json(xs))?;
 
         Ok(())
+    }
+
+    pub fn find_lowest_upper_bound(xs: Vec<Self>, line: &CsvLine) -> Option<&LinearModel> {
+        // TODO: from LinearModels, recode me
+        /*
+        pub fn find_lowest_upper_bound(&self, line: &CsvLine) -> Option<&LinearModelJSON> {
+            let mut res = None;
+            for lm in self.0.iter() {
+                // Apples and oranges
+                if lm.is_read_op != (line.io_type == 'r') {
+                    continue;
+                }
+                println!("{:?}", lm);
+
+                let approximated_time = lm.model.evaluate(line.bytes);
+                println!("{:?} -> {}", lm, approximated_time);
+
+                // we are looking for an upper bound. Thus if it is lower, we can instantly reject it.
+                if approximated_time < line.sec {
+                    continue;
+                }
+
+                // do we have a upper bound already?
+                res = match res {
+                    // if not, this is the best until now
+                    None => Some(lm),
+                    // if so, lets choose the tighter bound
+                    Some(lm2) => Some(if lm2.model.evaluate(line.bytes) < approximated_time {
+                        lm2
+                    } else {
+                        lm
+                    }),
+                }
+            }
+            res
+        }
+            */
+        None
     }
 }

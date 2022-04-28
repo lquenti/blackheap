@@ -3,7 +3,7 @@ use clap::Parser;
 mod analyzer;
 mod benchmark_wrapper;
 mod cli;
-mod html_templater;
+mod frontend;
 mod subprograms;
 
 use cli::{Cli, Commands};
