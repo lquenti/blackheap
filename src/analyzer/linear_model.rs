@@ -1,18 +1,11 @@
-use std::error::Error;
-use std::fs::File;
-use std::io::BufReader;
-use std::path::Path;
-
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
-use crate::benchmark_wrapper::BenchmarkType;
-use crate::subprograms::use_model::CsvLine;
 
 use serde::{Deserialize, Serialize};
-use serde_json;
 
 use linregress::{FormulaRegressionBuilder, RegressionDataBuilder};
 
+/*
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LinearModels(Vec<LinearModelJSON>);
 
@@ -74,6 +67,7 @@ pub struct LinearModelJSON {
     pub is_read_op: bool,
     pub model: LinearModel,
 }
+*/
 
 // TODO Probably refactor me away
 /// y=aX+b
@@ -84,8 +78,6 @@ pub struct LinearModel {
 }
 
 impl LinearModel {
-    // TODO: A lot of double work with to_svg, rewrite me
-    // TODO: From next minimum instead of maximum
     pub fn from_jsons_kdes(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde]) -> Self {
         let (xs, ys) = Self::get_xs_ys(jsons, kdes);
         let data = vec![("X", xs), ("Y", ys)];
@@ -111,42 +103,5 @@ impl LinearModel {
             ys.push(kdes[i].global_maximum.0);
         }
         (xs, ys)
-    }
-
-    /*
-    // TODO refactor me as well
-    pub fn to_svg(&self, jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde]) -> String {
-        // they are expected to be ordered TODO validate
-        let max_access_size = jsons[jsons.len() - 1].access_size_in_bytes as f64;
-        let (xs, ys) = Self::get_xs_ys(jsons, kdes);
-        // TODO: Replace with proper plotting function
-        let xs: Vec<f64> = xs.iter().map(|x| (x + 1.0f64).log2()).collect();
-        let ys: Vec<f64> = ys.iter().map(|y| (y + 1.0f64).log2()).collect();
-
-        let xs_ys: Vec<(f64, f64)> = xs.iter().cloned().zip(ys.iter().cloned()).collect();
-        for (x, y) in xs_ys.iter() {
-            println!("({},{})", x,y);
-        }
-        let pts = Plot::new(xs_ys).point_style(
-            PointStyle::new()
-                .colour("#ff0000")
-                .marker(PointMarker::Cross),
-        );
-        let line = Plot::new(vec![
-            (0.0f64, (self.b + 1.0f64).log2()),
-            ((max_access_size+1.0f64).log2(), ((max_access_size * self.a) + 1.0f64).log2()),
-        ])
-        .line_style(LineStyle::new().colour("#0000ff").linejoin(LineJoin::Round));
-        let v = ContinuousView::new()
-            .add(line)
-            .add(pts)
-            .x_label("Access Sizes in Bytes")
-            .y_label("Expected Speed in sec");
-        Page::single(&v).to_svg().unwrap().to_string()
-    }
-    */
-
-    pub fn evaluate(&self, bytes: u64) -> f64 {
-        self.a * (bytes as f64) + self.b
     }
 }

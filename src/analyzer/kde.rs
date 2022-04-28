@@ -4,8 +4,11 @@ use criterion_stats::univariate::Sample;
 
 use itertools_num::linspace;
 
+use serde::{Deserialize, Serialize};
+
 use crate::analyzer::json_reader::BenchmarkJSON;
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BenchmarkKde {
     pub access_size: u64, // TODO: If not needed remove me
     pub xs: Vec<f64>,
@@ -14,6 +17,7 @@ pub struct BenchmarkKde {
     pub global_maximum: (f64, f64)
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Cluster {
     xs: Vec<f64>,
     ys: Vec<f64>,
@@ -56,7 +60,7 @@ impl BenchmarkKde {
 
         // compute significant clusters
         let (minima, maxima) = Self::get_all_extrema(&xs, &ys);
-        let global_maximum = Self::get_global_maximum(&xs, &ys, &maxima);
+        let global_maximum = Self::get_global_maximum(&maxima);
         let significant_clusters = Self::to_significant_clusters(&xs, &ys, minima, maxima);
         let access_size = b.access_size_in_bytes;
         BenchmarkKde { xs, ys, significant_clusters, global_maximum, access_size}
@@ -145,7 +149,7 @@ impl BenchmarkKde {
         res
     }
 
-    fn get_global_maximum(xs: &Vec<f64>, ys: &Vec<f64>, maxima: &Vec<(f64, f64)>) -> (f64, f64) {
+    fn get_global_maximum(maxima: &Vec<(f64, f64)>) -> (f64, f64) {
         maxima.iter().fold((0.0, 0.0), |curr_max, new| {
             if new.1 > curr_max.1 {
                 (new.0, new.1)

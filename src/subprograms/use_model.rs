@@ -1,7 +1,3 @@
-use std::path::PathBuf;
-
-use crate::analyzer::linear_model::LinearModels;
-
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -25,7 +21,7 @@ impl CsvLine {
     }
 }
 
-pub fn use_model(model: &str, file: &str) -> Result<(), std::io::Error> {
+pub fn use_model(_model: &str, file: &str) -> Result<(), std::io::Error> {
     // TODO: validate
 
     // get measurements
@@ -35,6 +31,7 @@ pub fn use_model(model: &str, file: &str) -> Result<(), std::io::Error> {
     }
     println!("----------");
 
+    /*
     // load LinearModel
     let models = LinearModels::from_file(&PathBuf::from(model)).unwrap();
     for m in models.iter() {
@@ -65,6 +62,7 @@ pub fn use_model(model: &str, file: &str) -> Result<(), std::io::Error> {
         );
         println!("----------");
     }
+    */
 
     Ok(())
 }
