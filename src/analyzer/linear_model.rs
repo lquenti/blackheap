@@ -39,4 +39,8 @@ impl LinearModel {
         }
         (xs, ys)
     }
+
+    pub fn evaluate(&self, bytes: u64) -> f64 {
+        self.a * (bytes as f64) + self.b
+    }
 }
