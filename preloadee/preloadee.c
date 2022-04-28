@@ -14,15 +14,9 @@
 #include<stdarg.h>
 
 
-#define CSV_HEADER "filename,io_type,bytes,sec\n"
+#define CSV_HEADER "io_type,bytes,sec\n"
 
 typedef ssize_t (*io_operation_t)(int fd, void *buf, size_t count);
-
-typedef struct fd_table_t {
-  size_t n;
-  int *fds;
-  char **filenames;
-} fd_table_t;
 
 typedef struct state_t {
   int fp;
@@ -30,7 +24,6 @@ typedef struct state_t {
   ssize_t (*orig_write)(int fd, const void *buf, size_t count);
   int (*orig_open)(const char *path, int oflag, ...);
   int (*orig_close)(int fd);
-  fd_table_t fd_table;
 } state_t;
 
 static state_t *current_state = NULL;
@@ -38,69 +31,13 @@ static state_t *current_state = NULL;
 static void cleanup_state() {
   // current_state is never a nullptr since this just gets
   // called if init_state() got called first
-  free(current_state->fd_table.fds);
-  free(current_state->fd_table.filenames);
   free(current_state);
-}
-
-static ssize_t get_filename_index_from_fd(int fd) {
-  for (size_t i=0; i<current_state->fd_table.n; ++i) {
-    if (current_state->fd_table.fds[i] == fd) {
-      return i;
-    }
-  }
-  fprintf(stderr, "ERROR: COULD NOT FIND fd: %d\n",fd);
-  // TODO better error handling if even possible
-  return -1;
-}
-
-static void add_to_lookup_table(int fd, const char *str) {
-  // expected to be called after init_state
-
-  // copy
-  size_t len = strlen(str);
-  char *str_heap = malloc(sizeof(char) * len);
-  strcpy(str_heap, str);
-
-  // add to table
-  current_state->fd_table.n += 1;
-  realloc(current_state->fd_table.fds, sizeof(int) * current_state->fd_table.n);
-  realloc(current_state->fd_table.filenames, sizeof(int) * current_state->fd_table.n);
-  current_state->fd_table.fds[current_state->fd_table.n - 1] = fd;
-  current_state->fd_table.filenames[current_state->fd_table.n - 1] = str_heap;
-}
-
-static void remove_from_lookup_table(int fd) {
-  // expected to be called after init_state
-
-  // get the element in Table (in O(n) lol)
-  ssize_t fd_index = get_filename_index_from_fd(fd);
-  if (fd_index == -1) {
-    return;
-  }
-
-  // remove the filename not used anymore
-  free(current_state->fd_table.filenames[fd_index]);
-
-  // fill the gap resulted by deletion
-  for (size_t i=fd_index; i<(current_state->fd_table.n -1); ++i) {
-    current_state->fd_table.fds[i] = current_state->fd_table.fds[i+1];
-    current_state->fd_table.filenames[i] = current_state->fd_table.filenames[i+1];
-  }
-
-  // reduce size
-  current_state->fd_table.n -= 1;
-  realloc(current_state->fd_table.fds, sizeof(int) * current_state->fd_table.n);
-  realloc(current_state->fd_table.filenames, sizeof(int) * current_state->fd_table.n);
 }
 
 
 static void init_state() {
   atexit(cleanup_state);
   current_state = malloc(sizeof(state_t));
-  current_state->fd_table.n = 1;
-  current_state->fd_table.filenames = malloc(sizeof(char *));
-  current_state->fd_table.fds = malloc(sizeof(int));
 
   int timestamp = (int)time(NULL);
   char filename[256];
@@ -111,9 +48,6 @@ static void init_state() {
   current_state->orig_close = dlsym(RTLD_NEXT, "close");
 
   current_state->fp = current_state->orig_open(filename, O_CREAT | O_WRONLY | O_TRUNC, 0644);
-  current_state->fd_table.fds[0] = current_state->fp;
-  current_state->fd_table.filenames[0] = malloc(sizeof(char) * strlen(filename));
-  strcpy(current_state->fd_table.filenames[0],  filename);
 
 
   // write CSV header
@@ -155,16 +89,9 @@ static ssize_t do_io(bool is_read, int fd, void *buf, size_t count) {
   // record results
   // (Don't record our recording)
   if (fd != current_state->fp) {
-    ssize_t fd_index = get_filename_index_from_fd(fd);
-    if (fd_index == -1) {
-      // TODO error handling
-      return res;
-    }
-
     char result_buf[256];
     sprintf(result_buf,
-        "\"%s\",%c,%zu,%.17g\n",
-        current_state->fd_table.filenames[fd_index],
+        "\%c,%zu,%.17g\n",
         is_read ? 'r' : 'w',
         res,
         duration
@@ -198,7 +125,6 @@ int open(const char *path, int oflag, ...) {
   va_start(args, oflag);
   mflag = va_arg(args, int);
   int ret = current_state->orig_open(path, oflag, mflag);
-  add_to_lookup_table(ret, path);
   return ret;
 }
 
@@ -206,6 +132,5 @@ int close(int fd) {
   if (unlikely(current_state == NULL)) {
     init_state();
   }
-  remove_from_lookup_table(fd);
   return current_state->orig_close(fd);
 }
