@@ -1,3 +1,16 @@
+const get_random_colour = () => {
+  const space = "0123456789ABCDEF";
+  return `#${Array(6).fill().map(_ => space[Math.floor(Math.random() * 16)]).join('')}`
+}
+function getRandomColor() {
+  var letters = '0123456789ABCDEF';
+  var color = '#';
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
 const print_headline = (benchmark_type, is_read_op, div_name) => {
   const op = ((is_read_op) ? "read" : "write");
   document.getElementById(div_name).appendChild(document.createTextNode(`${benchmark_type}: ${op}`))
@@ -39,7 +52,6 @@ const plot_overview = (xs, ys, slope, intercept, div_name) => {
     },
     title: 'Model Overview',
   };
-  console.log(div_name);
   Plotly.newPlot(div_name, data, layout);
 };
 
@@ -70,17 +82,88 @@ const create_table = (xs, ys, div_name) => {
 
 const create_kdes = (kdes, div_name) => {
   const parent_div = document.getElementById(div_name);
-  kdes.forEach(k => {
+  const headline = document.createElement('h4');
+  headline.appendChild(document.createTextNode('KDEs'))
+  parent_div.appendChild(headline);
+
+  for (const kde of kdes) {
     const row = document.createElement('div');
     row.classList.add('row');
     parent_div.appendChild(row);
-    create_kde(k, row);
-  });
+    console.log(kde);
+    create_kde(kde, row);
+  }
 };
 
-const create_kde = ({xs, ys, access_size, cluster}, row) => {
-  // cluster: {x_min, x_max, y_max}
-  row.appendChild(document.createTextNode("test"));
+const create_kde = ({access_size, significant_clusters, xs, ys}, row) => {
+  // create headline
+  const headline = document.createElement("h4");
+  headline.appendChild(document.createTextNode(`Access Size: ${access_size}`));
+
+  // create another div for putting the graph in
+  const plot_div = document.createElement('div');
+
+  // make row unique to pass to plotly
+  const row_name = `kde-${access_size}`;
+  plot_div.id = row_name;
+
+  // append everything
+  row.appendChild(headline);
+  row.appendChild(plot_div);
+
+  // plot...
+  // the kde itself
+  const graph = {
+    x: xs,
+    y: ys,
+    mode: 'lines',
+    name: 'KDE',
+  };
+
+  // the maxima
+  let maxima_x = [], maxima_y = [];
+  for (const sc of significant_clusters) {
+    maxima_x.push(sc["maximum"][0]);
+    maxima_y.push(sc["maximum"][1]);
+  }
+  const maxima = {
+    x: maxima_x,
+    y: maxima_y,
+    mode: 'markers',
+    name: 'Maxima of each cluster'
+  };
+
+  // the clusters themselves
+  // https://plotly.com/javascript/shapes/
+  const clusters = significant_clusters.map(sc => {
+    return {
+      type: 'rect',
+      xref: 'x',
+      yref: 'paper',
+      x0: sc["xs"][0],
+      y0: 0,
+      x1: sc["xs"].slice(-1)[0],
+      y1: 1,
+      fillcolor: get_random_colour(),
+      opacity: 0.4,
+      line: {
+        width: 1,
+      },
+    };
+  })
+  console.log(clusters);
+
+  const data = [graph, maxima];
+  const layout = {
+    xaxis: {
+      text: 'time in seconds',
+    },
+    yaxis: {
+      text: 'Estimated Probability',
+    },
+    shapes: clusters,
+  };
+  Plotly.newPlot(row_name, data, layout);
 };
 
 const get_model_from_json = (j, benchmark_type, is_read_op) => {
