@@ -14,7 +14,7 @@ pub struct BenchmarkKde {
     pub xs: Vec<f64>,
     pub ys: Vec<f64>,
     pub significant_clusters: Vec<Cluster>,
-    pub global_maximum: (f64, f64)
+    pub global_maximum: (f64, f64),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -63,7 +63,13 @@ impl BenchmarkKde {
         let global_maximum = Self::get_global_maximum(&maxima);
         let significant_clusters = Self::to_significant_clusters(&xs, &ys, minima, maxima);
         let access_size = b.access_size_in_bytes;
-        BenchmarkKde { xs, ys, significant_clusters, global_maximum, access_size}
+        BenchmarkKde {
+            xs,
+            ys,
+            significant_clusters,
+            global_maximum,
+            access_size,
+        }
     }
 
     #[allow(clippy::type_complexity)] // for now
@@ -85,7 +91,12 @@ impl BenchmarkKde {
         (minima, maxima)
     }
 
-    fn to_all_cluster(xs: &Vec<f64>, ys: &Vec<f64>, mut minima: Vec<(f64, f64)>, maxima: Vec<(f64, f64)>) -> Vec<Cluster> {
+    fn to_all_cluster(
+        xs: &Vec<f64>,
+        ys: &Vec<f64>,
+        mut minima: Vec<(f64, f64)>,
+        maxima: Vec<(f64, f64)>,
+    ) -> Vec<Cluster> {
         // We want a delimiter at the front and back
         minima.insert(0, (xs[0], ys[0]));
         minima.push((xs[xs.len() - 1], ys[ys.len() - 1]));
@@ -110,7 +121,12 @@ impl BenchmarkKde {
         ret
     }
 
-    fn to_significant_clusters(xs: &Vec<f64>, ys: &Vec<f64>, minima: Vec<(f64, f64)>, maxima: Vec<(f64, f64)>) -> Vec<Cluster> {
+    fn to_significant_clusters(
+        xs: &Vec<f64>,
+        ys: &Vec<f64>,
+        minima: Vec<(f64, f64)>,
+        maxima: Vec<(f64, f64)>,
+    ) -> Vec<Cluster> {
         let clusters = Self::to_all_cluster(xs, ys, minima, maxima);
         let global_maximum = clusters.iter().fold(0.0f64, |max, new| {
             if max > new.maximum.1 {

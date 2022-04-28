@@ -1,6 +1,6 @@
 use std::fs;
-use std::path::PathBuf;
 use std::io;
+use std::path::PathBuf;
 
 use crate::analyzer::Analysis;
 use crate::benchmark_wrapper::PerformanceBenchmark;
@@ -28,7 +28,7 @@ pub fn create_model(
     );
     for benchmark in all_benchmarks {
         // run benchmark
-        //benchmark.run_and_save_all_benchmarks()?;
+        benchmark.run_and_save_all_benchmarks()?;
 
         // Run analysis
         let res = Analysis::new_from_finished_benchmark(benchmark);

@@ -3,8 +3,8 @@ use clap::Parser;
 mod analyzer;
 mod benchmark_wrapper;
 mod cli;
-mod subprograms;
 mod frontend;
+mod subprograms;
 
 use cli::{Cli, Commands};
 use subprograms::create_model;
