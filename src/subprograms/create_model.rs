@@ -28,14 +28,13 @@ pub fn create_model(
     );
     for benchmark in all_benchmarks {
         // run benchmark
-        benchmark.run_and_save_all_benchmarks()?;
+        //benchmark.run_and_save_all_benchmarks()?;
 
         // Run analysis
         let res = Analysis::new_from_finished_benchmark(benchmark);
         analyzed.push(res);
     }
     Analysis::all_to_file(&analyzed, model_path)?;
-    //println!("{}", Analysis::all_to_json(&analyzed));
 
     Ok(())
 }

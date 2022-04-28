@@ -22,6 +22,9 @@ const SINGLE_MODEL_HTML: &str = include_str!("../frontend/single_model.html");
 const MODEL_SUMMARY_HTML_PATH: &str = "model_summary.html";
 const MODEL_SUMMARY_HTML: &str = include_str!("../frontend/model_summary.html");
 
+const USE_MODEL_REPORT: &str = include_str!("../frontend/use_model_report.html");
+const USE_MODEL_REPORT_PATH: &str = "use_model_report.html";
+
 const PLACEHOLDER_BENCHMARK_TYPE: &str = "TYPE_OF_BENCHMARK";
 const PLACEHOLDER_IS_READ_OP: &str = "IS_READING_OPERATION";
 
@@ -73,7 +76,7 @@ pub fn create_frontend(xs: &[Analysis], to_folder: &str) -> Result<(), io::Error
     overwrite_file(PLOTLY_JS, &format!("{}/{}", base_path, PLOTLY_JS_PATH))?;
 
     // write summary
-    overwrite_file(MODEL_SUMMARY_HTML, MODEL_SUMMARY_HTML_PATH)?;
+    overwrite_file(MODEL_SUMMARY_HTML, &format!{"{}/{}", base_path, MODEL_SUMMARY_HTML_PATH})?;
 
     // write all single models, parametrized
     let all_benchmarks: Vec<(&BenchmarkType, bool)> = xs
@@ -116,6 +119,8 @@ pub fn use_frontend(report: &Report, to: &str) -> Result<()> {
     )?;
     overwrite_file(CUSTOM_JS, &format!("{}/{}", to, CUSTOM_JS_PATH))?;
     overwrite_file(PLOTLY_JS, &format!("{}/{}", to, PLOTLY_JS_PATH))?;
+
+    overwrite_file(USE_MODEL_REPORT, &format!("{}/{}", to, USE_MODEL_REPORT_PATH))?;
 
     Ok(())
 }
