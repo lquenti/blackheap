@@ -1,19 +1,13 @@
+/* Begin helpers */
 const get_random_colour = () => {
   const space = "0123456789ABCDEF";
   return `#${Array(6).fill().map(_ => space[Math.floor(Math.random() * 16)]).join('')}`
 }
-function getRandomColor() {
-  var letters = '0123456789ABCDEF';
-  var color = '#';
-  for (var i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-}
+const convert_is_read_op = (is_read_op) => (is_read_op) ? "read" : "write";
+/* End helpers */
 
 const print_headline = (benchmark_type, is_read_op, div_name) => {
-  const op = ((is_read_op) ? "read" : "write");
-  document.getElementById(div_name).appendChild(document.createTextNode(`${benchmark_type}: ${op}`))
+  document.getElementById(div_name).appendChild(document.createTextNode(`${benchmark_type}: ${convert_is_read_op(is_read_op)}`))
 };
 
 const print_model_function = (slope, intercept, div_name) => {
@@ -31,9 +25,10 @@ const plot_overview = (xs, ys, slope, intercept, div_name) => {
   const [biggest_access_size] = xs.slice(-1);
   // TODO: Verify if it actually looks like that by linspacing it
   const line = {
-    x: [1, biggest_access_size],
-    y: [f(1), f(biggest_access_size)],
+    x: [2, biggest_access_size],
+    y: [f(2), f(biggest_access_size)],
     mode: 'lines+markers',
+    name: 'Linearly interpolated function'
   };
   const data = [scatter, line];
   const layout = {
@@ -90,7 +85,6 @@ const create_kdes = (kdes, div_name) => {
     const row = document.createElement('div');
     row.classList.add('row');
     parent_div.appendChild(row);
-    console.log(kde);
     create_kde(kde, row);
   }
 };
@@ -151,7 +145,6 @@ const create_kde = ({access_size, significant_clusters, xs, ys}, row) => {
       },
     };
   })
-  console.log(clusters);
 
   const data = [graph, maxima];
   const layout = {
@@ -194,4 +187,80 @@ const single_model_main = (j, wanted_benchmark_type, wanted_is_read_op) => {
   plot_overview(xs, ys, linear_model.a, linear_model.b, 'overview');
   create_table(xs, ys, 'raw-data');
   create_kdes(kdes, 'kdes');
+  document.title = `${benchmark_type}: ${convert_is_read_op(is_read_op)} - Report`
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+const print_all_functions = (j, div_name) => {
+  const parent_div = document.getElementById(div_name);
+  for (const [index, model] of j.entries()) {
+    const row = document.createElement('div');
+    row.classList.add('row');
+    const row_name = `model-${index}`;
+    row.id = row_name;
+
+    const slope = model["linear_model"]["a"];
+    const intercept = model["linear_model"]["b"];
+
+    const headline = document.createElement('h4');
+    headline.appendChild(document.createTextNode(`${model["benchmark_type"]}: ${convert_is_read_op(model["is_read_op"])}`));
+
+    const p = document.createElement('p');
+    const f = `${slope}*x + ${intercept}`;
+
+    p.appendChild(document.createTextNode(f));
+    row.appendChild(headline);
+    row.appendChild(p);
+    parent_div.appendChild(row);
+  }
 }
+
+const plot_joined_functions = (j, div_name) => {
+  let lines = [];
+  for (const model of j) {
+    const biggest_access_size = model["kdes"].slice(-1)[0].access_size;
+    const slope = model["linear_model"]["a"];
+    const intercept = model["linear_model"]["b"];
+    const model_name = `${model["benchmark_type"]}: ${convert_is_read_op(model["is_read_op"])}`;
+    const random_colour = get_random_colour();
+    const f = x => slope * x + intercept;
+    const line = {
+      x: [2, biggest_access_size],
+      y: [f(2), f(biggest_access_size)],
+      mode: 'lines+markers',
+      name: model_name,
+      marker: {
+        color: random_colour,
+        line: {
+          color: get_random_colour,
+        }
+      }
+    };
+    lines.push(line);
+  }
+  const layout = {
+    xaxis: {
+      text: 'Access Size in Bytes',
+      type: 'log',
+      autorange: 'true',
+      rangemode: 'tozero',
+      tickformat: 'f'
+    },
+    yaxis: {
+      text: 'Expected Speed in sec',
+      type: 'log',
+      autorange: 'true',
+      tickformat: 'e',
+    },
+    title: 'Models Overview'
+  };
+  Plotly.newPlot(div_name, lines, layout);
+}
+
+const model_summary_main = j => {
+  print_all_functions(j, 'all-models');
+  plot_joined_functions(j, 'model-plot');
+
+  document.title = "Summary of all Models";
+};

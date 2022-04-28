@@ -14,22 +14,12 @@
     <div class="container">
       <!-- Headline -->
       <div class="row">
-        <h1 id="headline"></h1>
+        <h1 id="headline">All Models</h1>
       </div>
-      <!-- Overview Plot -->
-      <div class="row">
-        <h4 id="model"></h4>
-        <div id="overview">
-        </div>
+      <div id="all-models">
       </div>
-      <!-- Raw Data -->
-      <div class="row">
-        <h4>Raw Data</h4>
-        <div id="raw-data">
-        </div>
-      </div>
-      <!-- KDEs -->
-      <div id="kdes">
+      <h4>Plot of all models</h4>
+      <div id="model-plot">
       </div>
     </div>
     <script src="js/plotly.1.33.1.min.js"></script>
@@ -37,7 +27,7 @@
     <script>
       fetch('Model.json')
         .then(j => j.json())
-        .then(j => single_model_main(j, "SameOffset", false));
+        .then(j => model_summary_main(j));
     </script>
   </body>
 </html>
