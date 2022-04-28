@@ -19,7 +19,8 @@ impl fmt::Display for AccessPattern {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+// TODO impl Copy, remove all clones
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum BenchmarkType {
     RandomUncached,
     SameOffset,

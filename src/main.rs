@@ -23,7 +23,7 @@ fn main() {
             Ok(_) => {}
             Err(e) => eprintln!("{:?}", e),
         },
-        Commands::UseModel { model, file } => match use_model::use_model(&model, &file) {
+        Commands::UseModel { model, file, to } => match use_model::use_model(&model, &file, &to) {
             Ok(_) => {}
             Err(e) => eprintln!("{:?}", e),
         },

@@ -3,6 +3,9 @@ use std::io::{self, Write};
 
 use crate::analyzer::Analysis;
 use crate::benchmark_wrapper::BenchmarkType;
+use crate::use_model::Report;
+
+use anyhow::Result;
 
 // If anyone finds a way on how to not specify the number of bytes
 // while not assuming any encoding please PR.
@@ -90,5 +93,10 @@ pub fn create_frontend(xs: &[Analysis], to_folder: &str) -> Result<(), io::Error
         )?;
     }
 
+    Ok(())
+}
+
+pub fn use_frontend(report: &Report, to: &str) -> Result<()> {
+    create_folder_not_exists(to)?;
     Ok(())
 }
