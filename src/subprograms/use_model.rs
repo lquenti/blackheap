@@ -14,7 +14,6 @@ use anyhow::Result;
 // TODO move me somewhere else
 #[derive(Debug, Deserialize)]
 pub struct CsvLine {
-    pub filename: String,
     pub io_type: char,
     pub bytes: u64,
     pub sec: f64,

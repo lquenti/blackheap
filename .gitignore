@@ -1,5 +1,6 @@
 # used for local testing
 *.json
+*.csv
 
 # Created by https://www.toptal.com/developers/gitignore/api/rust,vim
 # Edit at https://www.toptal.com/developers/gitignore?templates=rust,vim
