@@ -73,7 +73,7 @@ impl BenchmarkKde {
     }
 
     #[allow(clippy::type_complexity)] // for now
-    fn get_all_extrema(xs: &Vec<f64>, ys: &Vec<f64>) -> (Vec<(f64, f64)>, Vec<(f64, f64)>) {
+    fn get_all_extrema(xs: &[f64], ys: &[f64]) -> (Vec<(f64, f64)>, Vec<(f64, f64)>) {
         let mut minima = Vec::new();
         let mut maxima = Vec::new();
         for i in 1..(xs.len() - 1) {
@@ -92,8 +92,8 @@ impl BenchmarkKde {
     }
 
     fn to_all_cluster(
-        xs: &Vec<f64>,
-        ys: &Vec<f64>,
+        xs: &[f64],
+        ys: &[f64],
         mut minima: Vec<(f64, f64)>,
         maxima: Vec<(f64, f64)>,
     ) -> Vec<Cluster> {
@@ -122,8 +122,8 @@ impl BenchmarkKde {
     }
 
     fn to_significant_clusters(
-        xs: &Vec<f64>,
-        ys: &Vec<f64>,
+        xs: &[f64],
+        ys: &[f64],
         minima: Vec<(f64, f64)>,
         maxima: Vec<(f64, f64)>,
     ) -> Vec<Cluster> {
@@ -163,7 +163,7 @@ impl BenchmarkKde {
         res
     }
 
-    fn get_global_maximum(maxima: &Vec<(f64, f64)>) -> (f64, f64) {
+    fn get_global_maximum(maxima: &[(f64, f64)]) -> (f64, f64) {
         maxima.iter().fold((0.0, 0.0), |curr_max, new| {
             if new.1 > curr_max.1 {
                 (new.0, new.1)

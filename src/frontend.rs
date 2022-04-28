@@ -48,7 +48,7 @@ fn parametrize_single_model(b: &BenchmarkType, is_read_op: bool) -> String {
 
 // I know, I know everything is hard coded
 // but it works for now...
-pub fn create_frontend(xs: &Vec<Analysis>, to_folder: &str) -> Result<(), io::Error> {
+pub fn create_frontend(xs: &[Analysis], to_folder: &str) -> Result<(), io::Error> {
     // all folders
     let base_path = format!("{}/finished", to_folder);
     let css_path = format!("{}/css", base_path);

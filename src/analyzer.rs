@@ -42,11 +42,11 @@ impl Analysis {
         }
     }
 
-    pub fn all_to_json(xs: &Vec<Self>) -> String {
+    pub fn all_to_json(xs: &[Self]) -> String {
         json![xs].to_string()
     }
 
-    pub fn all_to_file(xs: &Vec<Self>, to_folder: &str) -> Result<(), io::Error> {
+    pub fn all_to_file(xs: &[Self], to_folder: &str) -> Result<(), io::Error> {
         let path = format!("{}/finished", to_folder);
         frontend::create_frontend(xs, to_folder)?;
         // write file
