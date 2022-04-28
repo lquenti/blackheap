@@ -4,6 +4,22 @@ const get_random_colour = () => {
   return `#${Array(6).fill().map(_ => space[Math.floor(Math.random() * 16)]).join('')}`
 }
 const convert_is_read_op = (is_read_op) => (is_read_op) ? "read" : "write";
+
+// https://stackoverflow.com/a/40475362/9958281
+const linspace = (startValue, stopValue, cardinality) => {
+  let arr = [];
+  const step = (stopValue - startValue) / (cardinality - 1);
+  console.log(startValue, stopValue, cardinality);
+  for (var i = 0; i < cardinality; i++) {
+    arr.push(startValue + (step * i));
+  }
+  return arr;
+}
+
+const logspace = (startValue, stopValue, cardiality) => {
+  return linspace(Math.log10(startValue), Math.log10(stopValue), cardiality).map(x => Math.pow(10, x));
+}
+
 /* End helpers */
 
 const print_headline = (benchmark_type, is_read_op, div_name) => {
@@ -22,12 +38,14 @@ const plot_overview = (xs, ys, slope, intercept, div_name) => {
     mode: 'markers',
     name: 'Maxima of all KDEs',
   };
+  const smallest_access_size = xs[0];
   const [biggest_access_size] = xs.slice(-1);
-  // TODO: Verify if it actually looks like that by linspacing it
+  const lgs = logspace(smallest_access_size, biggest_access_size, 150);
+
   const line = {
-    x: [2, biggest_access_size],
-    y: [f(2), f(biggest_access_size)],
-    mode: 'lines+markers',
+    x: lgs,
+    y: lgs.map(f),
+    mode: 'lines',
     name: 'Linearly interpolated function'
   };
   const data = [scatter, line];
@@ -219,16 +237,20 @@ const print_all_functions = (j, div_name) => {
 const plot_joined_functions = (j, div_name) => {
   let lines = [];
   for (const model of j) {
+    const smallest_access_size = model["kdes"][0].access_size;
+    console.log(smallest_access_size);
     const biggest_access_size = model["kdes"].slice(-1)[0].access_size;
     const slope = model["linear_model"]["a"];
     const intercept = model["linear_model"]["b"];
     const model_name = `${model["benchmark_type"]}: ${convert_is_read_op(model["is_read_op"])}`;
     const random_colour = get_random_colour();
     const f = x => slope * x + intercept;
+    const xs = logspace(smallest_access_size, biggest_access_size, 150);
+    console.log(xs);
     const line = {
-      x: [2, biggest_access_size],
-      y: [f(2), f(biggest_access_size)],
-      mode: 'lines+markers',
+      x: xs,
+      y: xs.map(f),
+      mode: 'lines',
       name: model_name,
       marker: {
         color: random_colour,
