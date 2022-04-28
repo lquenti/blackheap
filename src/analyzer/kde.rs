@@ -10,7 +10,7 @@ use crate::analyzer::json_reader::BenchmarkJSON;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BenchmarkKde {
-    pub access_size: u64, // TODO: If not needed remove me
+    pub access_size: u64,
     pub xs: Vec<f64>,
     pub ys: Vec<f64>,
     pub significant_clusters: Vec<Cluster>,
@@ -66,7 +66,6 @@ impl BenchmarkKde {
         BenchmarkKde { xs, ys, significant_clusters, global_maximum, access_size}
     }
 
-    // TODO: REFACTOR THIS
     #[allow(clippy::type_complexity)] // for now
     fn get_all_extrema(xs: &Vec<f64>, ys: &Vec<f64>) -> (Vec<(f64, f64)>, Vec<(f64, f64)>) {
         let mut minima = Vec::new();
@@ -87,7 +86,6 @@ impl BenchmarkKde {
     }
 
     fn to_all_cluster(xs: &Vec<f64>, ys: &Vec<f64>, mut minima: Vec<(f64, f64)>, maxima: Vec<(f64, f64)>) -> Vec<Cluster> {
-
         // We want a delimiter at the front and back
         minima.insert(0, (xs[0], ys[0]));
         minima.push((xs[xs.len() - 1], ys[ys.len() - 1]));
