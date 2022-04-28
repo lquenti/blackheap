@@ -289,7 +289,7 @@ const model_summary_main = j => {
 
 /////////////////////////////////////////////
 
-const plot_bytes = (bytes_sec, j, div_name) => {
+const plot_bytes = (bytes_sec, div_name) => {
   let x = [], y = [];
   for (const [b, s] of bytes_sec) {
     x.push(b);
@@ -301,33 +301,7 @@ const plot_bytes = (bytes_sec, j, div_name) => {
     mode: 'markers',
     name: 'All recorded data'
   };
-  let data = [scatter];
-  // TODO refactor with lighter
-  for (const model of j) {
-    const smallest_access_size = model["kdes"][0].access_size;
-    console.log(smallest_access_size);
-    const biggest_access_size = model["kdes"].slice(-1)[0].access_size;
-    const slope = model["linear_model"]["a"];
-    const intercept = model["linear_model"]["b"];
-    const model_name = `${model["benchmark_type"]}: ${convert_is_read_op(model["is_read_op"])}`;
-    const random_colour = get_random_colour();
-    const f = x => slope * x + intercept;
-    const xs = logspace(smallest_access_size, biggest_access_size, 150);
-    console.log(xs);
-    const line = {
-      x: xs,
-      y: xs.map(f),
-      mode: 'lines',
-      name: model_name,
-      marker: {
-        color: random_colour,
-        line: {
-          color: get_random_colour,
-        }
-      }
-    };
-    data.push(line);
-  }
+  const data = [scatter];
   const layout = {
     xaxis: {
       text: 'Access Size in Bytes',
@@ -347,50 +321,11 @@ const plot_bytes = (bytes_sec, j, div_name) => {
   Plotly.newPlot(div_name, data, layout);
 }
 
-const get_total = (number_of_classified, number_of_unclassified) => {
-  let res = number_of_unclassified;
-  for (const [_, v] of Object.entries(number_of_classified)) {
-    res += v;
-  }
-  return res;
-}
-
-// TODO reduce redundancy
-const create_percentage_table = (number_of_classified, number_of_unclassified, total, div_name) => {
-  const all_entries = {"Unclassified": number_of_unclassified, ...number_of_classified};
-
-  const parent_div = document.getElementById(div_name);
-  const table = document.createElement('table');
-  const thead = document.createElement('thead');
-
-  // Create header
-  const head_1 = document.createElement('th');
-  head_1.appendChild(document.createTextNode('Classification'));
-  const head_2 = document.createElement('th');
-  head_2.appendChild(document.createTextNode('percentage of hits'));
-  thead.appendChild(head_1);
-  thead.appendChild(head_2);
-  table.appendChild(thead);
-
-  // create body
-  for (const [classi, nom] of Object.entries(all_entries)) {
-    const tr = table.insertRow();
-    const left = tr.insertCell();
-    const right = tr.insertCell();
-    left.appendChild(document.createTextNode(classi));
-    right.appendChild(document.createTextNode(`${nom}/${total} = ${nom / total * 100}%`))
-  }
-
-  parent_div.appendChild(table);
-}
-
 const use_model_main = j => {
-  const {number_of_classified, number_of_unclassified, read_bytes_sec, write_bytes_sec, model} = j;
-  plot_bytes(read_bytes_sec, model, 'plot-read');
-  plot_bytes(write_bytes_sec, model, 'plot-write');
+  const {number_of_classified, number_of_unclassified, read_bytes_sec, write_bytes_sec} = j;
+  plot_bytes(read_bytes_sec, 'plot-read');
+  plot_bytes(write_bytes_sec, 'plot-write');
 
-  // TODO: split read write
   const total = get_total(number_of_classified, number_of_unclassified);
-  create_percentage_table(number_of_classified, number_of_unclassified, total, 'percentages');
   document.title = "Report of recorded data";
 }

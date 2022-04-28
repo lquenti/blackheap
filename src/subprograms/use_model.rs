@@ -39,14 +39,16 @@ pub struct Report {
     // key in json has to be string TODO
     number_of_classified: BTreeMap<String, u64>,
     number_of_unclassified: u64,
+    // TODO: too bloaty
+    model: Vec<Analysis>,
 }
 
 impl Report {
     fn key_to_string(b: BenchmarkType, r: bool) -> String {
-        format!("{} {}", b, r)
+        format!("{} {}", if r {"read"} else {"write"}, b)
     }
 
-    fn from_measurements(model: &[Analysis], measurements: &Vec<CsvLine>) -> Self {
+    fn from_measurements(model: Vec<Analysis>, measurements: &Vec<CsvLine>) -> Self {
         let mut read_bytes_sec = Vec::new();
         let mut write_bytes_sec = Vec::new();
         let mut number_of_classified = BTreeMap::new();
@@ -61,7 +63,7 @@ impl Report {
             };
 
             // Add to either classified or unclassified
-            let a = Analysis::find_lowest_upper_bound(model, m);
+            let a = Analysis::find_lowest_upper_bound(&model, m);
             match &a {
                 Some(res) => {
                     let x = number_of_classified.entry(Self::key_to_string(res.benchmark_type.clone(), res.is_read_op)).or_insert(0);
@@ -71,7 +73,7 @@ impl Report {
             };
 
         }
-        Self {read_bytes_sec, write_bytes_sec, number_of_classified, number_of_unclassified}
+        Self {model, read_bytes_sec, write_bytes_sec, number_of_classified, number_of_unclassified}
     }
 
     // TODO: add static stuff
@@ -92,10 +94,6 @@ pub fn use_model(model: &str, file: &str, to: &str) -> Result<()> {
 
     // load Analyzed
     let analyzed = Analysis::load_from_file(model)?;
-
-    let output = Report::from_measurements(&analyzed, &measurements);
-    output.save_frontend(to)?;
-    println!("{:?}", output);
 
     // DEBUG
     for m in &measurements {
@@ -120,6 +118,9 @@ pub fn use_model(model: &str, file: &str, to: &str) -> Result<()> {
         );
         println!("----------");
     }
+
+    let output = Report::from_measurements(analyzed, &measurements);
+    output.save_frontend(to)?;
 
     Ok(())
 }
