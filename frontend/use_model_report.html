@@ -16,8 +16,13 @@
       <h1>Classified Data</h1>
       <!-- Plot -->
       <div class="row">
-        <h4>Graphical Representation</h4>
-        <div id="plot">
+        <h4>Graphical Representation (Read)</h4>
+        <div id="plot-read">
+        </div>
+      </div>
+      <div class="row">
+        <h4>Graphical Representation (Write)</h4>
+        <div id="plot-write">
         </div>
       </div>
       <!-- Raw Data -->
@@ -30,9 +35,9 @@
     <script src="js/plotly.1.33.1.min.js"></script>
     <script src="js/custom.js"></script>
     <script>
-      fetch('Model.json')
+      fetch('Report.json')
         .then(j => j.json())
-        .then(j => single_model_main(j, TYPE_OF_BENCHMARK, IS_READING_OPERATION));
+        .then(j => use_model_main(j));
     </script>
   </body>
 </html>
