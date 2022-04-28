@@ -18,10 +18,10 @@ use serde_json::json;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Analysis {
-    benchmark_type: BenchmarkType,
-    is_read_op: bool,
-    kdes: Vec<BenchmarkKde>,
-    linear_model: LinearModel,
+    pub benchmark_type: BenchmarkType,
+    pub is_read_op: bool,
+    pub kdes: Vec<BenchmarkKde>,
+    pub linear_model: LinearModel,
 }
 
 impl Analysis {
@@ -47,9 +47,8 @@ impl Analysis {
     }
 
     pub fn all_to_file(xs: &Vec<Self>, to_folder: &str) -> Result<(), io::Error> {
-        println!("all to file");
         let path = format!("{}/finished", to_folder);
-        frontend::create_frontend(to_folder)?;
+        frontend::create_frontend(xs, to_folder)?;
         // write file
         let mut output = File::create(format!("{}/Model.json", path))?;
         write!(output, "{}", Self::all_to_json(xs))?;

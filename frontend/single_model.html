@@ -37,7 +37,7 @@
     <script>
       fetch('Model.json')
         .then(j => j.json())
-        .then(j => single_model_main(j, "RandomUncached", false));
+        .then(j => single_model_main(j, TYPE_OF_BENCHMARK, IS_READING_OPERATION));
     </script>
   </body>
 </html>
