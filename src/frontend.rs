@@ -3,6 +3,9 @@ use std::io::{self, Write};
 
 use crate::analyzer::Analysis;
 use crate::benchmark_wrapper::BenchmarkType;
+use crate::use_model::Report;
+
+use anyhow::Result;
 
 // If anyone finds a way on how to not specify the number of bytes
 // while not assuming any encoding please PR.
@@ -89,6 +92,30 @@ pub fn create_frontend(xs: &[Analysis], to_folder: &str) -> Result<(), io::Error
             &file_path,
         )?;
     }
+
+    Ok(())
+}
+
+// TODO remove redundancy
+pub fn use_frontend(report: &Report, to: &str) -> Result<()> {
+    // all folders
+    let css_path = format!("{}/css", to);
+    let js_path = format!("{}/js", to);
+    create_folder_not_exists(to)?;
+    create_folder_not_exists(&css_path)?;
+    create_folder_not_exists(&js_path)?;
+
+    // write static
+    overwrite_file(
+        NORMALIZE_CSS,
+        &format!("{}/{}", to, NORMALIZE_CSS_PATH),
+    )?;
+    overwrite_file(
+        SKELETON_CSS,
+        &format!("{}/{}", to, SKELETON_CSS_PATH),
+    )?;
+    overwrite_file(CUSTOM_JS, &format!("{}/{}", to, CUSTOM_JS_PATH))?;
+    overwrite_file(PLOTLY_JS, &format!("{}/{}", to, PLOTLY_JS_PATH))?;
 
     Ok(())
 }

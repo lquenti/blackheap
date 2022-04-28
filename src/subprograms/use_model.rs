@@ -1,4 +1,15 @@
-use serde::Deserialize;
+use std::collections::BTreeMap;
+use std::fs::File;
+use std::io::Write;
+
+use crate::analyzer::Analysis;
+use crate::benchmark_wrapper::BenchmarkType;
+use crate::frontend;
+
+use serde::{Serialize, Deserialize};
+use serde_json::json;
+
+use anyhow::Result;
 
 // TODO move me somewhere else
 #[derive(Debug, Deserialize)]
@@ -21,48 +32,95 @@ impl CsvLine {
     }
 }
 
-pub fn use_model(_model: &str, file: &str) -> Result<(), std::io::Error> {
+// TODO: refactor me
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Report {
+    read_bytes_sec: Vec<(u64, f64)>,
+    write_bytes_sec: Vec<(u64, f64)>,
+    // key in json has to be string TODO
+    number_of_classified: BTreeMap<String, u64>,
+    number_of_unclassified: u64,
+}
+
+impl Report {
+    fn key_to_string(b: BenchmarkType, r: bool) -> String {
+        format!("{} {}", b, r)
+    }
+
+    fn from_measurements(model: &[Analysis], measurements: &Vec<CsvLine>) -> Self {
+        let mut read_bytes_sec = Vec::new();
+        let mut write_bytes_sec = Vec::new();
+        let mut number_of_classified = BTreeMap::new();
+        let mut number_of_unclassified = 0;
+
+        for m in measurements {
+            // TODO error detection
+            // Add to total list for plots
+            match m.io_type {
+                'r' => read_bytes_sec.push((m.bytes, m.sec)),
+                _ => write_bytes_sec.push((m.bytes, m.sec)),
+            };
+
+            // Add to either classified or unclassified
+            let a = Analysis::find_lowest_upper_bound(model, m);
+            match &a {
+                Some(res) => {
+                    let x = number_of_classified.entry(Self::key_to_string(res.benchmark_type.clone(), res.is_read_op)).or_insert(0);
+                    *x += 1;
+                },
+                None => number_of_unclassified +=1
+            };
+
+        }
+        Self {read_bytes_sec, write_bytes_sec, number_of_classified, number_of_unclassified}
+    }
+
+    // TODO: add static stuff
+    fn save_frontend(&self, to: &str) -> Result<()> {
+        frontend::use_frontend(self, to)?;
+        // write file
+        let mut output = File::create(format!("{}/Report.json", to))?;
+        write!(output, "{}", json![&self])?;
+        Ok(())
+    }
+}
+
+pub fn use_model(model: &str, file: &str, to: &str) -> Result<()> {
     // TODO: validate
 
     // get measurements
     let measurements: Vec<CsvLine> = CsvLine::from_file(file)?;
-    for m in &measurements {
-        println!("{:?}", m);
-    }
-    println!("----------");
 
-    /*
-    // load LinearModel
-    let models = LinearModels::from_file(&PathBuf::from(model)).unwrap();
-    for m in models.iter() {
-        println!("{:?}", m);
-    }
-    println!("----------");
+    // load Analyzed
+    let analyzed = Analysis::load_from_file(model)?;
 
-    // debug
+    let output = Report::from_measurements(&analyzed, &measurements);
+    output.save_frontend(to)?;
+    println!("{:?}", output);
+
+    // DEBUG
     for m in &measurements {
-        let olm = models.find_lowest_upper_bound(m);
+        let oa = Analysis::find_lowest_upper_bound(&analyzed, m);
         println!(
             "{}: {} bytes in {} took less than {} ({} {})",
-            if m.io_type == 'r' { "read" } else { "write" },
+            if m.io_type == 'r' {"read"} else {"write"},
             m.bytes,
             m.sec,
-            match &olm {
+            match &oa {
                 None => String::from("<NONE>"),
-                Some(lm) => lm.model.evaluate(m.bytes).to_string(),
+                Some(a) => a.linear_model.evaluate(m.bytes).to_string(),
             },
-            match &olm {
+            match &oa {
                 None => String::from(""),
-                Some(lm) => format!("{}", lm.benchmark_type),
+                Some(a) => format!("{}", a.benchmark_type),
             },
-            match &olm {
+            match &oa {
                 None => String::from(""),
-                Some(lm) => String::from(if lm.is_read_op { "read" } else { "write" }),
+                Some(a) => String::from(if a.is_read_op { "read" } else { "write" }),
             },
         );
         println!("----------");
     }
-    */
 
     Ok(())
 }

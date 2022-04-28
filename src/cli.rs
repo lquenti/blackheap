@@ -2,6 +2,7 @@ use clap::{Parser, Subcommand};
 
 pub const DEFAULT_MODEL_PATH: &str = "./default-model";
 pub const DEFAULT_BENCHMARK_FILE_PATH: &str = "/tmp/io_benchmark_test_file.dat";
+pub const DEFAULT_REPORT_PATH: &str = "./report";
 
 pub const NAME: &str = "io-modeller";
 pub const AUTHOR: &str = "Lars Quentin <lars.quentin@gwdg.de>";
@@ -40,5 +41,8 @@ pub enum Commands {
         /// Path to the recorded io accesses.
         #[clap(short, long, required = true)]
         file: String,
+        /// Output of report
+        #[clap(short, long, default_value_t = String::from(DEFAULT_REPORT_PATH))]
+        to: String,
     },
 }

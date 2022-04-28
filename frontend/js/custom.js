@@ -286,3 +286,12 @@ const model_summary_main = j => {
 
   document.title = "Summary of all Models";
 };
+
+/////////////////////////////////////////////
+
+
+
+const use_model_main = j => {
+  const {number_of_classified, number_of_unclassified, read_bytes_sec, write_bytes_sec} = j;
+  document.title = "Report of recorded data";
+}

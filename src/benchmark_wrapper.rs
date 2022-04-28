@@ -1,10 +1,11 @@
 use std::fmt;
+use std::str::FromStr;
 use std::fs::{self, File};
 use std::io::prelude::Write;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 
 #[derive(Debug)]
 enum AccessPattern {
@@ -18,10 +19,24 @@ impl fmt::Display for AccessPattern {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+// TODO impl Copy, remove all clones
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum BenchmarkType {
     RandomUncached,
     SameOffset,
+}
+
+impl FromStr for BenchmarkType {
+    type Err = String;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        println!("this got called");
+        match input {
+            "RandomUncached" => Ok(Self::RandomUncached),
+            "SameOffset" => Ok(Self::SameOffset),
+            _ => Err(String::from("Unknown BenchmarkType"))
+        }
+    }
 }
 
 impl fmt::Display for BenchmarkType {
