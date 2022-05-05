@@ -26,6 +26,9 @@ pub enum Commands {
         /// Path to where the benchmark should be done.
         #[clap(short, long, default_value_t = String::from(DEFAULT_BENCHMARK_FILE_PATH))]
         file: String,
+        /// Whether the benchmark can be skipped (already computed)
+        #[clap(long)]
+        analyze_only: bool,
         /// Path to the used benchmarker
         #[clap(short, long, required = true)]
         benchmarker: String,
