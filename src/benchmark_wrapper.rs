@@ -7,6 +7,8 @@ use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
 
+use anyhow::{bail, Result};
+
 #[derive(Debug)]
 enum AccessPattern {
     Off0,
@@ -222,7 +224,7 @@ impl<'a> PerformanceBenchmark<'a> {
         params
     }
 
-    fn run_test(&self, access_size: &u64) -> std::result::Result<String, String> {
+    fn run_test(&self, access_size: &u64) -> Result<String> {
         let child = Command::new(&self.benchmarker_path)
             .args(self.get_parameters(access_size))
             .stdout(Stdio::piped())
@@ -235,7 +237,7 @@ impl<'a> PerformanceBenchmark<'a> {
         if !output.status.success() {
             let error_message =
                 std::str::from_utf8(&output.stderr).expect("Invalid UTF-8 sequence!");
-            return Err(String::from(error_message));
+            bail!(String::from(error_message));
         }
 
         let ret = std::str::from_utf8(&output.stdout).expect("Invalid UTF-8 sequence!");
@@ -264,7 +266,7 @@ impl<'a> PerformanceBenchmark<'a> {
         )
     }
 
-    pub fn run_and_save_all_benchmarks(&self) -> Result<(), std::io::Error> {
+    pub fn run_and_save_all_benchmarks(&self) -> Result<()> {
         let benchmark_folder_path = self.get_benchmark_folder();
         fs::create_dir_all(&benchmark_folder_path)?;
 

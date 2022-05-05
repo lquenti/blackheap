@@ -20,7 +20,7 @@ pub struct CsvLine {
 }
 
 impl CsvLine {
-    fn from_file(file: &str) -> Result<Vec<CsvLine>, std::io::Error> {
+    fn from_file(file: &str) -> Result<Vec<CsvLine>> {
         let mut rdr = csv::Reader::from_path(file)?;
         let mut res = Vec::new();
         for result in rdr.deserialize::<CsvLine>() {

@@ -53,6 +53,7 @@ fn get_all_jsons_from_directory(folder: &Path) -> Vec<PathBuf> {
 }
 
 // TODO: scream louder when something goes wrong
+// TODO: ANYHOW HERE
 fn benchmark_json_to_struct(file_path: &Path) -> Option<BenchmarkJSON> {
     let file = File::open(file_path);
 

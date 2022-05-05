@@ -3,7 +3,7 @@ pub mod kde;
 pub mod linear_model;
 
 use std::fs::File;
-use std::io::{self, BufReader, Write};
+use std::io::{BufReader, Write};
 
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
@@ -13,7 +13,6 @@ use crate::benchmark_wrapper::PerformanceBenchmark;
 use crate::frontend;
 use crate::use_model::CsvLine;
 
-// TODO: use everywhere
 use anyhow::Result;
 
 use serde::{self, Deserialize, Serialize};
@@ -57,7 +56,7 @@ impl Analysis {
         json![xs].to_string()
     }
 
-    pub fn all_to_file(xs: &[Self], to_folder: &str) -> Result<(), io::Error> {
+    pub fn all_to_file(xs: &[Self], to_folder: &str) -> Result<()> {
         let path = format!("{}/finished", to_folder);
         frontend::create_frontend(xs, to_folder)?;
         // write file
