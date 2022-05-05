@@ -15,6 +15,12 @@ jobs:
     steps:
     - name: Lint with clippy
       run: |
+        cargo build
+  clippy:
+    runs-on: rust-latest
+    steps:
+    - name: Lint with clippy
+      run: |
         rustup component add clippy && cargo clippy -- -D warnings
   rustfmt:
     runs-on: rust-latest
