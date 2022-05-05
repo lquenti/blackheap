@@ -1,11 +1,11 @@
 use std::fmt;
-use std::str::FromStr;
 use std::fs::{self, File};
 use std::io::prelude::Write;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
+use std::str::FromStr;
 
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug)]
 enum AccessPattern {
@@ -34,7 +34,7 @@ impl FromStr for BenchmarkType {
         match input {
             "RandomUncached" => Ok(Self::RandomUncached),
             "SameOffset" => Ok(Self::SameOffset),
-            _ => Err(String::from("Unknown BenchmarkType"))
+            _ => Err(String::from("Unknown BenchmarkType")),
         }
     }
 }

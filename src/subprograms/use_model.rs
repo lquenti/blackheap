@@ -6,7 +6,7 @@ use crate::analyzer::Analysis;
 use crate::benchmark_wrapper::BenchmarkType;
 use crate::frontend;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use anyhow::Result;
@@ -45,10 +45,10 @@ pub struct Report {
 
 impl Report {
     fn key_to_string(b: BenchmarkType, r: bool) -> String {
-        format!("{} {}", if r {"read"} else {"write"}, b)
+        format!("{} {}", if r { "read" } else { "write" }, b)
     }
 
-    fn from_measurements(model: Vec<Analysis>, measurements: &Vec<CsvLine>) -> Self {
+    fn from_measurements(model: Vec<Analysis>, measurements: &[CsvLine]) -> Self {
         let mut read_bytes_sec = Vec::new();
         let mut write_bytes_sec = Vec::new();
         let mut number_of_classified = BTreeMap::new();
@@ -66,19 +66,28 @@ impl Report {
             let a = Analysis::find_lowest_upper_bound(&model, m);
             match &a {
                 Some(res) => {
-                    let x = number_of_classified.entry(Self::key_to_string(res.benchmark_type.clone(), res.is_read_op)).or_insert(0);
+                    let x = number_of_classified
+                        .entry(Self::key_to_string(
+                            res.benchmark_type.clone(),
+                            res.is_read_op,
+                        ))
+                        .or_insert(0);
                     *x += 1;
-                },
-                None => number_of_unclassified +=1
+                }
+                None => number_of_unclassified += 1,
             };
-
         }
-        Self {model, read_bytes_sec, write_bytes_sec, number_of_classified, number_of_unclassified}
+        Self {
+            model,
+            read_bytes_sec,
+            write_bytes_sec,
+            number_of_classified,
+            number_of_unclassified,
+        }
     }
 
-    // TODO: add static stuff
     fn save_frontend(&self, to: &str) -> Result<()> {
-        frontend::use_frontend(self, to)?;
+        frontend::use_frontend(to)?;
         // write file
         let mut output = File::create(format!("{}/Report.json", to))?;
         write!(output, "{}", json![&self])?;
@@ -100,7 +109,7 @@ pub fn use_model(model: &str, file: &str, to: &str) -> Result<()> {
         let oa = Analysis::find_lowest_upper_bound(&analyzed, m);
         println!(
             "{}: {} bytes in {} took less than {} ({} {})",
-            if m.io_type == 'r' {"read"} else {"write"},
+            if m.io_type == 'r' { "read" } else { "write" },
             m.bytes,
             m.sec,
             match &oa {

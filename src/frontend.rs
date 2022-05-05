@@ -3,7 +3,6 @@ use std::io::{self, Write};
 
 use crate::analyzer::Analysis;
 use crate::benchmark_wrapper::BenchmarkType;
-use crate::use_model::Report;
 
 use anyhow::Result;
 
@@ -76,7 +75,10 @@ pub fn create_frontend(xs: &[Analysis], to_folder: &str) -> Result<(), io::Error
     overwrite_file(PLOTLY_JS, &format!("{}/{}", base_path, PLOTLY_JS_PATH))?;
 
     // write summary
-    overwrite_file(MODEL_SUMMARY_HTML, &format!{"{}/{}", base_path, MODEL_SUMMARY_HTML_PATH})?;
+    overwrite_file(
+        MODEL_SUMMARY_HTML,
+        &format! {"{}/{}", base_path, MODEL_SUMMARY_HTML_PATH},
+    )?;
 
     // write all single models, parametrized
     let all_benchmarks: Vec<(&BenchmarkType, bool)> = xs
@@ -100,7 +102,7 @@ pub fn create_frontend(xs: &[Analysis], to_folder: &str) -> Result<(), io::Error
 }
 
 // TODO remove redundancy
-pub fn use_frontend(report: &Report, to: &str) -> Result<()> {
+pub fn use_frontend(to: &str) -> Result<()> {
     // all folders
     let css_path = format!("{}/css", to);
     let js_path = format!("{}/js", to);
@@ -109,18 +111,15 @@ pub fn use_frontend(report: &Report, to: &str) -> Result<()> {
     create_folder_not_exists(&js_path)?;
 
     // write static
-    overwrite_file(
-        NORMALIZE_CSS,
-        &format!("{}/{}", to, NORMALIZE_CSS_PATH),
-    )?;
-    overwrite_file(
-        SKELETON_CSS,
-        &format!("{}/{}", to, SKELETON_CSS_PATH),
-    )?;
+    overwrite_file(NORMALIZE_CSS, &format!("{}/{}", to, NORMALIZE_CSS_PATH))?;
+    overwrite_file(SKELETON_CSS, &format!("{}/{}", to, SKELETON_CSS_PATH))?;
     overwrite_file(CUSTOM_JS, &format!("{}/{}", to, CUSTOM_JS_PATH))?;
     overwrite_file(PLOTLY_JS, &format!("{}/{}", to, PLOTLY_JS_PATH))?;
 
-    overwrite_file(USE_MODEL_REPORT, &format!("{}/{}", to, USE_MODEL_REPORT_PATH))?;
+    overwrite_file(
+        USE_MODEL_REPORT,
+        &format!("{}/{}", to, USE_MODEL_REPORT_PATH),
+    )?;
 
     Ok(())
 }

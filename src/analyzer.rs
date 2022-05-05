@@ -3,8 +3,7 @@ pub mod kde;
 pub mod linear_model;
 
 use std::fs::File;
-use std::io::{self, Write, BufReader};
-use std::str::FromStr;
+use std::io::{self, BufReader, Write};
 
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
@@ -17,7 +16,7 @@ use crate::use_model::CsvLine;
 // TODO: use everywhere
 use anyhow::Result;
 
-use serde::{self, de::Error, Deserialize, Deserializer, Serialize};
+use serde::{self, Deserialize, Serialize};
 use serde_json::json;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -84,11 +83,13 @@ impl Analysis {
                 // if not, this is the best until now
                 None => Some(a),
                 // if so, lets choose the tighter bound
-                Some(a2) => Some(if a2.linear_model.evaluate(line.bytes) < approximated_time {
-                    a2
-                } else {
-                    a
-                }),
+                Some(a2) => Some(
+                    if a2.linear_model.evaluate(line.bytes) < approximated_time {
+                        a2
+                    } else {
+                        a
+                    },
+                ),
             };
         }
         res
