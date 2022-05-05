@@ -10,6 +10,7 @@ pub fn create_model(
     benchmark_file_path: &str,
     benchmarker_path: &str,
     root: bool,
+    analyze_only: bool,
 ) -> Result<(), io::Error> {
     // create folders
     fs::create_dir_all(model_path)?;
@@ -28,11 +29,23 @@ pub fn create_model(
     );
     for benchmark in all_benchmarks {
         // run benchmark
-        benchmark.run_and_save_all_benchmarks()?;
+        if !analyze_only {
+            benchmark.run_and_save_all_benchmarks()?;
+        }
 
         // Run analysis
         let res = Analysis::new_from_finished_benchmark(benchmark);
         analyzed.push(res);
+    }
+
+    // remove folder if exists
+    if analyze_only {
+        if let Err(e) = fs::remove_dir_all(format!("{}/finished", &model_path)) {
+            match e.kind() {
+                std::io::ErrorKind::NotFound => {},
+                _ => return Err(e),
+            }
+        }
     }
     Analysis::all_to_file(&analyzed, model_path)?;
 
