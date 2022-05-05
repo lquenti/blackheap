@@ -4,7 +4,7 @@ use std::io::{self, Write};
 use crate::analyzer::Analysis;
 use crate::benchmark_wrapper::BenchmarkType;
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 
 // If anyone finds a way on how to not specify the number of bytes
 // while not assuming any encoding please PR.
@@ -27,19 +27,19 @@ const USE_MODEL_REPORT_PATH: &str = "use_model_report.html";
 const PLACEHOLDER_BENCHMARK_TYPE: &str = "TYPE_OF_BENCHMARK";
 const PLACEHOLDER_IS_READ_OP: &str = "IS_READING_OPERATION";
 
-fn create_folder_not_exists(path: &str) -> Result<(), io::Error> {
+fn create_folder_not_exists(path: &str) -> Result<()> {
     if let Err(e) = fs::create_dir(&path) {
         match e.kind() {
             io::ErrorKind::AlreadyExists => {}
             _ => {
-                return Err(e);
+                bail!(e);
             }
         }
     }
     Ok(())
 }
 
-fn overwrite_file(data: &str, path: &str) -> Result<(), io::Error> {
+fn overwrite_file(data: &str, path: &str) -> Result<()> {
     let mut file = File::create(path)?;
     write!(file, "{}", data)?;
     Ok(())
@@ -53,7 +53,7 @@ fn parametrize_single_model(b: &BenchmarkType, is_read_op: bool) -> String {
 
 // I know, I know everything is hard coded
 // but it works for now...
-pub fn create_frontend(xs: &[Analysis], to_folder: &str) -> Result<(), io::Error> {
+pub fn create_frontend(xs: &[Analysis], to_folder: &str) -> Result<()> {
     // all folders
     let base_path = format!("{}/finished", to_folder);
     let css_path = format!("{}/css", base_path);

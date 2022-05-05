@@ -1,9 +1,10 @@
 use std::fs;
-use std::io;
 use std::path::PathBuf;
 
 use crate::analyzer::Analysis;
 use crate::benchmark_wrapper::PerformanceBenchmark;
+
+use anyhow::{bail, Result};
 
 pub fn create_model(
     model_path: &str,
@@ -11,7 +12,7 @@ pub fn create_model(
     benchmarker_path: &str,
     root: bool,
     analyze_only: bool,
-) -> Result<(), io::Error> {
+) -> Result<()> {
     // create folders
     fs::create_dir_all(model_path)?;
 
@@ -42,8 +43,8 @@ pub fn create_model(
     if analyze_only {
         if let Err(e) = fs::remove_dir_all(format!("{}/finished", &model_path)) {
             match e.kind() {
-                std::io::ErrorKind::NotFound => {},
-                _ => return Err(e),
+                std::io::ErrorKind::NotFound => {}
+                _ => bail!(e),
             }
         }
     }
