@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+  "io-modeller",
+  "io-benchmarker"
+]
