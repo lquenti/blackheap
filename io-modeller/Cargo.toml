@@ -1,9 +1,13 @@
 [package]
 name = "io-modeller"
 version = "0.1.0"
+authors = ["Lars Quentin <lars.quentin@gwdg.de>"]
+description = "Blackbox Analysis for Automatic I/O-Classification"
+readme = "README.md"
+homepage = "https://github.com/lquenti/io-modeller"
+repository = "https://github.com/lquenti/io-modeller"
+license = "MIT"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
