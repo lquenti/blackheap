@@ -1,8 +1,15 @@
 [package]
 name = "io-benchmarker"
 version = "0.1.0"
+authors = ["Lars Quentin <lars.quentin@gwdg.de>"]
+description = "High Precision Benchmarker used for io-modeller"
+readme = "README.md"
+homepage = "https://github.com/lquenti/io-modeller"
+repository = "https://github.com/lquenti/io-modeller"
+license = "MIT"
 edition = "2021"
+build = "build.rs"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
+[build-dependencies]
+bindgen = "*"
+cc = "1.0"
