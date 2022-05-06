@@ -282,6 +282,7 @@ impl<'a> PerformanceBenchmark<'a> {
         unsafe {
             // TODO: Error handling
             // TODO: Can we make it immutable by changing the C Code?
+            // TODO: Inner free results
             let c_results: *mut benchmark_results_t = io_benchmarker::benchmark_file(&cfg);
             let mut i = 0;
                 while i < (*c_results).length {
@@ -289,6 +290,7 @@ impl<'a> PerformanceBenchmark<'a> {
                     results.push(*res_time);
                     i += 1;
                 }
+            std::ptr::drop_in_place(c_results);
         }
         let j = BenchmarkJSON::new_from_results(self, results, access_size);
         Ok(json!(j).to_string())
