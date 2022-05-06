@@ -6,14 +6,17 @@ use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::ffi::CString;
 
+use crate::analyzer::json_reader::BenchmarkJSON;
+
 use io_benchmarker::{self, benchmark_config_t, benchmark_results_t, access_pattern_t};
 
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 use anyhow::{bail, Result};
 
 #[derive(Debug)]
-enum AccessPattern {
+pub enum AccessPattern {
     Off0,
     Rnd,
 }
@@ -63,20 +66,20 @@ pub struct PerformanceBenchmark<'a> {
     pub benchmark_type: BenchmarkType,
 
     pub is_read_op: bool,
-    mem_pattern: AccessPattern,
-    file_pattern: AccessPattern,
-    repeats: u64,
-    memory_buffer_size_in_bytes: u64,
-    file_buffer_size_in_bytes: u64,
-    use_o_direct: bool,
-    drop_cache_before: bool,
-    reread_every_block: bool,
-    delete_afterwards: bool,
+    pub mem_pattern: AccessPattern,
+    pub file_pattern: AccessPattern,
+    pub repeats: u64,
+    pub memory_buffer_size_in_bytes: u64,
+    pub file_buffer_size_in_bytes: u64,
+    pub use_o_direct: bool,
+    pub drop_cache_before: bool,
+    pub reread_every_block: bool,
+    pub delete_afterwards: bool,
 
     pub model_path: &'a str,
-    file_path: &'a str,
+    pub file_path: &'a str,
 
-    available_ram_in_bytes: Option<i32>,
+    pub available_ram_in_bytes: Option<u64>,
 }
 
 impl<'a> PerformanceBenchmark<'a> {
@@ -87,16 +90,15 @@ impl<'a> PerformanceBenchmark<'a> {
         root: bool,
     ) -> Vec<Self> {
         vec![
-            //TODO
-            //Self::new_random_uncached_read(model_path, benchmark_file_path, benchmarker_path, root),
+            Self::new_random_uncached_read(model_path, benchmark_file_path, benchmarker_path, root),
             Self::new_random_uncached_write(
                 model_path,
                 benchmark_file_path,
                 benchmarker_path,
                 root,
             ),
-            //Self::new_same_offset_read(model_path, benchmark_file_path, benchmarker_path),
-            //Self::new_same_offset_write(model_path, benchmark_file_path, benchmarker_path),
+            Self::new_same_offset_read(model_path, benchmark_file_path, benchmarker_path),
+            Self::new_same_offset_write(model_path, benchmark_file_path, benchmarker_path),
         ]
     }
 
@@ -276,12 +278,20 @@ impl<'a> PerformanceBenchmark<'a> {
             delete_afterwards: self.delete_afterwards,
             restrict_free_ram_to: 0 // BIG TODO: PORT FROM ARG PARSER
         };
+        let mut results: Vec<f64> = Vec::new();
         unsafe {
+            // TODO: Error handling
             // TODO: Can we make it immutable by changing the C Code?
-            let results: *mut benchmark_results_t = io_benchmarker::benchmark_file(&cfg);
-            io_benchmarker::print_output(&cfg, results);
+            let c_results: *mut benchmark_results_t = io_benchmarker::benchmark_file(&cfg);
+            let mut i = 0;
+                while i < (*c_results).length {
+                    let res_time = (*c_results).durations.offset(i as isize);
+                    results.push(*res_time);
+                    i += 1;
+                }
         }
-        Ok(String::new())
+        let j = BenchmarkJSON::new_from_results(self, results, access_size);
+        Ok(json!(j).to_string())
     }
 
     fn run_test_and_save_to_file(&self, access_size: u64, file_path: &str) {
@@ -310,8 +320,7 @@ impl<'a> PerformanceBenchmark<'a> {
         let benchmark_folder_path = self.get_benchmark_folder();
         fs::create_dir_all(&benchmark_folder_path)?;
 
-        // TODO
-        for i in 1..3 {
+        for i in 1..28 {
             let access_size = u64::pow(2, i);
             let io_type = if self.is_read_op { "read" } else { "write" };
             println!(
