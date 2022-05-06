@@ -68,7 +68,7 @@ impl Report {
                 Some(res) => {
                     let x = number_of_classified
                         .entry(Self::key_to_string(
-                            res.benchmark_type.clone(),
+                            res.benchmark_type,
                             res.is_read_op,
                         ))
                         .or_insert(0);

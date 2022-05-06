@@ -35,11 +35,12 @@ pub fn create_model(
         }
 
         // Run analysis
-        let res = Analysis::new_from_finished_benchmark(benchmark);
-        analyzed.push(res);
+        //let res = Analysis::new_from_finished_benchmark(benchmark);
+        //analyzed.push(res);
     }
 
     // remove folder if exists
+    /*
     if analyze_only {
         if let Err(e) = fs::remove_dir_all(format!("{}/finished", &model_path)) {
             match e.kind() {
@@ -49,6 +50,7 @@ pub fn create_model(
         }
     }
     Analysis::all_to_file(&analyzed, model_path)?;
+    */
 
     Ok(())
 }

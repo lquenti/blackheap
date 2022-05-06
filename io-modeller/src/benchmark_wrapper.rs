@@ -4,6 +4,9 @@ use std::io::prelude::Write;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::str::FromStr;
+use std::ffi::CString;
+
+use io_benchmarker::{self, benchmark_config_t, benchmark_results_t, access_pattern_t};
 
 use serde::{Deserialize, Serialize};
 
@@ -15,14 +18,22 @@ enum AccessPattern {
     Rnd,
 }
 
+impl AccessPattern {
+    fn to_c(&self) -> access_pattern_t {
+        match self {
+            Off0 => io_benchmarker::access_pattern_t_ACCESS_PATTERN_CONST,
+            Rnd => io_benchmarker::access_pattern_t_ACCESS_PATTERN_RANDOM,
+        }
+    }
+}
+
 impl fmt::Display for AccessPattern {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", format!("{:?}", self).to_lowercase())
     }
 }
 
-// TODO impl Copy, remove all clones
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum BenchmarkType {
     RandomUncached,
     SameOffset,
@@ -54,7 +65,7 @@ pub struct PerformanceBenchmark<'a> {
     pub is_read_op: bool,
     mem_pattern: AccessPattern,
     file_pattern: AccessPattern,
-    repeats: u32,
+    repeats: u64,
     memory_buffer_size_in_bytes: u64,
     file_buffer_size_in_bytes: u64,
     use_o_direct: bool,
@@ -64,7 +75,6 @@ pub struct PerformanceBenchmark<'a> {
 
     pub model_path: &'a str,
     file_path: &'a str,
-    benchmarker_path: &'a str,
 
     available_ram_in_bytes: Option<i32>,
 }
@@ -77,15 +87,16 @@ impl<'a> PerformanceBenchmark<'a> {
         root: bool,
     ) -> Vec<Self> {
         vec![
-            Self::new_random_uncached_read(model_path, benchmark_file_path, benchmarker_path, root),
+            //TODO
+            //Self::new_random_uncached_read(model_path, benchmark_file_path, benchmarker_path, root),
             Self::new_random_uncached_write(
                 model_path,
                 benchmark_file_path,
                 benchmarker_path,
                 root,
             ),
-            Self::new_same_offset_read(model_path, benchmark_file_path, benchmarker_path),
-            Self::new_same_offset_write(model_path, benchmark_file_path, benchmarker_path),
+            //Self::new_same_offset_read(model_path, benchmark_file_path, benchmarker_path),
+            //Self::new_same_offset_write(model_path, benchmark_file_path, benchmarker_path),
         ]
     }
 
@@ -108,7 +119,6 @@ impl<'a> PerformanceBenchmark<'a> {
             reread_every_block: false,
             delete_afterwards: true,
 
-            benchmarker_path,
             file_path,
             model_path,
 
@@ -135,7 +145,6 @@ impl<'a> PerformanceBenchmark<'a> {
             reread_every_block: false,
             delete_afterwards: true,
 
-            benchmarker_path,
             file_path,
             model_path,
 
@@ -161,7 +170,6 @@ impl<'a> PerformanceBenchmark<'a> {
             reread_every_block: true,
             delete_afterwards: false,
 
-            benchmarker_path,
             file_path,
             model_path,
 
@@ -187,7 +195,6 @@ impl<'a> PerformanceBenchmark<'a> {
             reread_every_block: true,
             delete_afterwards: false,
 
-            benchmarker_path,
             file_path,
             model_path,
 
@@ -195,6 +202,7 @@ impl<'a> PerformanceBenchmark<'a> {
         }
     }
 
+    /*
     fn get_parameters(&self, access_size: &u64) -> Vec<String> {
         let mut params = vec![
             String::from(if self.is_read_op { "--read" } else { "--write" }),
@@ -223,7 +231,9 @@ impl<'a> PerformanceBenchmark<'a> {
         }
         params
     }
+    */
 
+    /*
     fn run_test(&self, access_size: &u64) -> Result<String> {
         let child = Command::new(&self.benchmarker_path)
             .args(self.get_parameters(access_size))
@@ -243,8 +253,38 @@ impl<'a> PerformanceBenchmark<'a> {
         let ret = std::str::from_utf8(&output.stdout).expect("Invalid UTF-8 sequence!");
         Ok(String::from(ret))
     }
+    */
 
-    fn run_test_and_save_to_file(&self, access_size: &u64, file_path: &str) {
+    // TODO: how small can I make the unsafe blocks?
+    // TODO: BIG TODO: PORT LOGIC FROM ARG PARSER (and read through all of the C code)
+    // TODO: does the CString free itself?
+    fn run_test(&self, access_size: u64) -> Result<String> {
+        let c_filepath = CString::new(self.file_path)?;
+        let cfg = io_benchmarker::benchmark_config_t {
+            filepath: c_filepath.as_ptr() as *const i8,
+            memory_buffer_in_bytes: self.memory_buffer_size_in_bytes,
+            file_size_in_bytes: self.file_buffer_size_in_bytes,
+            access_size_in_bytes: access_size,
+            number_of_io_op_tests: self.repeats,
+            access_pattern_in_memory: self.mem_pattern.to_c(),
+            access_pattern_in_file: self.file_pattern.to_c(),
+            is_read_operation: self.is_read_op,
+            prepare_file_size: true, // BIG TODO: PORT FROM ARG_PARSER
+            use_o_direct: self.use_o_direct,
+            drop_cache_first: self.drop_cache_before,
+            do_reread: self.reread_every_block,
+            delete_afterwards: self.delete_afterwards,
+            restrict_free_ram_to: 0 // BIG TODO: PORT FROM ARG PARSER
+        };
+        unsafe {
+            // TODO: Can we make it immutable by changing the C Code?
+            let results: *mut benchmark_results_t = io_benchmarker::benchmark_file(&cfg);
+            io_benchmarker::print_output(&cfg, results);
+        }
+        Ok(String::new())
+    }
+
+    fn run_test_and_save_to_file(&self, access_size: u64, file_path: &str) {
         let run_res = self.run_test(access_size);
         match run_res {
             Ok(output) => {
@@ -270,7 +310,8 @@ impl<'a> PerformanceBenchmark<'a> {
         let benchmark_folder_path = self.get_benchmark_folder();
         fs::create_dir_all(&benchmark_folder_path)?;
 
-        for i in 1..28 {
+        // TODO
+        for i in 1..3 {
             let access_size = u64::pow(2, i);
             let io_type = if self.is_read_op { "read" } else { "write" };
             println!(
@@ -283,7 +324,7 @@ impl<'a> PerformanceBenchmark<'a> {
                 .collect();
 
             // TODO
-            self.run_test_and_save_to_file(&access_size, path.to_str().unwrap());
+            self.run_test_and_save_to_file(access_size, path.to_str().unwrap());
         }
         Ok(())
     }

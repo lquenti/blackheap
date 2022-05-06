@@ -24,6 +24,7 @@ pub struct Cluster {
     maximum: (f64, f64),
 }
 
+// TODO remove clone if possible (why aren't they refs?)
 impl Cluster {
     fn merge(&self, next: &Cluster) -> Cluster {
         let mut global_xs = self.xs.clone();

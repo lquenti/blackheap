@@ -25,3 +25,5 @@ linregress = "0.4.4"
 csv = "1.1"
 
 anyhow = "1.0"
+
+io-benchmarker = { path = "../io-benchmarker" }
