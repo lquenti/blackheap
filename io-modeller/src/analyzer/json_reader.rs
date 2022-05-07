@@ -99,7 +99,28 @@ impl BenchmarkJSON {
             .collect();
         jsons
     }
+    // TODO: Rename me since benchmarks are actually doing the runs
     pub fn new_from_performance_benchmark(benchmark: &PerformanceBenchmark) -> Vec<Self> {
         Self::new_from_dir(&PathBuf::from(benchmark.get_benchmark_folder()))
+    }
+
+    pub fn new_from_results(benchmark: &PerformanceBenchmark, durations: Vec<f64>, access_size: u64) -> Self {
+        Self {
+            filepath: benchmark.file_path.to_string(),
+            repeats: benchmark.repeats,
+            memory_buffer_in_bytes: benchmark.memory_buffer_size_in_bytes,
+            file_size_in_bytes: benchmark.file_buffer_size_in_bytes,
+            access_size_in_bytes: access_size,
+            access_pattern_in_memory: benchmark.mem_pattern.to_string(),
+            access_pattern_in_file: benchmark.file_pattern.to_string(),
+            io_operation: String::from(if benchmark.is_read_op {"read"} else {"write"}), // TODO
+            prepare_file_size: true, // TODO
+            restricted_ram_in_bytes: match benchmark.available_ram_in_bytes {Some(n) => n, None => 0},
+            use_o_direct: benchmark.use_o_direct,
+            drop_cache_first: benchmark.drop_cache_before,
+            reread_every_block: benchmark.reread_every_block,
+            delete_afterwards: benchmark.delete_afterwards,
+            durations: durations,
+        }
     }
 }

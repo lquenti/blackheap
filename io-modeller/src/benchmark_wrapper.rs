@@ -4,15 +4,30 @@ use std::io::prelude::Write;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::str::FromStr;
+use std::ffi::CString;
+
+use crate::analyzer::json_reader::BenchmarkJSON;
+
+use io_benchmarker::{self, benchmark_config_t, benchmark_results_t, access_pattern_t};
 
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 use anyhow::{bail, Result};
 
 #[derive(Debug)]
-enum AccessPattern {
+pub enum AccessPattern {
     Off0,
     Rnd,
+}
+
+impl AccessPattern {
+    fn to_c(&self) -> access_pattern_t {
+        match self {
+            Self::Off0 => io_benchmarker::access_pattern_t_ACCESS_PATTERN_CONST,
+            Self::Rnd => io_benchmarker::access_pattern_t_ACCESS_PATTERN_RANDOM,
+        }
+    }
 }
 
 impl fmt::Display for AccessPattern {
@@ -21,8 +36,7 @@ impl fmt::Display for AccessPattern {
     }
 }
 
-// TODO impl Copy, remove all clones
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum BenchmarkType {
     RandomUncached,
     SameOffset,
@@ -52,21 +66,20 @@ pub struct PerformanceBenchmark<'a> {
     pub benchmark_type: BenchmarkType,
 
     pub is_read_op: bool,
-    mem_pattern: AccessPattern,
-    file_pattern: AccessPattern,
-    repeats: u32,
-    memory_buffer_size_in_bytes: u64,
-    file_buffer_size_in_bytes: u64,
-    use_o_direct: bool,
-    drop_cache_before: bool,
-    reread_every_block: bool,
-    delete_afterwards: bool,
+    pub mem_pattern: AccessPattern,
+    pub file_pattern: AccessPattern,
+    pub repeats: u64,
+    pub memory_buffer_size_in_bytes: u64,
+    pub file_buffer_size_in_bytes: u64,
+    pub use_o_direct: bool,
+    pub drop_cache_before: bool,
+    pub reread_every_block: bool,
+    pub delete_afterwards: bool,
 
     pub model_path: &'a str,
-    file_path: &'a str,
-    benchmarker_path: &'a str,
+    pub file_path: &'a str,
 
-    available_ram_in_bytes: Option<i32>,
+    pub available_ram_in_bytes: Option<u64>,
 }
 
 impl<'a> PerformanceBenchmark<'a> {
@@ -108,7 +121,6 @@ impl<'a> PerformanceBenchmark<'a> {
             reread_every_block: false,
             delete_afterwards: true,
 
-            benchmarker_path,
             file_path,
             model_path,
 
@@ -135,7 +147,6 @@ impl<'a> PerformanceBenchmark<'a> {
             reread_every_block: false,
             delete_afterwards: true,
 
-            benchmarker_path,
             file_path,
             model_path,
 
@@ -161,7 +172,6 @@ impl<'a> PerformanceBenchmark<'a> {
             reread_every_block: true,
             delete_afterwards: false,
 
-            benchmarker_path,
             file_path,
             model_path,
 
@@ -187,7 +197,6 @@ impl<'a> PerformanceBenchmark<'a> {
             reread_every_block: true,
             delete_afterwards: false,
 
-            benchmarker_path,
             file_path,
             model_path,
 
@@ -195,6 +204,7 @@ impl<'a> PerformanceBenchmark<'a> {
         }
     }
 
+    /*
     fn get_parameters(&self, access_size: &u64) -> Vec<String> {
         let mut params = vec![
             String::from(if self.is_read_op { "--read" } else { "--write" }),
@@ -223,7 +233,9 @@ impl<'a> PerformanceBenchmark<'a> {
         }
         params
     }
+    */
 
+    /*
     fn run_test(&self, access_size: &u64) -> Result<String> {
         let child = Command::new(&self.benchmarker_path)
             .args(self.get_parameters(access_size))
@@ -243,8 +255,48 @@ impl<'a> PerformanceBenchmark<'a> {
         let ret = std::str::from_utf8(&output.stdout).expect("Invalid UTF-8 sequence!");
         Ok(String::from(ret))
     }
+    */
 
-    fn run_test_and_save_to_file(&self, access_size: &u64, file_path: &str) {
+    // TODO: how small can I make the unsafe blocks?
+    // TODO: BIG TODO: PORT LOGIC FROM ARG PARSER (and read through all of the C code)
+    // TODO: does the CString free itself?
+    fn run_test(&self, access_size: u64) -> Result<String> {
+        let c_filepath = CString::new(self.file_path)?;
+        let cfg = io_benchmarker::benchmark_config_t {
+            filepath: c_filepath.as_ptr() as *const i8,
+            memory_buffer_in_bytes: self.memory_buffer_size_in_bytes,
+            file_size_in_bytes: self.file_buffer_size_in_bytes,
+            access_size_in_bytes: access_size,
+            number_of_io_op_tests: self.repeats,
+            access_pattern_in_memory: self.mem_pattern.to_c(),
+            access_pattern_in_file: self.file_pattern.to_c(),
+            is_read_operation: self.is_read_op,
+            prepare_file_size: true, // BIG TODO: PORT FROM ARG_PARSER
+            use_o_direct: self.use_o_direct,
+            drop_cache_first: self.drop_cache_before,
+            do_reread: self.reread_every_block,
+            delete_afterwards: self.delete_afterwards,
+            restrict_free_ram_to: 0 // BIG TODO: PORT FROM ARG PARSER
+        };
+        let mut results: Vec<f64> = Vec::new();
+        unsafe {
+            // TODO: Error handling
+            // TODO: Can we make it immutable by changing the C Code?
+            // TODO: Inner free results
+            let c_results: *mut benchmark_results_t = io_benchmarker::benchmark_file(&cfg);
+            let mut i = 0;
+                while i < (*c_results).length {
+                    let res_time = (*c_results).durations.offset(i as isize);
+                    results.push(*res_time);
+                    i += 1;
+                }
+            std::ptr::drop_in_place(c_results);
+        }
+        let j = BenchmarkJSON::new_from_results(self, results, access_size);
+        Ok(json!(j).to_string())
+    }
+
+    fn run_test_and_save_to_file(&self, access_size: u64, file_path: &str) {
         let run_res = self.run_test(access_size);
         match run_res {
             Ok(output) => {
@@ -283,7 +335,7 @@ impl<'a> PerformanceBenchmark<'a> {
                 .collect();
 
             // TODO
-            self.run_test_and_save_to_file(&access_size, path.to_str().unwrap());
+            self.run_test_and_save_to_file(access_size, path.to_str().unwrap());
         }
         Ok(())
     }

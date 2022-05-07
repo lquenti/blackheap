@@ -1,0 +1,29 @@
+[package]
+name = "io-modeller"
+version = "0.1.0"
+authors = ["Lars Quentin <lars.quentin@gwdg.de>"]
+description = "Blackbox Analysis for Automatic I/O-Classification"
+readme = "README.md"
+homepage = "https://github.com/lquenti/io-modeller"
+repository = "https://github.com/lquenti/io-modeller"
+license = "MIT"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+criterion-stats = "0.2.5"
+
+# Used for linspace (like np.linspace())
+itertools-num = "0.1"
+
+clap = { version = "3.0.14", features = ["derive"] }
+
+linregress = "0.4.4"
+
+csv = "1.1"
+
+anyhow = "1.0"
+
+io-benchmarker = { path = "../io-benchmarker" }
