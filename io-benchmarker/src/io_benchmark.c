@@ -33,6 +33,7 @@ static void init_file(const benchmark_config_t *config, benchmark_state_t *state
   /* is it externally managed? */
   if (!config->prepare_file_size)
     return;
+  printf("Initializing file...\n"); fflush(stdout);
 
   state->fd = open_or_die(config->filepath, O_CREAT | O_RDWR, 0644);
 
@@ -43,17 +44,23 @@ static void init_file(const benchmark_config_t *config, benchmark_state_t *state
   if ((size_t)st.st_size == config->file_size_in_bytes)
     return;
 
+  printf("File now gets truncated!\n"); fflush(stdout);
   /* If not, we just truncate it to zero and fill it up */
   state->fd = open_or_die(config->filepath, O_RDWR | O_TRUNC, 0644);
+  printf("File successfully truncated!\n"); fflush(stdout);
   size_t count = (MAX_IO_SIZE <= config->memory_buffer_in_bytes) ? MAX_IO_SIZE : config->memory_buffer_in_bytes;
   size_t iterations = config->file_size_in_bytes / count;
+  printf("calculations: %zub*%zu = %zu, total wanted: %zu, mem buffer size: %zu \n", count, iterations, count*iterations, config->file_size_in_bytes, config->memory_buffer_in_bytes); fflush(stdout);
   for (; iterations; --iterations)
   {
+    printf("iteration left: %zu\n", iterations); fflush(stdout);
     write_or_die(state->fd, state->buffer, count);
   }
   /* Now allocate the rest which is less than 1 buffer size. */
   size_t rest = config->file_size_in_bytes % count;
+  printf("all iterations passed, now the rest: %zu\n", rest); fflush(stdout);
   write_or_die(state->fd, state->buffer, rest);
+  printf("looks fine, now fsync,fstat, END init_file\n"); fflush(stdout);
 
   /* Did it work? */
   fsync_or_die(state->fd);
@@ -150,18 +157,31 @@ static void prepare_run(const benchmark_config_t *config, benchmark_state_t *sta
 /** Choose the next memory position after each io-op according to the access pattern. */
 static inline void pick_next_mem_position(const benchmark_config_t *config, benchmark_state_t *state)
 {
+  printf("b4 mempos: offset: %zu, total: %zu, access_size: %zu\n", state->last_mem_offset, config->memory_buffer_in_bytes, config->access_size_in_bytes);
   switch (config->access_pattern_in_memory)
   {
   case ACCESS_PATTERN_CONST:
+  {
+    printf("const mem: doesn't change, still:\n");
+    printf("after mempos: offset: %zu, total: %zu, access_size: %zu\n", state->last_mem_offset, config->memory_buffer_in_bytes, config->access_size_in_bytes);
     /* After one io-op the pointer does not get moved like the fd-state for the file */
     return;
+  }
   case ACCESS_PATTERN_SEQUENTIAL:
   {
+    printf("seq mem, += access_size_in_bytes\n");
     state->last_mem_offset += config->access_size_in_bytes;
+    printf("after mempos: offset: %zu, total: %zu, access_size: %zu\n", state->last_mem_offset, config->memory_buffer_in_bytes, config->access_size_in_bytes);
     return;
   }
   case ACCESS_PATTERN_RANDOM:
-    state->last_mem_offset = ((size_t)rand() * 128) % (config->memory_buffer_in_bytes - config->access_size_in_bytes);
+    printf("rand mem: ((size_t)rand*128) mod (config->membufferinbytes - config->access_size_in_bytes)\n");
+    size_t r = ((size_t)rand() * 128);
+    size_t fz = config->memory_buffer_in_bytes - config->access_size_in_bytes;
+    printf("rand mem: %zu mod %zu = %zu\n", r, fz, r%fz);
+    state->last_mem_offset = r % fz;
+    //state->last_mem_offset = ((size_t)rand() * 128) % (config->memory_buffer_in_bytes - config->access_size_in_bytes);
+    printf("after mempos: offset: %zu, total: %zu, access_size: %zu\n", state->last_mem_offset, config->memory_buffer_in_bytes, config->access_size_in_bytes);
     return;
   }
 }
@@ -222,10 +242,12 @@ static void do_benchmark(const benchmark_config_t *config, benchmark_state_t *st
   prepare_run(config, state);
   for (size_t i = 0; i < config->number_of_io_op_tests; ++i)
   {
+    printf("access size %zu, run %zu\n", config->access_size_in_bytes, i);
     do_reread_if_needed(config, state);
     clock_gettime(CLOCK_MONOTONIC, &start);
     res = state->io_op(state->fd, state->buffer, config->access_size_in_bytes);
     clock_gettime(CLOCK_MONOTONIC, &end);
+    printf("Run %zu done, preparing for next one...\n", i);
     io_op_worked_or_die(res, config->is_read_operation);
     pick_next_mem_position(config, state);
     pick_next_file_position(config, state);
@@ -259,6 +281,8 @@ benchmark_results_t *benchmark_file(const benchmark_config_t *config)
   do_benchmark(config, &state, results);
 
   do_cleanup(config, &state);
+  fflush(stdout); //TODO
+  fflush(stderr);
   return results;
 }
 

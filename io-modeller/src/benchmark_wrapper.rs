@@ -24,8 +24,8 @@ pub enum AccessPattern {
 impl AccessPattern {
     fn to_c(&self) -> access_pattern_t {
         match self {
-            Off0 => io_benchmarker::access_pattern_t_ACCESS_PATTERN_CONST,
-            Rnd => io_benchmarker::access_pattern_t_ACCESS_PATTERN_RANDOM,
+            Self::Off0 => io_benchmarker::access_pattern_t_ACCESS_PATTERN_CONST,
+            Self::Rnd => io_benchmarker::access_pattern_t_ACCESS_PATTERN_RANDOM,
         }
     }
 }
