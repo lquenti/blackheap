@@ -1,0 +1,19 @@
+[
+    {
+        "arguments": [
+            "gcc",
+            "-c",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-std=gnu11",
+            "-O2",
+            "-o",
+            "-D_GNU_SOURCE",
+            "./build/io-benchmark.exe",
+            "src/main.c"
+        ],
+        "directory": "/home/lquenti/Documents/gwdg/lquentin/dev/io-benchmark",
+        "file": "src/main.c"
+    }
+]
