@@ -22,9 +22,9 @@
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
 
-const char *DEFAULT_FILENAME = "io_benchmark_test_file.dat";
-const char *DEFAULT_FILEPATH = "/tmp/io_benchmark_test_file.dat";
-const char *argp_program_bug_address = "https://gitlab.gwdg.de/lars.quentin1/io-benchmark/-/issues";
+const char *DEFAULT_FILENAME = "blackheap_benchmark_test_file.dat";
+const char *DEFAULT_FILEPATH = "/tmp/blackheap_benchmark_test_file.dat";
+const char *argp_program_bug_address = "https://github.com/lquenti/blackheap/issues";
 const char *argp_program_version = "0.1.0";
 
 
@@ -260,7 +260,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 }
 
 static struct argp_option options[] = {
-    /* Define a group for all io-benchmark options in case someone wants to embed them. */
+    /* Define a group for all io_benchmark options in case someone wants to embed them. */
     {0, 0, 0, 0, "Benchmark Options:", GROUP_BENCHMARK_OPTIONS},
 
     /* Read and write are mutually exclusive. */
