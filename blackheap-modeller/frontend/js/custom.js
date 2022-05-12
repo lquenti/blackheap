@@ -30,7 +30,7 @@ const print_model_function = (slope, intercept, div_name) => {
   document.getElementById(div_name).appendChild(document.createTextNode(`Linear Model: ${slope}*x+${intercept}`))
 };
 
-const plot_overview = (xs, ys, slope, intercept, div_name) => {
+const plot_overview = (xs, ys, slope, intercept, use_log, div_name) => {
   const f = x => slope * x + intercept;
   const scatter = {
     x: xs,
@@ -49,22 +49,24 @@ const plot_overview = (xs, ys, slope, intercept, div_name) => {
     name: 'Linearly interpolated function'
   };
   const data = [scatter, line];
-  const layout = {
+  let layout = {
     xaxis: {
       text: 'Access Size in Bytes',
-      type: 'log',
       autorange: 'true',
       rangemode: 'tozero',
       tickformat: 'f',
     },
     yaxis: {
       text: 'Expected Speed in sec',
-      type: 'log',
       autorange: 'true',
       tickformat: 'e',
     },
-    title: 'Model Overview',
+    title: `Model Overview (${use_log ? "log" : "linear"})`,
   };
+  if (use_log) {
+    layout["xaxis"]["type"] = 'log';
+    layout["yaxis"]["type"] = 'log';
+  }
   Plotly.newPlot(div_name, data, layout);
 };
 
@@ -202,7 +204,8 @@ const single_model_main = (j, wanted_benchmark_type, wanted_is_read_op) => {
 
   print_headline(benchmark_type, is_read_op, 'headline');
   print_model_function(linear_model.a, linear_model.b, 'model');
-  plot_overview(xs, ys, linear_model.a, linear_model.b, 'overview');
+  plot_overview(xs, ys, linear_model.a, linear_model.b, true, 'overview-log');
+  plot_overview(xs, ys, linear_model.a, linear_model.b, false, 'overview-linear');
   create_table(xs, ys, 'raw-data');
   create_kdes(kdes, 'kdes');
   document.title = `${benchmark_type}: ${convert_is_read_op(is_read_op)} - Report`

@@ -6,8 +6,6 @@ use crate::benchmark_wrapper::BenchmarkType;
 
 use anyhow::{bail, Result};
 
-// If anyone finds a way on how to not specify the number of bytes
-// while not assuming any encoding please PR.
 const NORMALIZE_CSS_PATH: &str = "css/normalize.css";
 const NORMALIZE_CSS: &str = include_str!("../frontend/css/normalize.css");
 const SKELETON_CSS_PATH: &str = "css/skeleton.css";
