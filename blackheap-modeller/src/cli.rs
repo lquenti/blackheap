@@ -1,10 +1,10 @@
 use clap::{Parser, Subcommand};
 
 pub const DEFAULT_MODEL_PATH: &str = "./default-model";
-pub const DEFAULT_BENCHMARK_FILE_PATH: &str = "/tmp/io_benchmark_test_file.dat";
+pub const DEFAULT_BENCHMARK_FILE_PATH: &str = "/tmp/blackheap_benchmark_test_file.dat";
 pub const DEFAULT_REPORT_PATH: &str = "./report";
 
-pub const NAME: &str = "io-modeller";
+pub const NAME: &str = "blackheap";
 pub const AUTHOR: &str = "Lars Quentin <lars.quentin@gwdg.de>";
 pub const VERSION: &str = "0.1";
 pub const ABOUT: &str = "A blackbox modeller for I/O-classification";

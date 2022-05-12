@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8">
     <title>Still rendering...</title>
-    <meta name="description" content="An automatic IO report created by io-modeller">
-    <meta name="author" content="io-modeller">
+    <meta name="description" content="An automatic IO report created by blackheap">
+    <meta name="author" content="blackheap">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link rel="stylesheet" href="css/normalize.css">
@@ -14,12 +14,22 @@
     <div class="container">
       <!-- Headline -->
       <div class="row">
-        <h1 id="headline">All Models</h1>
+        <h1 id="headline"></h1>
       </div>
-      <div id="all-models">
+      <!-- Overview Plot -->
+      <div class="row">
+        <h4 id="model"></h4>
+        <div id="overview">
+        </div>
       </div>
-      <h4>Plot of all models</h4>
-      <div id="model-plot">
+      <!-- Raw Data -->
+      <div class="row">
+        <h4>Raw Data</h4>
+        <div id="raw-data">
+        </div>
+      </div>
+      <!-- KDEs -->
+      <div id="kdes">
       </div>
     </div>
     <script src="js/plotly.1.33.1.min.js"></script>
@@ -27,7 +37,7 @@
     <script>
       fetch('Model.json')
         .then(j => j.json())
-        .then(j => model_summary_main(j));
+        .then(j => single_model_main(j, TYPE_OF_BENCHMARK, IS_READING_OPERATION));
     </script>
   </body>
 </html>
