@@ -5,6 +5,14 @@ use serde::{Deserialize, Serialize};
 
 use linregress::{FormulaRegressionBuilder, RegressionDataBuilder};
 
+// TODO: Rename file
+// TODO: Do serialization/deserialization via function only
+// TODO: Hide access to a/b
+pub trait PredictionModel {
+    fn from_jsons_kdes(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde]) -> Self;
+    fn evaluate(&self, bytes: u64) -> f64;
+}
+
 /// y=aX+b
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct LinearModel {
@@ -13,7 +21,19 @@ pub struct LinearModel {
 }
 
 impl LinearModel {
-    pub fn from_jsons_kdes(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde]) -> Self {
+    fn get_xs_ys(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde]) -> (Vec<f64>, Vec<f64>) {
+        let mut xs = Vec::new();
+        let mut ys = Vec::new();
+        for i in 0..jsons.len() {
+            xs.push(jsons[i].access_size_in_bytes as f64);
+            ys.push(kdes[i].global_maximum.0);
+        }
+        (xs, ys)
+    }
+}
+
+impl PredictionModel for LinearModel {
+    fn from_jsons_kdes(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde]) -> Self {
         let (xs, ys) = Self::get_xs_ys(jsons, kdes);
         let data = vec![("X", xs), ("Y", ys)];
         let formula = "Y ~ X";
@@ -29,18 +49,8 @@ impl LinearModel {
         let b = parameters.intercept_value;
         Self { a, b }
     }
-
-    pub fn get_xs_ys(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde]) -> (Vec<f64>, Vec<f64>) {
-        let mut xs = Vec::new();
-        let mut ys = Vec::new();
-        for i in 0..jsons.len() {
-            xs.push(jsons[i].access_size_in_bytes as f64);
-            ys.push(kdes[i].global_maximum.0);
-        }
-        (xs, ys)
-    }
-
-    pub fn evaluate(&self, bytes: u64) -> f64 {
+    fn evaluate(&self, bytes: u64) -> f64 {
         self.a * (bytes as f64) + self.b
     }
+
 }

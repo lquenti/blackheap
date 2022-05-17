@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::Write;
 
+use crate::analyzer::linear_model::PredictionModel;
 use crate::analyzer::Analysis;
 use crate::benchmark_wrapper::BenchmarkType;
 use crate::frontend;

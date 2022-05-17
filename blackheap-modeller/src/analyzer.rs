@@ -7,7 +7,7 @@ use std::io::{BufReader, Write};
 
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
-use crate::analyzer::linear_model::LinearModel;
+use crate::analyzer::linear_model::{LinearModel, PredictionModel};
 use crate::benchmark_wrapper::BenchmarkType;
 use crate::benchmark_wrapper::PerformanceBenchmark;
 use crate::frontend;
