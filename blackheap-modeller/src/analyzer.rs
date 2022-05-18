@@ -1,13 +1,13 @@
 pub mod json_reader;
 pub mod kde;
-pub mod linear_model;
+pub mod prediction_model;
 
 use std::fs::File;
 use std::io::{BufReader, Write};
 
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
-use crate::analyzer::linear_model::{LinearModel, PredictionModel};
+use crate::analyzer::prediction_model::{Interval, Linear, PredictionModel};
 use crate::benchmark_wrapper::BenchmarkType;
 use crate::benchmark_wrapper::PerformanceBenchmark;
 use crate::frontend;
@@ -23,7 +23,7 @@ pub struct Analysis {
     pub benchmark_type: BenchmarkType,
     pub is_read_op: bool,
     pub kdes: Vec<BenchmarkKde>,
-    pub linear_model: LinearModel,
+    pub linear_model: Linear,
 }
 
 impl Analysis {
@@ -35,7 +35,7 @@ impl Analysis {
             .iter()
             .map(|j| BenchmarkKde::from_benchmark(j, 100))
             .collect();
-        let linear_model = LinearModel::from_jsons_kdes(&jsons, &kdes);
+        let linear_model = Linear::from_jsons_kdes_interval(&jsons, &kdes, Interval::new());
         Self {
             benchmark_type: benchmark.benchmark_type,
             is_read_op: benchmark.is_read_op,
@@ -74,7 +74,12 @@ impl Analysis {
             }
             let approximated_time = a.linear_model.evaluate(line.bytes);
 
-            if approximated_time < line.sec {
+            // if the model isn't defined on that interval, skip
+            if approximated_time.is_none() {
+                continue;
+            }
+
+            if approximated_time.unwrap() < line.sec {
                 continue;
             }
             // do we have a upper bound already?
