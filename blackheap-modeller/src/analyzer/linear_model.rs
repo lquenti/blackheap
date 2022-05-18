@@ -10,19 +10,32 @@ use linregress::{FormulaRegressionBuilder, RegressionDataBuilder};
 // TODO: Hide access to a/b
 // TODO: Rename a/b
 pub trait PredictionModel {
-    fn from_jsons_kdes(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde]) -> Self;
-    fn evaluate(&self, bytes: u64) -> f64;
+    fn from_jsons_kdes_interval(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde], xss: Interval) -> Self;
     // helper
-    fn get_xs_ys(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde]) -> (Vec<f64>, Vec<f64>) {
+    fn get_xs_ys_interval(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde], xss: Interval) -> (Vec<f64>, Vec<f64>) {
         let mut xs = Vec::new();
         let mut ys = Vec::new();
         for i in 0..jsons.len() {
-            xs.push(jsons[i].access_size_in_bytes as f64);
-            ys.push(kdes[i].global_maximum.0);
+            // if codomain in valid interval, it is relevant for our analysis
+            if xss.contains(jsons[i].access_size_in_bytes) {
+                xs.push(jsons[i].access_size_in_bytes as f64);
+                ys.push(kdes[i].global_maximum.0);
+            }
         }
         (xs, ys)
     }
-}
+    fn find_max_xs_ys(xs: &[f64], ys: &[f64]) -> (f64, f64) {
+        let (mut max_xs, mut max_ys) = (0.0f64, 0.0f64);
+        for i in 0..xs.len() {
+            let (curr_xs, curr_ys) = (xs[i], ys[i]);
+            if curr_ys > max_ys {
+                max_xs = curr_xs;
+                max_ys = curr_ys;
+            }
+        }
+        (max_xs, max_ys)
+    }
+fn evaluate(&self, bytes: u64) -> Option<f64>; }
 
 /*
 /// y=aX+b
@@ -55,10 +68,10 @@ impl PredictionModel for LinearModel {
 }
 */
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Interval {
-    lower: Option<f64>,
-    upper: Option<f64>,
+    pub lower: Option<u64>,
+    pub upper: Option<u64>,
 }
 
 impl Interval {
@@ -67,22 +80,37 @@ impl Interval {
         Self {lower: None, upper: None}
     }
 
-    pub fn new_left_closed(minimum: f64) -> Self{
+    pub fn new_left_closed(minimum: u64) -> Self{
         Self {lower: Some(minimum), upper: None}
     }
 
-    pub fn new_right_closed(maximum: f64) -> Self{
+    pub fn new_right_closed(maximum: u64) -> Self{
         Self {lower: None, upper: Some(maximum)}
     }
 
-    pub fn new_closed(minimum: f64, maximum: f64) -> Self{
+    pub fn new_closed(minimum: u64, maximum: u64) -> Self{
         Self {lower: Some(minimum), upper: Some(maximum)}
     }
 
-    pub fn contains(&self, val: f64) -> Self {
-        if let Some(minimum) = val {
-            if val
+    pub fn contains(&self, val: u64) -> bool {
+        if let Some(minimum) = self.lower {
+            // its lower bounded
+            if val < minimum {
+                return false;
+            }
         }
+        if let Some(maximum) = self.upper {
+            // its upper bounded
+            if val > maximum {
+                return false;
+            }
+        }
+        true
+    }
+
+    // Matches first if any
+    pub fn contains_any(xss: &[Self], val: u64) -> Option<&Self> {
+        xss.iter().find(|xs| xs.contains(val))
     }
 }
 
@@ -103,14 +131,34 @@ struct Linear {
 // TODO: or any other compile time constraint, who knows
 // Otherwise, just check it on runtime
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct ConstLinear {
+struct ConstantLinear {
     constant: Constant,
     linear: Linear
 }
 
-impl PredictionModel for Linear {
+impl PredictionModel for Constant {
+    fn from_jsons_kdes_interval(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde], xss: Interval) -> Self {
+        let (xs, ys) = Self::get_xs_ys_interval(jsons, kdes, xss);
+        let (_max_xs, max_ys) = Self::find_max_xs_ys(&xs, &ys);
+        Self {const_value: max_ys, valid_interval: xss}
+    }
+    fn evaluate(&self, bytes: u64) -> Option<f64> {
+        if self.valid_interval.contains(bytes) {
+            return Some(self.const_value);
+        }
+        None
+    }
+}
+
+impl Linear {
     fn from_jsons_kdes(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde]) -> Self {
-        let (xs, ys) = Self::get_xs_ys(jsons, kdes);
+        Self::from_jsons_kdes_interval(jsons, kdes, Interval::new())
+    }
+}
+
+impl PredictionModel for Linear {
+    fn from_jsons_kdes_interval(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde], xss: Interval) -> Self {
+        let (xs, ys) = Self::get_xs_ys_interval(jsons, kdes, xss);
         let data = vec![("X", xs), ("Y", ys)];
         let formula = "Y ~ X";
         let data = RegressionDataBuilder::new().build_from(data).unwrap();
@@ -123,5 +171,44 @@ impl PredictionModel for Linear {
         let parameters = model.parameters;
         let slope = parameters.regressor_values[0];
         let y_intercept = parameters.intercept_value;
+
+        let valid_interval = xss;
+
+        Self { slope, y_intercept, valid_interval }
+    }
+
+    fn evaluate(&self, bytes: u64) -> Option<f64> {
+        let x = bytes as f64;
+        if self.valid_interval.contains(bytes) {
+            return Some(self.slope * (bytes as f64) + self.y_intercept);
+        }
+        None
+    }
+}
+
+impl PredictionModel for ConstantLinear {
+    fn from_jsons_kdes_interval(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde], xss: Interval) -> Self {
+        // BIG TODO
+        if !xss.contains(4096) {
+            panic!("todo find good generic split");
+        }
+        // if xss is unbounded, let it be unbounded as well
+        let lower_interval = match xss.lower {
+            None => Interval::new_right_closed(4096),
+            Some(lower_bound) => Interval::new_closed(lower_bound, 4096)
+        };
+        let upper_interval = match xss.upper {
+            None => Interval::new_left_closed(4096),
+            Some(upper_bound) => Interval::new_closed(4096, upper_bound)
+        };
+
+        let constant = Constant::from_jsons_kdes_interval(jsons, kdes, lower_interval);
+        let linear = Linear::from_jsons_kdes_interval(jsons, kdes, upper_interval);
+
+        Self {constant, linear}
+    }
+
+    fn evaluate(&self, bytes: u64) -> Option<f64> {
+        self.constant.evaluate(bytes).or_else(|| self.linear.evaluate(bytes))
     }
 }
