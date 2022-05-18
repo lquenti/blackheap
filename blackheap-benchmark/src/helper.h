@@ -12,7 +12,7 @@
 #define DROP_PAGE_CACHE "/proc/sys/vm/drop_caches"
 
 /* See: https://stackoverflow.com/a/70370002/9958281 */
-const unsigned long MAX_IO_SIZE;
+#define MAX_IO_SIZE 0x7ffff000
 
 /** Helper function to "handle" malloc failure.
  *
