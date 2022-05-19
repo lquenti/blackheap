@@ -5,9 +5,10 @@ pub mod prediction_model;
 use std::fs::File;
 use std::io::{BufReader, Write};
 
+use crate::analyzer::prediction_model::Models;
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
-use crate::analyzer::prediction_model::{Interval, Linear, PredictionModel};
+use crate::analyzer::prediction_model::Interval;
 use crate::benchmark_wrapper::BenchmarkType;
 use crate::benchmark_wrapper::PerformanceBenchmark;
 use crate::frontend;
@@ -29,17 +30,18 @@ use serde_json::json;
  *    So we have 2 options:
  *    1. Use type erasure in order to not have generic parameters (see: erased_serde)
  *    2. use code duplication
+ *    3. Use an enum
  */
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Analysis {
     pub benchmark_type: BenchmarkType,
     pub is_read_op: bool,
     pub kdes: Vec<BenchmarkKde>,
-    pub linear_model: Linear,
+    pub model: Models,
 }
 
 impl Analysis {
-    pub fn new_from_finished_benchmark(benchmark: PerformanceBenchmark<'_>) -> Self {
+    pub fn new_from_finished_benchmark(benchmark: PerformanceBenchmark<'_>, use_linear: bool) -> Self {
         let mut jsons: Vec<BenchmarkJSON> =
             BenchmarkJSON::new_from_performance_benchmark(&benchmark);
         jsons.sort_by_key(|j| j.access_size_in_bytes);
@@ -47,12 +49,15 @@ impl Analysis {
             .iter()
             .map(|j| BenchmarkKde::from_benchmark(j, 100))
             .collect();
-        let linear_model = Linear::from_jsons_kdes_interval(&jsons, &kdes, Interval::new());
+        let model = match use_linear {
+            true => Models::new_linear(&jsons, &kdes, Interval::new()),
+            _ => Models::new_constant_linear(&jsons, &kdes, Interval::new())
+        };
         Self {
             benchmark_type: benchmark.benchmark_type,
             is_read_op: benchmark.is_read_op,
             kdes,
-            linear_model,
+            model,
         }
     }
 
@@ -84,7 +89,7 @@ impl Analysis {
             if a.is_read_op != (line.io_type == 'r') {
                 continue;
             }
-            let approximated_time = a.linear_model.evaluate(line.bytes);
+            let approximated_time = a.model.evaluate(line.bytes);
 
             // if the model isn't defined on that interval, skip
             if approximated_time.is_none() {
@@ -100,7 +105,7 @@ impl Analysis {
                 None => Some(a),
                 // if so, lets choose the tighter bound
                 Some(a2) => Some(
-                    if a2.linear_model.evaluate(line.bytes) < approximated_time {
+                    if a2.model.evaluate(line.bytes) < approximated_time {
                         a2
                     } else {
                         a

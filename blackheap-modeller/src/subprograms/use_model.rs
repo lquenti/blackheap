@@ -2,7 +2,6 @@ use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::Write;
 
-use crate::analyzer::prediction_model::PredictionModel;
 use crate::analyzer::Analysis;
 use crate::benchmark_wrapper::BenchmarkType;
 use crate::frontend;
@@ -116,7 +115,7 @@ pub fn use_model(model: &str, file: &str, to: &str) -> Result<()> {
             match &oa {
                 None => String::from("<NONE>"),
                 Some(a) => a
-                    .linear_model
+                    .model
                     .evaluate(m.bytes)
                     .unwrap_or(0.0f64)
                     .to_string(),

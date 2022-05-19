@@ -1,3 +1,4 @@
+// TODO: traitify me in the future
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
 
@@ -5,42 +6,54 @@ use serde::{Deserialize, Serialize};
 
 use linregress::{FormulaRegressionBuilder, RegressionDataBuilder};
 
-// TODO: Rename file
-pub trait PredictionModel {
-    fn from_jsons_kdes_interval(
-        jsons: &[BenchmarkJSON],
-        kdes: &[BenchmarkKde],
-        xss: Interval,
-    ) -> Self;
-    // helper
-    fn get_xs_ys_interval(
-        jsons: &[BenchmarkJSON],
-        kdes: &[BenchmarkKde],
-        xss: Interval,
-    ) -> (Vec<f64>, Vec<f64>) {
-        let mut xs = Vec::new();
-        let mut ys = Vec::new();
-        for i in 0..jsons.len() {
-            // if codomain in valid interval, it is relevant for our analysis
-            if xss.contains(jsons[i].access_size_in_bytes) {
-                xs.push(jsons[i].access_size_in_bytes as f64);
-                ys.push(kdes[i].global_maximum.0);
-            }
+#[derive(Debug, Serialize, Deserialize)]
+pub enum Models {
+    Linear(Linear),
+    ConstantLinear(ConstantLinear),
+}
+
+impl Models {
+    pub fn evaluate(&self, bytes: u64) -> Option<f64> {
+        match &self {
+            Self::Linear(x) => x.evaluate(bytes),
+            Self::ConstantLinear(x) => x.evaluate(bytes),
         }
-        (xs, ys)
     }
-    fn find_max_xs_ys(xs: &[f64], ys: &[f64]) -> (f64, f64) {
-        let (mut max_xs, mut max_ys) = (0.0f64, 0.0f64);
-        for i in 0..xs.len() {
-            let (curr_xs, curr_ys) = (xs[i], ys[i]);
-            if curr_ys > max_ys {
-                max_xs = curr_xs;
-                max_ys = curr_ys;
-            }
+    pub fn new_linear(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde], xss: Interval) -> Self {
+        Models::Linear(Linear::from_jsons_kdes_interval(jsons, kdes, xss))
+    }
+    pub fn new_constant_linear(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde], xss: Interval) -> Self {
+        Models::ConstantLinear(ConstantLinear::from_jsons_kdes_interval(jsons,kdes, xss))
+    }
+}
+
+// TODO: helper
+fn get_xs_ys_interval(
+    jsons: &[BenchmarkJSON],
+    kdes: &[BenchmarkKde],
+    xss: Interval,
+) -> (Vec<f64>, Vec<f64>) {
+    let mut xs = Vec::new();
+    let mut ys = Vec::new();
+    for i in 0..jsons.len() {
+        // if codomain in valid interval, it is relevant for our analysis
+        if xss.contains(jsons[i].access_size_in_bytes) {
+            xs.push(jsons[i].access_size_in_bytes as f64);
+            ys.push(kdes[i].global_maximum.0);
         }
-        (max_xs, max_ys)
     }
-    fn evaluate(&self, bytes: u64) -> Option<f64>;
+    (xs, ys)
+}
+fn find_max_xs_ys(xs: &[f64], ys: &[f64]) -> (f64, f64) {
+    let (mut max_xs, mut max_ys) = (0.0f64, 0.0f64);
+    for i in 0..xs.len() {
+        let (curr_xs, curr_ys) = (xs[i], ys[i]);
+        if curr_ys > max_ys {
+            max_xs = curr_xs;
+            max_ys = curr_ys;
+        }
+    }
+    (max_xs, max_ys)
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -115,20 +128,20 @@ pub struct ConstantLinear {
     linear: Linear,
 }
 
-impl PredictionModel for Constant {
-    fn from_jsons_kdes_interval(
+impl Constant {
+    pub fn from_jsons_kdes_interval(
         jsons: &[BenchmarkJSON],
         kdes: &[BenchmarkKde],
         xss: Interval,
     ) -> Self {
-        let (xs, ys) = Self::get_xs_ys_interval(jsons, kdes, xss);
-        let (_max_xs, max_ys) = Self::find_max_xs_ys(&xs, &ys);
+        let (xs, ys) = get_xs_ys_interval(jsons, kdes, xss);
+        let (_max_xs, max_ys) = find_max_xs_ys(&xs, &ys);
         Self {
             const_value: max_ys,
             valid_interval: xss,
         }
     }
-    fn evaluate(&self, bytes: u64) -> Option<f64> {
+    pub fn evaluate(&self, bytes: u64) -> Option<f64> {
         if self.valid_interval.contains(bytes) {
             return Some(self.const_value);
         }
@@ -136,13 +149,13 @@ impl PredictionModel for Constant {
     }
 }
 
-impl PredictionModel for Linear {
-    fn from_jsons_kdes_interval(
+impl Linear {
+    pub fn from_jsons_kdes_interval(
         jsons: &[BenchmarkJSON],
         kdes: &[BenchmarkKde],
         xss: Interval,
     ) -> Self {
-        let (xs, ys) = Self::get_xs_ys_interval(jsons, kdes, xss);
+        let (xs, ys) = get_xs_ys_interval(jsons, kdes, xss);
         let data = vec![("X", xs), ("Y", ys)];
         let formula = "Y ~ X";
         let data = RegressionDataBuilder::new().build_from(data).unwrap();
@@ -165,7 +178,7 @@ impl PredictionModel for Linear {
         }
     }
 
-    fn evaluate(&self, bytes: u64) -> Option<f64> {
+    pub fn evaluate(&self, bytes: u64) -> Option<f64> {
         if self.valid_interval.contains(bytes) {
             return Some(self.slope * (bytes as f64) + self.y_intercept);
         }
@@ -173,8 +186,8 @@ impl PredictionModel for Linear {
     }
 }
 
-impl PredictionModel for ConstantLinear {
-    fn from_jsons_kdes_interval(
+impl ConstantLinear {
+    pub fn from_jsons_kdes_interval(
         jsons: &[BenchmarkJSON],
         kdes: &[BenchmarkKde],
         xss: Interval,
@@ -199,7 +212,7 @@ impl PredictionModel for ConstantLinear {
         Self { constant, linear }
     }
 
-    fn evaluate(&self, bytes: u64) -> Option<f64> {
+    pub fn evaluate(&self, bytes: u64) -> Option<f64> {
         self.constant
             .evaluate(bytes)
             .or_else(|| self.linear.evaluate(bytes))
