@@ -22,8 +22,12 @@ impl Models {
     pub fn new_linear(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde], xss: Interval) -> Self {
         Models::Linear(Linear::from_jsons_kdes_interval(jsons, kdes, xss))
     }
-    pub fn new_constant_linear(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde], xss: Interval) -> Self {
-        Models::ConstantLinear(ConstantLinear::from_jsons_kdes_interval(jsons,kdes, xss))
+    pub fn new_constant_linear(
+        jsons: &[BenchmarkJSON],
+        kdes: &[BenchmarkKde],
+        xss: Interval,
+    ) -> Self {
+        Models::ConstantLinear(ConstantLinear::from_jsons_kdes_interval(jsons, kdes, xss))
     }
 }
 

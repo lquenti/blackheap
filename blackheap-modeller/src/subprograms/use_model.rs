@@ -114,11 +114,7 @@ pub fn use_model(model: &str, file: &str, to: &str) -> Result<()> {
             m.sec,
             match &oa {
                 None => String::from("<NONE>"),
-                Some(a) => a
-                    .model
-                    .evaluate(m.bytes)
-                    .unwrap_or(0.0f64)
-                    .to_string(),
+                Some(a) => a.model.evaluate(m.bytes).unwrap_or(0.0f64).to_string(),
             },
             match &oa {
                 None => String::from(""),

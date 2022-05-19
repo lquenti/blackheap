@@ -21,10 +21,12 @@ fn main() {
             root,
             analyze_only,
             model,
-        } => match create_model::create_model(&to, &file, &benchmarker, root, analyze_only, model) {
-            Ok(_) => {}
-            Err(e) => eprintln!("{:?}", e),
-        },
+        } => {
+            match create_model::create_model(&to, &file, &benchmarker, root, analyze_only, model) {
+                Ok(_) => {}
+                Err(e) => eprintln!("{:?}", e),
+            }
+        }
         Commands::UseModel { model, file, to } => match use_model::use_model(&model, &file, &to) {
             Ok(_) => {}
             Err(e) => eprintln!("{:?}", e),

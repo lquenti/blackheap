@@ -1,4 +1,4 @@
-use clap::{ArgEnum,Parser, Subcommand};
+use clap::{ArgEnum, Parser, Subcommand};
 
 pub const DEFAULT_MODEL_PATH: &str = "./default-model";
 pub const DEFAULT_BENCHMARK_FILE_PATH: &str = "/tmp/blackheap_benchmark_test_file.dat";

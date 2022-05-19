@@ -5,10 +5,10 @@ pub mod prediction_model;
 use std::fs::File;
 use std::io::{BufReader, Write};
 
-use crate::analyzer::prediction_model::Models;
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
 use crate::analyzer::prediction_model::Interval;
+use crate::analyzer::prediction_model::Models;
 use crate::benchmark_wrapper::BenchmarkType;
 use crate::benchmark_wrapper::PerformanceBenchmark;
 use crate::frontend;
@@ -41,7 +41,10 @@ pub struct Analysis {
 }
 
 impl Analysis {
-    pub fn new_from_finished_benchmark(benchmark: PerformanceBenchmark<'_>, use_linear: bool) -> Self {
+    pub fn new_from_finished_benchmark(
+        benchmark: PerformanceBenchmark<'_>,
+        use_linear: bool,
+    ) -> Self {
         let mut jsons: Vec<BenchmarkJSON> =
             BenchmarkJSON::new_from_performance_benchmark(&benchmark);
         jsons.sort_by_key(|j| j.access_size_in_bytes);
@@ -51,7 +54,7 @@ impl Analysis {
             .collect();
         let model = match use_linear {
             true => Models::new_linear(&jsons, &kdes, Interval::new()),
-            _ => Models::new_constant_linear(&jsons, &kdes, Interval::new())
+            _ => Models::new_constant_linear(&jsons, &kdes, Interval::new()),
         };
         Self {
             benchmark_type: benchmark.benchmark_type,
@@ -104,13 +107,11 @@ impl Analysis {
                 // if not, this is the best until now
                 None => Some(a),
                 // if so, lets choose the tighter bound
-                Some(a2) => Some(
-                    if a2.model.evaluate(line.bytes) < approximated_time {
-                        a2
-                    } else {
-                        a
-                    },
-                ),
+                Some(a2) => Some(if a2.model.evaluate(line.bytes) < approximated_time {
+                    a2
+                } else {
+                    a
+                }),
             };
         }
         res
