@@ -14,6 +14,8 @@ const CUSTOM_JS_PATH: &str = "js/custom.js";
 const CUSTOM_JS: &str = include_str!("../frontend/js/custom.js");
 const PLOTLY_JS_PATH: &str = "js/plotly.1.33.1.min.js";
 const PLOTLY_JS: &str = include_str!("../frontend/js/plotly.1.33.1.min.js");
+const LODASH_JS_PATH: &str = "js/lodash.4.17.21.min.js";
+const LODASH_JS: &str = include_str!("../frontend/js/lodash.4.17.21.min.js");
 
 const SINGLE_MODEL_HTML: &str = include_str!("../frontend/single_model.html");
 const MODEL_SUMMARY_HTML_PATH: &str = "model_summary.html";
@@ -71,6 +73,7 @@ pub fn create_frontend(xs: &[Analysis], to_folder: &str) -> Result<()> {
     )?;
     overwrite_file(CUSTOM_JS, &format!("{}/{}", base_path, CUSTOM_JS_PATH))?;
     overwrite_file(PLOTLY_JS, &format!("{}/{}", base_path, PLOTLY_JS_PATH))?;
+    overwrite_file(LODASH_JS, &format!("{}/{}", base_path, LODASH_JS_PATH))?;
 
     // write summary
     overwrite_file(
