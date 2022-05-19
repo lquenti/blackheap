@@ -3,6 +3,7 @@ use std::path::PathBuf;
 
 use crate::analyzer::Analysis;
 use crate::benchmark_wrapper::PerformanceBenchmark;
+use crate::cli::ModelEnum;
 
 use anyhow::{bail, Result};
 
@@ -12,6 +13,7 @@ pub fn create_model(
     benchmarker_path: &str,
     root: bool,
     analyze_only: bool,
+    model: ModelEnum,
 ) -> Result<()> {
     // create folders
     fs::create_dir_all(model_path)?;

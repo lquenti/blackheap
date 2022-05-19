@@ -20,8 +20,8 @@ fn main() {
             benchmarker,
             root,
             analyze_only,
-            .. // TODO
-        } => match create_model::create_model(&to, &file, &benchmarker, root, analyze_only) {
+            model,
+        } => match create_model::create_model(&to, &file, &benchmarker, root, analyze_only, model) {
             Ok(_) => {}
             Err(e) => eprintln!("{:?}", e),
         },

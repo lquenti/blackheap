@@ -18,6 +18,18 @@ use anyhow::Result;
 use serde::{self, Deserialize, Serialize};
 use serde_json::json;
 
+/**
+ * Q: Why do all those <sthsth>Analysis-Structs have code duplication?
+ *    Can't you just use something like Box<dyn PredictionModel>
+ *    where PredictionModel is a SuperTrait inheriting all traits?
+ * A: I wish I could. In order to use a trait-reference as a struct
+ *    member, the trait has to be "object safe". This requires that any trait method does not have
+ *    generic parameters. Sadly, this is the case for Serialize, thus we can't have any
+ *    Serializable Trait as a struct member, which makes the whole analysis not serializable.
+ *    So we have 2 options:
+ *    1. Use type erasure in order to not have generic parameters (see: erased_serde)
+ *    2. use code duplication
+ */
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Analysis {
     pub benchmark_type: BenchmarkType,
