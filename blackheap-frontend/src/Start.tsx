@@ -6,6 +6,7 @@ const StartView = () => (
     <p className="text-gray-500 text-lg">
       React and Tailwind CSS in action
     </p>
+    <button className="btn">Button</button>
   </div>
 )
 
