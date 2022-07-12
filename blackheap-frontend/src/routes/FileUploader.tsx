@@ -1,5 +1,22 @@
+import {useEffect} from 'react';
 import {FiUpload} from "react-icons/fi";
+
+import {useFilePicker} from "use-file-picker";
+
 const FileUploader = () => {
+  const [openFileSelector, {filesContent}] = useFilePicker({
+    accept: ".json",
+    limitFilesConfig: {max: 1},
+  });
+
+  useEffect(() => {
+    if (filesContent.length !== 0) {
+      console.log(filesContent[0].content);
+    }
+  }, [filesContent]);
+
+
+
   return (
     <div className="hero min-h-screen bg-base-200">
       <div className="hero-content text-center">
@@ -8,7 +25,7 @@ const FileUploader = () => {
           <p className="py-6">
             Please upload your performance model:
           </p>
-          <button className="btn btn-primary">
+          <button onClick={openFileSelector} className="btn btn-primary">
             <FiUpload className="mr-3" />
             Select
           </button>
