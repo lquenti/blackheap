@@ -13,14 +13,26 @@ const Dashboard = () => {
   return (
     <div className="drawer drawer-mobile text-base-content">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
-      <div className="drawer-content flex flex-col items-center justify-center bg-base-100">
+      <div className="drawer-content flexitems-center justify-center bg-base-100">
         {/* Page content here */}
         {model.map((analysis: Analysis, i: number) =>
-          <div key={i}>
+          <div key={i} className="flex-col">
             <h1>{benchmark_type_str(analysis.benchmark_type)}: {is_read_op_str(analysis.is_read_op)}</h1>
             {/* Function values */}
             <h2>{equation_str(analysis.model)}</h2>
             {/* Function overview log view */}
+            <Plot
+              data={[
+                {
+                  x: analysis.kdes.map(k => k.access_size),
+                  y: analysis.kdes.map(k => k.global_maximum[0]),
+                  type: 'scatter'
+                }
+              ]}
+              layout={{title: 'test'}}
+            />
+            <div>
+            </div>
             {/* Table */}
             {/* All KDEs */}
           </div>)}
