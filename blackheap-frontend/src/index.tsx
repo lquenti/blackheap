@@ -6,6 +6,8 @@ import {
   Route
 } from "react-router-dom";
 
+import './tailwind.css';
+
 import FileUploader from './routes/FileUploader';
 import Dashboard from './routes/Dashboard';
 
@@ -14,7 +16,6 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    Hehe
     <Router>
       <Routes>
         <Route path="/" element={<FileUploader />} />
