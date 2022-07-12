@@ -1,18 +1,20 @@
 import {createContext, Dispatch, useState, SetStateAction} from "react";
+import Model from '../types/Model';
 
+// TODO ANY
 type ModelContextType = {
-  jsonStr: string,
-  setJsonStr: Dispatch<SetStateAction<string>>,
+  json: Model,
+  setJson: Dispatch<SetStateAction<any>>,
 };
 
 const ModelContext = createContext<ModelContextType | null>(null);
 
 // TODO any
 export const ModelProvider = ({children}: any) => {
-  const [jsonStr, setJsonStr] = useState("");
+  const [json, setJson] = useState([]);
   return <ModelContext.Provider value={{
-    jsonStr,
-    setJsonStr,
+    json,
+    setJson,
   }}>
     {children}
   </ModelContext.Provider>;

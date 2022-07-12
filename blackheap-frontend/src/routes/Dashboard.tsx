@@ -1,20 +1,27 @@
 import {useContext} from 'react';
 import Plot from 'react-plotly.js';
 
+import Model from '../types/Model';
+import {Analysis} from '../types/Model';
 import Blackheap from '../components/Blackheap';
 import ModelContext from '../contexts/ModelContext';
 
 const Dashboard = () => {
   // TODO NULL OPERATOR
-  const {jsonStr} = useContext(ModelContext)!;
+  const model: Model = useContext(ModelContext)!.json;
   return (
     <div className="drawer drawer-mobile text-base-content">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-col items-center justify-center bg-base-100">
         {/* Page content here */}
-        <div>
-          {jsonStr}
-        </div>
+        {model.map((analysis: Analysis) => <div>
+          <ul>
+            <li>{analysis.benchmark_type}</li>
+            <li>{analysis.is_read_op}</li>
+            <li>{analysis.kdes[0].access_size}</li>
+          </ul>
+          <hr />
+        </div>)}
         <div>
           <Plot
             data={[

@@ -48,5 +48,5 @@ type Analysis = {
 
 export type {BenchmarkType, Cluster, BenchmarkKde, Interval, Constant, Linear, ConstantLinear, Analysis};
 
-const Model = Array<Analysis>;
+type Model = Array<Analysis>;
 export default Model;

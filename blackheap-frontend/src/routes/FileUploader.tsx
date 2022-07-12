@@ -2,6 +2,7 @@ import {useEffect, useContext, useState} from 'react';
 import {FiUpload} from "react-icons/fi";
 import {Navigate} from 'react-router-dom';
 
+import Model from '../types/Model';
 import Blackheap from '../components/Blackheap';
 import {useFilePicker} from "use-file-picker";
 import ModelContext from '../contexts/ModelContext';
@@ -14,15 +15,15 @@ const FileUploader = () => {
   const [enableRedirect, setEnableRedirect] = useState(false);
 
   // TODO non null operator
-  const {setJsonStr} = useContext(ModelContext)!;
+  const {setJson} = useContext(ModelContext)!;
 
   useEffect(() => {
     if (filesContent.length !== 0) {
-      console.log(filesContent[0].content);
-      setJsonStr(filesContent[0].content)
+      const parsed: Model = JSON.parse(filesContent[0].content);
+      setJson(parsed);
       setEnableRedirect(true);
     }
-  }, [filesContent, setJsonStr]);
+  }, [filesContent, setJson]);
 
 
 
