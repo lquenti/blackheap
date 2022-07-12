@@ -1,5 +1,5 @@
 import {useContext} from 'react';
-import {Link} from 'react-router-dom'
+import Plot from 'react-plotly.js';
 
 import Blackheap from '../components/Blackheap';
 import ModelContext from '../contexts/ModelContext';
@@ -12,7 +12,25 @@ const Dashboard = () => {
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-col items-center justify-center bg-base-100">
         {/* Page content here */}
-        {jsonStr}
+        <div>
+          {jsonStr}
+        </div>
+        <div>
+          <Plot
+            data={[
+              {
+                x: [1, 2, 3],
+                y: [2, 6, 3],
+                type: 'scatter',
+                mode: 'lines+markers',
+                marker: {color: 'red'},
+              },
+              {type: 'bar', x: [1, 2, 3], y: [2, 5, 3]},
+            ]}
+            layout={{title: 'A Fancy Plot'}}
+          />
+        </div>
+
         <label htmlFor="my-drawer-2" className="btn btn-primary drawer-button lg:hidden">Open drawer</label>
 
       </div>
