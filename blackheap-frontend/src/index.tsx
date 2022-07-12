@@ -1,15 +1,25 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import {
+  HashRouter as Router,
+  Routes,
+  Route
+} from "react-router-dom";
 
-import './index.css';
-
-import Start from './Start';
+import FileUploader from './routes/FileUploader';
+import Dashboard from './routes/Dashboard';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <Start />
+    Hehe
+    <Router>
+      <Routes>
+        <Route path="/" element={<FileUploader />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Routes>
+    </Router>
   </React.StrictMode>
 );
