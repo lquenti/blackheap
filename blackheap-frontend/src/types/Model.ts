@@ -1,4 +1,4 @@
-enum BenchmarkType {
+const enum BenchmarkType {
   RandomUncached = "RandomUncached",
   SameOffset = "SameOffset",
 };
@@ -43,10 +43,11 @@ type Analysis = {
   benchmark_type: BenchmarkType,
   is_read_op: boolean,
   kdes: Array<BenchmarkKde>,
-  model: {model: ConstantLinear | Linear},
+  model: {ConstantLinear: ConstantLinear} | {Linear: Linear},
 };
 
-export type {BenchmarkType, Cluster, BenchmarkKde, Interval, Constant, Linear, ConstantLinear, Analysis};
+export {BenchmarkType};
+export type {Cluster, BenchmarkKde, Interval, Constant, Linear, ConstantLinear, Analysis};
 
 type Model = Array<Analysis>;
 export default Model;

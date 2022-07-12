@@ -2,6 +2,7 @@ import {useContext} from 'react';
 import Plot from 'react-plotly.js';
 
 import Model from '../types/Model';
+import {benchmark_type_str, equation_str, is_read_op_str} from '../utils/ModelUtils';
 import {Analysis} from '../types/Model';
 import Blackheap from '../components/Blackheap';
 import ModelContext from '../contexts/ModelContext';
@@ -14,14 +15,15 @@ const Dashboard = () => {
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-col items-center justify-center bg-base-100">
         {/* Page content here */}
-        {model.map((analysis: Analysis) => <div>
-          <ul>
-            <li>{analysis.benchmark_type}</li>
-            <li>{analysis.is_read_op}</li>
-            <li>{analysis.kdes[0].access_size}</li>
-          </ul>
-          <hr />
-        </div>)}
+        {model.map((analysis: Analysis, i: number) =>
+          <div key={i}>
+            <h1>{benchmark_type_str(analysis.benchmark_type)}: {is_read_op_str(analysis.is_read_op)}</h1>
+            {/* Function values */}
+            <h2>{equation_str(analysis.model)}</h2>
+            {/* Function overview log view */}
+            {/* Table */}
+            {/* All KDEs */}
+          </div>)}
         <div>
           <Plot
             data={[
@@ -44,7 +46,7 @@ const Dashboard = () => {
       <div className="drawer-side">
         <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
         <ul className="menu p-4 overflow-y-auto w-80 bg-base-300 text-base-content">
-          <h1 className="text-2xl text-center"><Blackheap /></h1>
+          <h2 className="text-2xl text-center"><Blackheap /></h2>
           {/* Sidebar content here */}
           <li><a>Sidebar Item 1</a></li>
           <li><a>Sidebar Item 2</a></li>
