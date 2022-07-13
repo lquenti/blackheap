@@ -1,4 +1,4 @@
-import {Interval, Constant, Linear, ConstantLinear, BenchmarkType, Analysis} from '../types/Model';
+import {Interval, Constant, Linear, ConstantLinear, BenchmarkType} from '../types/Model';
 
 const benchmark_type_str = (b: BenchmarkType): string => {
   switch (b) {

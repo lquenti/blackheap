@@ -13,10 +13,8 @@ import FileUploader from './routes/FileUploader';
 import Dashboard from './routes/Dashboard';
 import NotFound from './routes/NotFound';
 
-import RandomUncachedRead from './routes/RandomUncachedRead';
-import RandomUncachedWrite from './routes/RandomUncachedWrite';
-import SameOffsetRead from './routes/SameOffsetRead';
-import SameOffsetWrite from './routes/SameOffsetWrite';
+import PlotView from './routes/Plotview'; import {BenchmarkType} from './types/Model';
+
 import Evaluation from './routes/Evaluation';
 
 const root = ReactDOM.createRoot(
@@ -29,16 +27,16 @@ root.render(
         <Routes>
           <Route index element={<FileUploader />} />
           <Route path="dashboard" element={<Dashboard />}>
-            <Route path="randomread" element={<RandomUncachedRead />} />
-            <Route path="randomwrite" element={<RandomUncachedWrite />} />
-            <Route path="offsetread" element={<SameOffsetRead />} />
-            <Route path="offsetwrite" element={<SameOffsetWrite />} />
+            <Route path="randomread" element={<PlotView benchmark_type={BenchmarkType.RandomUncached} is_read_op={true} />} />
+            <Route path="randomwrite" element={<PlotView benchmark_type={BenchmarkType.RandomUncached} is_read_op={false} />} />
+              <Route path="offsetread" element={<PlotView benchmark_type={BenchmarkType.SameOffset} is_read_op={true}  />} />
+              <Route path="offsetwrite" element={<PlotView benchmark_type={BenchmarkType.SameOffset} is_read_op={false} />} />
             <Route path="evaluation" element={<Evaluation />} />
             <Route path="*" element={<NotFound />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </Router>
-    </React.StrictMode>
-  </ModelProvider>
+          </Router>
+        </React.StrictMode>
+        </ModelProvider>
 );
