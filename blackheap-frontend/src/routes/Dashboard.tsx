@@ -4,6 +4,7 @@ import {FiLogOut} from 'react-icons/fi';
 import Model from '../types/Model';
 import Blackheap from '../components/Blackheap';
 import ModelContext from '../contexts/ModelContext';
+import {Link, Outlet} from 'react-router-dom';
 
 const Dashboard = () => {
   // TODO NULL OPERATOR
@@ -12,9 +13,8 @@ const Dashboard = () => {
     <div className="drawer drawer-mobile text-base-content">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flexitems-center justify-center bg-base-100">
-        {/* Page content here */}
+        <Outlet />
         <label htmlFor="my-drawer-2" className="btn btn-primary drawer-button lg:hidden">Open drawer</label>
-
       </div>
       <div className="drawer-side">
         <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
@@ -25,16 +25,16 @@ const Dashboard = () => {
             <hr className="my-2" />
           </div>
           <li><a className="active">Overview</a></li>
-          <li><a>Random Uncached: Read</a></li>
-          <li><a>Random Uncached: Write</a></li>
-          <li><a>Same Offset: Read</a></li>
-          <li><a>Same Offset: Write</a></li>
+          <li><Link to="randomread">Random Uncached: Read</Link></li>
+          <li><Link to="randomwrite">Random Uncached: Write</Link></li>
+          <li><Link to="offsetread">Same Offset: Read</Link></li>
+          <li><Link to="offsetwrite">Same Offset: Write</Link></li>
           <div className="py-3">
             <h3 className="text-lg font-semibold ml-3">Evaluation</h3>
             <hr className="my-2" />
           </div>
-          <li><a>New Measurements</a></li>
-          <li style={{marginTop: "auto"}}><a><FiLogOut /> Logout</a></li> {/* TODO: Only refresh to root */}
+          <li><Link to="evaluation">New Measurements</Link></li>
+          <li style={{marginTop: "auto"}}><Link to="/"><FiLogOut /> Logout</Link></li> {/* TODO: Only refresh to root */}
         </ul>
       </div>
     </div>
