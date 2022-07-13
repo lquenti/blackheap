@@ -44,10 +44,4 @@ const evaluate = (f: {ConstantLinear: ConstantLinear} | {Linear: Linear}, x: num
   throw new Error(`${f} couldn't get parsed`);
 }
 
-// ---
-const get_all_maxima = (a: Analysis): Array<[number, number]> => {console.log(a); const res = a.kdes.map(k => k.global_maximum); console.log(res); console.log("---"); return res};
-
-const get_all_maxima_x = (a: Analysis): Array<number> => get_all_maxima(a).map(([x, _]) => x);
-const get_all_maxima_y = (a: Analysis): Array<number> => get_all_maxima(a).map(([_, y]) => y);
-
-export {benchmark_type_str, is_read_op_str, equation_str, evaluate, get_all_maxima_x, get_all_maxima_y};
+export {benchmark_type_str, is_read_op_str, equation_str, evaluate};
