@@ -1,3 +1,6 @@
+import {useContext} from "react";
+import Model from "../types/Model";
+import ModelContext from "../contexts/ModelContext";
 import {BenchmarkType} from "../types/Model";
 import {benchmark_type_str, is_read_op_str} from "../utils/ModelUtils";
 
@@ -7,9 +10,11 @@ type PlotViewProps = {
 }
 
 const PlotView = ({benchmark_type, is_read_op}: PlotViewProps) => {
+  const model: Model = useContext(ModelContext)!.json;
+  const ourModel = model.find(el => el.benchmark_type === benchmark_type && el.is_read_op === is_read_op);
   return (
-    <div>
-      Plotview: {benchmark_type_str(benchmark_type)}: {is_read_op_str(is_read_op)}
+    <div> lol
+
     </div>
   );
 }
