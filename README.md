@@ -1,4 +1,5 @@
-# blackheap
+![Blackheap Logo](./icon.png)
+
 WIP
 
 ## What?
