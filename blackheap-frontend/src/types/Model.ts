@@ -13,7 +13,7 @@ type BenchmarkKde = {
   access_size: number,
   xs: Array<number>,
   ys: Array<number>,
-  significant_cluster: Array<Cluster>,
+  significant_clusters: Array<Cluster>,
   global_maximum: [number, number],
 };
 

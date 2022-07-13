@@ -17,13 +17,13 @@ const PlotView = ({benchmark_type, is_read_op}: PlotViewProps) => {
   const ourModel = model.find(el => el.benchmark_type === benchmark_type && el.is_read_op === is_read_op)!;
 
   return (
-    <div className="mx-auto max-w-lg">
+    <div className="mx-auto max-w-2xl">
       <h1 className="text-center text-4lg">{benchmark_type_str(benchmark_type)}: {is_read_op_str(is_read_op)} Operations</h1>
       {/* Formula */}
       <div>
         <Formula tex={equation_str(ourModel.model)} />
       </div>
-      {/* Functinon plot */}
+      {/* Function plot */}
       <div>
       </div>
       {/* Plotting of each KDE*/}
