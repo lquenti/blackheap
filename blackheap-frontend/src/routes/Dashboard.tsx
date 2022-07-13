@@ -4,7 +4,7 @@ import {FiLogOut} from 'react-icons/fi';
 import Model from '../types/Model';
 import Blackheap from '../components/Blackheap';
 import ModelContext from '../contexts/ModelContext';
-import {Link, Outlet} from 'react-router-dom';
+import {Link, NavLink, Outlet} from 'react-router-dom';
 
 const Dashboard = () => {
   // TODO NULL OPERATOR
@@ -24,17 +24,17 @@ const Dashboard = () => {
             <h3 className="text-lg font-semibold ml-3">Data Views</h3>
             <hr className="my-2" />
           </div>
-          <li><a className="active">Overview</a></li>
-          <li><Link to="randomread">Random Uncached: Read</Link></li>
-          <li><Link to="randomwrite">Random Uncached: Write</Link></li>
-          <li><Link to="offsetread">Same Offset: Read</Link></li>
-          <li><Link to="offsetwrite">Same Offset: Write</Link></li>
+          <li><NavLink to="/dashboard" end>Overview</NavLink></li>
+          <li><NavLink to="randomread">Random Uncached: Read</NavLink></li>
+          <li><NavLink to="randomwrite">Random Uncached: Write</NavLink></li>
+          <li><NavLink to="offsetread">Same Offset: Read</NavLink></li>
+          <li><NavLink to="offsetwrite">Same Offset: Write</NavLink></li>
           <div className="py-3">
             <h3 className="text-lg font-semibold ml-3">Evaluation</h3>
             <hr className="my-2" />
           </div>
-          <li><Link to="evaluation">New Measurements</Link></li>
-          <li style={{marginTop: "auto"}}><Link to="/"><FiLogOut /> Logout</Link></li> {/* TODO: Only refresh to root */}
+          <li><NavLink to="evaluation">New Measurements</NavLink></li>
+          <li style={{marginTop: "auto"}}><Link to="/"><FiLogOut /> Logout</Link></li>
         </ul>
       </div>
     </div>
