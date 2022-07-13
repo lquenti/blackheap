@@ -8,10 +8,7 @@ type KdePlotProps = {
 // TODO: DONT HARDCODE COLOURS
 const KdePlot = ({k}: KdePlotProps) => {
   console.log(k);
-  const get_random_colour = () => {
-    const space = "0123456789ABCDEF";
-    return `#${[1, 2, 3, 4, 5, 6].map(_ => space[Math.floor(Math.random() * 16)]).join('')}`
-  }
+  const colours = ['#E779C1', '#fff'];
   const graph = {
     x: k.xs,
     y: k.ys,
@@ -34,7 +31,7 @@ const KdePlot = ({k}: KdePlotProps) => {
   };
   // the clusters themselves
   // https://plotly.com/javascript/shapes/
-  const clusters = k.significant_clusters.map(sc => {
+  const clusters = k.significant_clusters.map((sc, i) => {
     return {
       type: "rect" as const,
       xref: 'x' as const,
@@ -43,7 +40,7 @@ const KdePlot = ({k}: KdePlotProps) => {
       y0: 0,
       x1: sc["xs"].slice(-1)[0],
       y1: 1,
-      fillcolor: get_random_colour(),
+      fillcolor: colours[i % colours.length],
       opacity: 0.4,
       line: {
         width: 1,
