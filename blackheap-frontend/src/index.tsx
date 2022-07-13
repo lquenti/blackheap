@@ -11,6 +11,7 @@ import './tailwind.css';
 import {ModelProvider} from './contexts/ModelContext';
 import FileUploader from './routes/FileUploader';
 import Dashboard from './routes/Dashboard';
+import NotFound from './routes/NotFound';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -20,8 +21,9 @@ root.render(
     <React.StrictMode>
       <Router>
         <Routes>
-          <Route path="/" element={<FileUploader />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route index element={<FileUploader />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </React.StrictMode>

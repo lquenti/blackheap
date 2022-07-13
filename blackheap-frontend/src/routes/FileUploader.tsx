@@ -31,7 +31,7 @@ const FileUploader = () => {
     <div className="hero min-h-screen bg-base-100">
       <div className="hero-content text-center text-base-content">
         <div className="max-w-md">
-          <h1 className="text-5xl font-bold">Welcome to <Blackheap />!</h1>
+          <h1 className="text-5xl font-bold">Welcome to <Blackheap /></h1>
           <p className="py-6">
             Please upload your performance model:
           </p>
