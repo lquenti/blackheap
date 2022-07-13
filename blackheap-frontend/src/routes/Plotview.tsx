@@ -5,6 +5,7 @@ import {BenchmarkType} from "../types/Model";
 import {benchmark_type_str, equation_str, is_read_op_str} from "../utils/ModelUtils";
 import Formula from "../components/Formula";
 import KdePlot from "../components/KdePlot";
+import SingleFunctionPlot from "../components/SingleFunctionPlot";
 
 type PlotViewProps = {
   benchmark_type: BenchmarkType,
@@ -18,13 +19,14 @@ const PlotView = ({benchmark_type, is_read_op}: PlotViewProps) => {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-center text-4lg">{benchmark_type_str(benchmark_type)}: {is_read_op_str(is_read_op)} Operations</h1>
+      <h1 className="text-center text-4xl mt-3 mb-9">{benchmark_type_str(benchmark_type)}: {is_read_op_str(is_read_op)} Operations</h1>
       {/* Formula */}
       <div>
         <Formula tex={equation_str(ourModel.model)} />
       </div>
       {/* Function plot */}
       <div>
+        <SingleFunctionPlot a={ourModel} />
       </div>
       {/* Plotting of each KDE*/}
       {ourModel.kdes.map((k, i) => (

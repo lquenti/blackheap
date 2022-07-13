@@ -57,15 +57,25 @@ const KdePlot = ({k}: KdePlotProps) => {
         paper_bgcolor: '#2d1b69',
         plot_bgcolor: '#251655',
         margin: {
-          t: 30,
-          l: 30,
-          r: 30,
-          b: 30
+          t: 50,
+          l: 80,
+          r: 50,
+          b: 50
         },
         font: {
           color: "#f9f7fd"
         },
-        shapes: clusters
+        shapes: clusters,
+        xaxis: {
+          title: {
+            text: "time in seconds" as const,
+          }
+        },
+        yaxis: {
+          title: {
+            text: "estimated probability" as const,
+          }
+        }
       }}
     />
   );

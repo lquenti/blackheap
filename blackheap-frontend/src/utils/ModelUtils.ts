@@ -9,7 +9,7 @@ const benchmark_type_str = (b: BenchmarkType): string => {
   }
 }
 
-const is_read_op_str = (is_read: boolean): string => (is_read) ? "read" : "write";
+const is_read_op_str = (is_read: boolean): string => (is_read) ? "Read" : "Write";
 
 const interval_equation = (xs: Interval): string => {
   const lower = xs.lower === null ? "(-\\inf" : `[${xs.lower}`;
