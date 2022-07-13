@@ -11,15 +11,27 @@ const benchmark_type_str = (b: BenchmarkType): string => {
 
 const is_read_op_str = (is_read: boolean): string => (is_read) ? "read" : "write";
 
-// TODO: LaTeX
 const interval_equation = (xs: Interval): string => {
-  const lower = xs.lower === null ? "(-inf" : `[${xs.lower}`;
-  const upper = xs.upper === null ? "inf)" : `${xs.upper})`;
+  const lower = xs.lower === null ? "(-\\inf" : `[${xs.lower}`;
+  const upper = xs.upper === null ? "\\inf)" : `${xs.upper}]`;
   return `${lower}, ${upper}`
 }
-const constant_equation = (f: Constant): string => `x |-> ${f.const_value}, ${interval_equation(f.valid_interval)}`
-const linear_equation = (f: Linear): string => `x |-> ${f.slope}*x + ${f.y_intercept}, ${interval_equation(f.valid_interval)}`
-const constant_linear_equation = (f: ConstantLinear): string => `${constant_equation(f.constant)}----${linear_equation(f.linear)}`
+const linear_equation = (linear: Linear): string => `f(x) = ${linear.slope} x + ${linear.y_intercept}`;
+const constant_linear_equation = ({constant, linear}: ConstantLinear): string => {
+  const constant_function = `${constant.const_value}`;
+  const constant_interval = interval_equation(constant.valid_interval);
+
+  const linear_function = `${linear.slope} x + ${linear.y_intercept}`;
+  const linear_interval = interval_equation(linear.valid_interval);
+
+  return `
+  f(x) =
+  \\begin{cases}
+  ${constant_function} & x \\in ${constant_interval}\\\\
+  ${linear_function} & x \\in ${linear_interval}
+  \\end{cases}
+  `
+}
 const equation_str = (f: {ConstantLinear: ConstantLinear} | {Linear: Linear}): string => {
   if ("ConstantLinear" in f) return constant_linear_equation(f.ConstantLinear);
   if ("Linear" in f) return linear_equation(f.Linear);

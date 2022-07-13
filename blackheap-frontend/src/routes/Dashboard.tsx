@@ -14,11 +14,9 @@ const Dashboard = () => {
     <div className="drawer drawer-mobile text-base-content">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content bg-base-100">
-        <div className="">
-          <label htmlFor="my-drawer-2" className="btn btn-primary drawer-button lg:hidden m-3 px-3">
-            <GoThreeBars className="text-xl" />
-          </label>
-        </div>
+        <label htmlFor="my-drawer-2" className="btn btn-primary drawer-button lg:hidden m-3 px-3">
+          <GoThreeBars className="text-xl" />
+        </label>
         <Outlet />
       </div>
       <div className="drawer-side">
