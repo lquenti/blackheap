@@ -3,33 +3,22 @@ use clap::Parser;
 mod analyzer;
 mod benchmark_wrapper;
 mod cli;
-mod frontend;
-mod subprograms;
+mod create_model;
 
-use cli::{Cli, Commands};
-use subprograms::create_model;
-use subprograms::use_model;
+use cli::Cli;
 
 fn main() {
     let cli = Cli::parse();
 
-    match cli.command {
-        Commands::CreateModel {
-            to,
-            file,
-            benchmarker,
-            root,
-            analyze_only,
-            model,
-        } => {
-            match create_model::create_model(&to, &file, &benchmarker, root, analyze_only, model) {
-                Ok(_) => {}
-                Err(e) => eprintln!("{:?}", e),
-            }
-        }
-        Commands::UseModel { model, file, to } => match use_model::use_model(&model, &file, &to) {
-            Ok(_) => {}
-            Err(e) => eprintln!("{:?}", e),
-        },
+    match create_model::create_model(
+        &cli.to,
+        &cli.file,
+        &cli.benchmarker,
+        cli.root,
+        cli.analyze_only,
+        cli.model,
+    ) {
+        Ok(_) => {}
+        Err(e) => eprintln!("{:?}", e),
     }
 }

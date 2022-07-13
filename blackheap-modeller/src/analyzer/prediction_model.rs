@@ -13,12 +13,6 @@ pub enum Models {
 }
 
 impl Models {
-    pub fn evaluate(&self, bytes: u64) -> Option<f64> {
-        match &self {
-            Self::Linear(x) => x.evaluate(bytes),
-            Self::ConstantLinear(x) => x.evaluate(bytes),
-        }
-    }
     pub fn new_linear(jsons: &[BenchmarkJSON], kdes: &[BenchmarkKde], xss: Interval) -> Self {
         Models::Linear(Linear::from_jsons_kdes_interval(jsons, kdes, xss))
     }
@@ -145,12 +139,6 @@ impl Constant {
             valid_interval: xss,
         }
     }
-    pub fn evaluate(&self, bytes: u64) -> Option<f64> {
-        if self.valid_interval.contains(bytes) {
-            return Some(self.const_value);
-        }
-        None
-    }
 }
 
 impl Linear {
@@ -181,13 +169,6 @@ impl Linear {
             valid_interval,
         }
     }
-
-    pub fn evaluate(&self, bytes: u64) -> Option<f64> {
-        if self.valid_interval.contains(bytes) {
-            return Some(self.slope * (bytes as f64) + self.y_intercept);
-        }
-        None
-    }
 }
 
 impl ConstantLinear {
@@ -214,11 +195,5 @@ impl ConstantLinear {
         let linear = Linear::from_jsons_kdes_interval(jsons, kdes, upper_interval);
 
         Self { constant, linear }
-    }
-
-    pub fn evaluate(&self, bytes: u64) -> Option<f64> {
-        self.constant
-            .evaluate(bytes)
-            .or_else(|| self.linear.evaluate(bytes))
     }
 }

@@ -3,7 +3,7 @@ pub mod kde;
 pub mod prediction_model;
 
 use std::fs::File;
-use std::io::{BufReader, Write};
+use std::io::Write;
 
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
@@ -11,8 +11,6 @@ use crate::analyzer::prediction_model::Interval;
 use crate::analyzer::prediction_model::Models;
 use crate::benchmark_wrapper::BenchmarkType;
 use crate::benchmark_wrapper::PerformanceBenchmark;
-use crate::frontend;
-use crate::use_model::CsvLine;
 
 use anyhow::Result;
 
@@ -64,56 +62,16 @@ impl Analysis {
         }
     }
 
-    pub fn load_from_file(file_path: &str) -> Result<Vec<Self>> {
-        let file = File::open(file_path)?;
-
-        let reader = BufReader::new(file);
-        let res = serde_json::from_reader(reader)?;
-        Ok(res)
-    }
-
     pub fn all_to_json(xs: &[Self]) -> String {
         json![xs].to_string()
     }
 
     pub fn all_to_file(xs: &[Self], to_folder: &str) -> Result<()> {
         let path = format!("{}/finished", to_folder);
-        frontend::create_frontend(xs, to_folder)?;
         // write file
         let mut output = File::create(format!("{}/Model.json", path))?;
         write!(output, "{}", Self::all_to_json(xs))?;
 
         Ok(())
-    }
-
-    pub fn find_lowest_upper_bound<'a>(xs: &'a [Self], line: &'a CsvLine) -> Option<&'a Self> {
-        let mut res = None;
-        for a in xs.iter() {
-            if a.is_read_op != (line.io_type == 'r') {
-                continue;
-            }
-            let approximated_time = a.model.evaluate(line.bytes);
-
-            // if the model isn't defined on that interval, skip
-            if approximated_time.is_none() {
-                continue;
-            }
-
-            if approximated_time.unwrap() < line.sec {
-                continue;
-            }
-            // do we have a upper bound already?
-            res = match res {
-                // if not, this is the best until now
-                None => Some(a),
-                // if so, lets choose the tighter bound
-                Some(a2) => Some(if a2.model.evaluate(line.bytes) < approximated_time {
-                    a2
-                } else {
-                    a
-                }),
-            };
-        }
-        res
     }
 }
