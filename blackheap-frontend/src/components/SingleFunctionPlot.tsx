@@ -1,17 +1,7 @@
 import _ from "lodash";
 import Plot from "react-plotly.js";
-import { Analysis, BenchmarkKde } from "../types/Model";
-import { evaluate } from "../utils/ModelUtils";
-
-// TODO move somewhere else
-const get_max_for_access_sizes = (kdes: Array<BenchmarkKde>): { xs: Array<number>, ys: Array<number> } => {
-  let xs = [], ys = [];
-  for (const k of kdes) {
-    xs.push(k["access_size"]);
-    ys.push(k["global_maximum"][0]);
-  }
-  return { xs, ys };
-}
+import { Analysis } from "../types/Model";
+import { evaluate, get_max_for_access_sizes } from "../utils/ModelUtils";
 
 const SingleFunctionPlot = ({ a }: { a: Analysis }) => {
   const { xs, ys } = get_max_for_access_sizes(a.kdes);

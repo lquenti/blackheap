@@ -1,15 +1,10 @@
-import { useContext } from 'react';
 import { FiLogOut } from 'react-icons/fi';
 import { GoThreeBars } from 'react-icons/go';
 
-import Model from '../types/Model';
 import Blackheap from '../components/Blackheap';
-import ModelContext from '../contexts/ModelContext';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 
 const Dashboard = () => {
-  // TODO NULL OPERATOR
-  const model: Model = useContext(ModelContext)!.json;
   return (
     <div className="drawer drawer-mobile text-base-content">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
@@ -27,7 +22,7 @@ const Dashboard = () => {
             <h3 className="text-lg font-semibold ml-3">Data Views</h3>
             <hr className="my-2" />
           </div>
-          <li><NavLink to="/dashboard" end>Overview</NavLink></li>
+          <li><NavLink to="overview" end>Overview</NavLink></li>
           <li><NavLink to="randomread">Random Uncached: Read</NavLink></li>
           <li><NavLink to="randomwrite">Random Uncached: Write</NavLink></li>
           <li><NavLink to="offsetread">Same Offset: Read</NavLink></li>

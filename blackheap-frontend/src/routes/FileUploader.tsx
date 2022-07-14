@@ -41,7 +41,7 @@ const FileUploader = () => {
           </button>
         </div>
       </div>
-      {enableRedirect && <Navigate to="/dashboard" />}
+      {enableRedirect && <Navigate to="/dashboard/overview" />}
     </div>
   )
 }

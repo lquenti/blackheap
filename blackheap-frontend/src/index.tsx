@@ -14,7 +14,7 @@ import Dashboard from './routes/Dashboard';
 import NotFound from './routes/NotFound';
 
 import PlotView from './routes/Plotview'; import { BenchmarkType } from './types/Model';
-
+import Overview from './routes/Overview';
 import Evaluation from './routes/Evaluation';
 
 const root = ReactDOM.createRoot(
@@ -27,6 +27,7 @@ root.render(
         <Routes>
           <Route index element={<FileUploader />} />
           <Route path="dashboard" element={<Dashboard />}>
+            <Route path="overview" element={<Overview />} />
             <Route path="randomread" element={<PlotView benchmark_type={BenchmarkType.RandomUncached} is_read_op={true} />} />
             <Route path="randomwrite" element={<PlotView benchmark_type={BenchmarkType.RandomUncached} is_read_op={false} />} />
             <Route path="offsetread" element={<PlotView benchmark_type={BenchmarkType.SameOffset} is_read_op={true} />} />

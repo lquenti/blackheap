@@ -1,4 +1,4 @@
-import { Interval, Constant, Linear, ConstantLinear, BenchmarkType } from '../types/Model';
+import { Interval, Linear, ConstantLinear, BenchmarkType, BenchmarkKde } from '../types/Model';
 
 const benchmark_type_str = (b: BenchmarkType): string => {
   switch (b) {
@@ -56,4 +56,13 @@ const evaluate = (f: { ConstantLinear: ConstantLinear } | { Linear: Linear }, x:
   throw new Error(`${f} couldn't get parsed`);
 }
 
-export { benchmark_type_str, is_read_op_str, equation_str, evaluate };
+const get_max_for_access_sizes = (kdes: Array<BenchmarkKde>): { xs: Array<number>, ys: Array<number> } => {
+  let xs = [], ys = [];
+  for (const k of kdes) {
+    xs.push(k["access_size"]);
+    ys.push(k["global_maximum"][0]);
+  }
+  return { xs, ys };
+}
+
+export { benchmark_type_str, is_read_op_str, equation_str, evaluate, get_max_for_access_sizes };
