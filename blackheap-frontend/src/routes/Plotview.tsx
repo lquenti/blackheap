@@ -28,6 +28,25 @@ const PlotView = ({ benchmark_type, is_read_op }: PlotViewProps) => {
       <div>
         <SingleFunctionPlot a={ourModel} />
       </div>
+      {/* Raw data TODO MAKE OWN COMPONENT */}
+      <div className="overflow-x-auto my-9">
+        <table className="table table-compact table-zebra w-full">
+          <thead>
+            <tr>
+              <th>Access Size</th>
+              <th>Approximated access time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ourModel.kdes.map((k,i) => (
+              <tr key={`kde-table-${i}`}>
+                <th>{k.access_size}</th>
+                <th>{k.global_maximum[0]}</th>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       {/* Plotting of each KDE*/}
       {ourModel.kdes.map((k, i) => (
         <KdePlot key={`kde-${i}`} k={k} />
