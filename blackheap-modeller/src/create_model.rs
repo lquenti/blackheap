@@ -3,6 +3,7 @@ use std::path::PathBuf;
 
 use crate::analyzer::Analysis;
 use crate::benchmark_wrapper::PerformanceBenchmark;
+use crate::cli::ModelEnum;
 
 use anyhow::{bail, Result};
 
@@ -12,9 +13,11 @@ pub fn create_model(
     benchmarker_path: &str,
     root: bool,
     analyze_only: bool,
+    model: ModelEnum,
 ) -> Result<()> {
     // create folders
     fs::create_dir_all(model_path)?;
+    let use_linear = ModelEnum::Linear == model;
 
     let mut parent = PathBuf::from(benchmark_file_path);
     parent.pop();
@@ -35,7 +38,7 @@ pub fn create_model(
         }
 
         // Run analysis
-        let res = Analysis::new_from_finished_benchmark(benchmark);
+        let res = Analysis::new_from_finished_benchmark(benchmark, use_linear);
         analyzed.push(res);
     }
 

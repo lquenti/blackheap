@@ -18,8 +18,6 @@
 
 #include"helper.h"
 
-const unsigned long MAX_IO_SIZE = 0x7ffff000;
-
 void *malloc_or_die(size_t size)
 {
   void *res;
@@ -52,7 +50,7 @@ ssize_t read_or_die(int fd, void *buf, size_t count)
 {
   if (count > MAX_IO_SIZE)
   {
-    fprintf(stderr, "ERROR: Linux just supports reading up to 0x%lx bytes per read\n", MAX_IO_SIZE);
+    fprintf(stderr, "ERROR: Linux just supports reading up to 0x%x bytes per read\n", MAX_IO_SIZE);
     exit(1);
   }
   ssize_t res = read(fd, buf, count);
@@ -73,7 +71,7 @@ ssize_t write_or_die(int fd, void *buf, size_t count)
 {
   if (count > MAX_IO_SIZE)
   {
-    fprintf(stderr, "ERROR: Linux just supports writing up to 0x%lx bytes per read\n", MAX_IO_SIZE);
+    fprintf(stderr, "ERROR: Linux just supports writing up to 0x%x bytes per read\n", MAX_IO_SIZE);
     exit(1);
   }
   ssize_t res = write(fd, buf, count);

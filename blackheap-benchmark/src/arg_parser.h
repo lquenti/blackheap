@@ -4,12 +4,6 @@
 #include "io_benchmark.h"
 #include "helper.h"
 
-const char *DEFAULT_FILENAME;
-const char *DEFAULT_FILEPATH;
-const char *argp_program_bug_address;
-const char *argp_program_version;
-
-
 typedef struct benchmark_config_parser_t
 {
   char *filepath;
