@@ -23,6 +23,38 @@ impl Models {
     ) -> Self {
         Models::ConstantLinear(ConstantLinear::from_jsons_kdes_interval(jsons, kdes, xss))
     }
+    pub fn to_csv(&self) -> String {
+        let headline = String::from("slope,y_intercept,begin,end");
+        // TODO refactor
+        match self {
+            Models::Linear(linear)  => {
+                let linear = format!(
+                    "{},{},{},{}",
+                    linear.slope,
+                    linear.y_intercept,
+                    linear.valid_interval.lower.map_or(String::new(), |x| x.to_string()),
+                    linear.valid_interval.upper.map_or(String::new(), |x| x.to_string())
+                );
+                format!("{}\n{}", headline, linear)
+            },
+            Models::ConstantLinear(constant_linear) => {
+                let constant = format!(
+                    ",{},{},{}",
+                    constant_linear.constant.const_value,
+                    constant_linear.constant.valid_interval.lower.map_or(String::new(), |x| x.to_string()),
+                    constant_linear.constant.valid_interval.upper.map_or(String::new(), |x| x.to_string())
+                );
+                let linear = format!(
+                    "{},{},{},{}",
+                    constant_linear.linear.slope,
+                    constant_linear.linear.y_intercept,
+                    constant_linear.linear.valid_interval.lower.map_or(String::new(), |x| x.to_string()),
+                    constant_linear.linear.valid_interval.upper.map_or(String::new(), |x| x.to_string())
+                );
+                format!("{}\n{}\n{}", headline, constant, linear)
+            },
+        }
+    }
 }
 
 // TODO: helper
