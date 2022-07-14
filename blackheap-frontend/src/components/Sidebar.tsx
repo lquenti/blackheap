@@ -1,8 +1,8 @@
-import {useContext} from "react";
+import { useContext } from "react";
 import ModelContext from "../contexts/ModelContext";
 import Model from "../types/Model";
 
-import {benchmark_type_str, is_read_op_str} from '../utils/ModelUtils';
+import { benchmark_type_str, is_read_op_str } from '../utils/ModelUtils';
 
 
 const Sidebar = () => {

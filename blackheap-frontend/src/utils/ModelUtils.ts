@@ -1,4 +1,4 @@
-import {Interval, Constant, Linear, ConstantLinear, BenchmarkType} from '../types/Model';
+import { Interval, Constant, Linear, ConstantLinear, BenchmarkType } from '../types/Model';
 
 const benchmark_type_str = (b: BenchmarkType): string => {
   switch (b) {
@@ -17,7 +17,7 @@ const interval_equation = (xs: Interval): string => {
   return `${lower}, ${upper}`
 }
 const linear_equation = (linear: Linear): string => `f(x) = ${linear.slope} x + ${linear.y_intercept}`;
-const constant_linear_equation = ({constant, linear}: ConstantLinear): string => {
+const constant_linear_equation = ({ constant, linear }: ConstantLinear): string => {
   const constant_function = `${constant.const_value}`;
   const constant_interval = interval_equation(constant.valid_interval);
 
@@ -32,7 +32,7 @@ const constant_linear_equation = ({constant, linear}: ConstantLinear): string =>
   \\end{cases}
   `
 }
-const equation_str = (f: {ConstantLinear: ConstantLinear} | {Linear: Linear}): string => {
+const equation_str = (f: { ConstantLinear: ConstantLinear } | { Linear: Linear }): string => {
   if ("ConstantLinear" in f) return constant_linear_equation(f.ConstantLinear);
   if ("Linear" in f) return linear_equation(f.Linear);
   throw new Error(`${f} couldn't get parsed`);
@@ -50,10 +50,10 @@ const evaluate_constant_linear = (f: ConstantLinear, x: number): number => {
   throw new Error(`${x} was not in any interval defined by ${f}`);
 };
 const evaluate_linear = (f: Linear, x: number): number => f.slope * x + f.y_intercept;
-const evaluate = (f: {ConstantLinear: ConstantLinear} | {Linear: Linear}, x: number): number => {
+const evaluate = (f: { ConstantLinear: ConstantLinear } | { Linear: Linear }, x: number): number => {
   if ("ConstantLinear" in f) return evaluate_constant_linear(f.ConstantLinear, x);
   if ("Linear" in f) return evaluate_linear(f.Linear, x);
   throw new Error(`${f} couldn't get parsed`);
 }
 
-export {benchmark_type_str, is_read_op_str, equation_str, evaluate};
+export { benchmark_type_str, is_read_op_str, equation_str, evaluate };

@@ -8,12 +8,12 @@ import {
 
 import './tailwind.css';
 
-import {ModelProvider} from './contexts/ModelContext';
+import { ModelProvider } from './contexts/ModelContext';
 import FileUploader from './routes/FileUploader';
 import Dashboard from './routes/Dashboard';
 import NotFound from './routes/NotFound';
 
-import PlotView from './routes/Plotview'; import {BenchmarkType} from './types/Model';
+import PlotView from './routes/Plotview'; import { BenchmarkType } from './types/Model';
 
 import Evaluation from './routes/Evaluation';
 
@@ -29,14 +29,14 @@ root.render(
           <Route path="dashboard" element={<Dashboard />}>
             <Route path="randomread" element={<PlotView benchmark_type={BenchmarkType.RandomUncached} is_read_op={true} />} />
             <Route path="randomwrite" element={<PlotView benchmark_type={BenchmarkType.RandomUncached} is_read_op={false} />} />
-              <Route path="offsetread" element={<PlotView benchmark_type={BenchmarkType.SameOffset} is_read_op={true}  />} />
-              <Route path="offsetwrite" element={<PlotView benchmark_type={BenchmarkType.SameOffset} is_read_op={false} />} />
+            <Route path="offsetread" element={<PlotView benchmark_type={BenchmarkType.SameOffset} is_read_op={true} />} />
+            <Route path="offsetwrite" element={<PlotView benchmark_type={BenchmarkType.SameOffset} is_read_op={false} />} />
             <Route path="evaluation" element={<Evaluation />} />
             <Route path="*" element={<NotFound />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
-          </Router>
-        </React.StrictMode>
-        </ModelProvider>
+      </Router>
+    </React.StrictMode>
+  </ModelProvider>
 );

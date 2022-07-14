@@ -1,11 +1,11 @@
-import {useContext} from 'react';
-import {FiLogOut} from 'react-icons/fi';
-import {GoThreeBars} from 'react-icons/go';
+import { useContext } from 'react';
+import { FiLogOut } from 'react-icons/fi';
+import { GoThreeBars } from 'react-icons/go';
 
 import Model from '../types/Model';
 import Blackheap from '../components/Blackheap';
 import ModelContext from '../contexts/ModelContext';
-import {Link, NavLink, Outlet} from 'react-router-dom';
+import { Link, NavLink, Outlet } from 'react-router-dom';
 
 const Dashboard = () => {
   // TODO NULL OPERATOR
@@ -37,7 +37,7 @@ const Dashboard = () => {
             <hr className="my-2" />
           </div>
           <li><NavLink to="evaluation">New Measurements</NavLink></li>
-          <li style={{marginTop: "auto"}}><Link to="/"><FiLogOut /> Logout</Link></li>
+          <li style={{ marginTop: "auto" }}><Link to="/"><FiLogOut /> Logout</Link></li>
         </ul>
       </div>
     </div>

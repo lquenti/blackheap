@@ -1,21 +1,21 @@
-import {useEffect, useContext, useState} from 'react';
-import {FiUpload} from "react-icons/fi";
-import {Navigate} from 'react-router-dom';
+import { useEffect, useContext, useState } from 'react';
+import { FiUpload } from "react-icons/fi";
+import { Navigate } from 'react-router-dom';
 
 import Model from '../types/Model';
 import Blackheap from '../components/Blackheap';
-import {useFilePicker} from "use-file-picker";
+import { useFilePicker } from "use-file-picker";
 import ModelContext from '../contexts/ModelContext';
 
 const FileUploader = () => {
-  const [openFileSelector, {filesContent}] = useFilePicker({
+  const [openFileSelector, { filesContent }] = useFilePicker({
     accept: ".json",
-    limitFilesConfig: {max: 1},
+    limitFilesConfig: { max: 1 },
   });
   const [enableRedirect, setEnableRedirect] = useState(false);
 
   // TODO non null operator
-  const {setJson} = useContext(ModelContext)!;
+  const { setJson } = useContext(ModelContext)!;
 
   useEffect(() => {
     if (filesContent.length !== 0) {

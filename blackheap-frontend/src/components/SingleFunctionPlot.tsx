@@ -1,25 +1,26 @@
 import _ from "lodash";
 import Plot from "react-plotly.js";
-import {Analysis, BenchmarkKde} from "../types/Model";
-import {evaluate} from "../utils/ModelUtils";
+import { Analysis, BenchmarkKde } from "../types/Model";
+import { evaluate } from "../utils/ModelUtils";
 
 // TODO move somewhere else
-const get_max_for_access_sizes = (kdes: Array<BenchmarkKde>): {xs: Array<number>, ys: Array<number>} => {
+const get_max_for_access_sizes = (kdes: Array<BenchmarkKde>): { xs: Array<number>, ys: Array<number> } => {
   let xs = [], ys = [];
   for (const k of kdes) {
     xs.push(k["access_size"]);
     ys.push(k["global_maximum"][0]);
   }
-  return {xs, ys};
+  return { xs, ys };
 }
 
-const SingleFunctionPlot = ({a}: {a: Analysis}) => {
-  const {xs, ys} = get_max_for_access_sizes(a.kdes);
+const SingleFunctionPlot = ({ a }: { a: Analysis }) => {
+  const { xs, ys } = get_max_for_access_sizes(a.kdes);
   const scatter = {
     x: xs,
     y: ys,
     mode: 'markers',
     name: 'Maxima of all KDEs',
+    marker: { color: '#E779C1' },
   };
   const smallest_access_size = xs[0];
   const [biggest_access_size] = xs.slice(-1);
@@ -30,7 +31,8 @@ const SingleFunctionPlot = ({a}: {a: Analysis}) => {
     x: lgs,
     y: lgs.map(x => evaluate(a.model, x)),
     mode: 'lines',
-    name: 'Linearly interpolated function'
+    name: 'Linearly interpolated function',
+    marker: { color: '#f3cc30' },
   };
   const data = [scatter, line];
   return (

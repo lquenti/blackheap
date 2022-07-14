@@ -1,4 +1,4 @@
-import {BenchmarkKde} from '../types/Model';
+import { BenchmarkKde } from '../types/Model';
 import Plot from "react-plotly.js";
 
 type KdePlotProps = {
@@ -6,7 +6,7 @@ type KdePlotProps = {
 }
 
 // TODO: DONT HARDCODE COLOURS
-const KdePlot = ({k}: KdePlotProps) => {
+const KdePlot = ({ k }: KdePlotProps) => {
   console.log(k);
   const colours = ['#E779C1', '#fff'];
   const graph = {
@@ -14,7 +14,7 @@ const KdePlot = ({k}: KdePlotProps) => {
     y: k.ys,
     mode: 'lines',
     name: 'KDE',
-    marker: {color: '#f3cc30'},
+    marker: { color: '#f3cc30' },
   }
 
   // Maxima
