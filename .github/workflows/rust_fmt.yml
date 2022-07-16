@@ -1,4 +1,4 @@
-name: Cargo fmt
+name: Cargo Fmt
 on:
   push:
     branches: [ master ]
