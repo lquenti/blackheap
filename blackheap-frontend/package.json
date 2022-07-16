@@ -155,8 +155,12 @@
     "@typescript-eslint/eslint-plugin": "^5.30.6",
     "@typescript-eslint/parser": "^5.30.6",
     "autoprefixer": "^10.4.7",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "^7.30.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "html-inline-css-webpack-plugin": "^1.11.1",
-    "html-inline-script-webpack-plugin": "^3.0.0"
+    "html-inline-script-webpack-plugin": "^3.0.0",
+    "prettier": "^2.7.1"
   }
 }
