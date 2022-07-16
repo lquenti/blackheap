@@ -4,11 +4,12 @@ use std::path::{Path, PathBuf};
 
 use crate::benchmark_wrapper::PerformanceBenchmark;
 
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
-fn get_all_jsons_from_directory(folder: &Path) -> Vec<PathBuf> {
-    let folder: PathBuf = fs::canonicalize(&folder).unwrap();
-    let dir: ReadDir = fs::read_dir(&folder).unwrap();
+fn get_all_jsons_from_directory(folder: &Path) -> Result<Vec<PathBuf>> {
+    let folder: PathBuf = fs::canonicalize(&folder)?;
+    let dir: ReadDir = fs::read_dir(&folder)?;
 
     let mut valid_dir_entries: Vec<DirEntry> = Vec::new();
     for dir_entry in dir {
@@ -48,26 +49,15 @@ fn get_all_jsons_from_directory(folder: &Path) -> Vec<PathBuf> {
         }
         valid_jsons.push(path);
     }
-    valid_jsons
+    Ok(valid_jsons)
 }
 
-// TODO: scream louder when something goes wrong
-// TODO: ANYHOW HERE
-fn benchmark_json_to_struct(file_path: &Path) -> Option<BenchmarkJSON> {
-    let file: Result<File, std::io::Error> = File::open(file_path);
+fn benchmark_json_to_struct(file_path: &Path) -> Result<BenchmarkJSON> {
+    let file: File = File::open(file_path)?;
 
-    if file.is_err() {
-        return None;
-    }
-    let file: File = file.unwrap();
     let reader: BufReader<File> = BufReader::new(file);
-    match serde_json::from_reader(reader) {
-        Ok(json) => json,
-        Err(e) => {
-            println!("{}", e);
-            None
-        }
-    }
+    let j = serde_json::from_reader(reader)?;
+    Ok(j)
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -90,15 +80,17 @@ pub struct BenchmarkJSON {
 }
 
 impl BenchmarkJSON {
-    pub fn new_from_dir(folder: &Path) -> Vec<Self> {
-        let json_paths: Vec<PathBuf> = get_all_jsons_from_directory(folder);
-        let jsons: Vec<BenchmarkJSON> = json_paths
+    pub fn new_from_dir(folder: &Path) -> Result<Vec<Self>> {
+        let json_paths: Vec<PathBuf> = get_all_jsons_from_directory(folder)?;
+        let jsons: Result<Vec<BenchmarkJSON>> = json_paths
             .iter()
-            .filter_map(|path| benchmark_json_to_struct(path))
+            .map(|path| benchmark_json_to_struct(path))
+            .collect::<Vec<Result<BenchmarkJSON>>>()
+            .into_iter()
             .collect();
         jsons
     }
-    pub fn new_from_performance_benchmark(benchmark: &PerformanceBenchmark) -> Vec<Self> {
+    pub fn new_from_performance_benchmark(benchmark: &PerformanceBenchmark) -> Result<Vec<Self>> {
         Self::new_from_dir(&PathBuf::from(benchmark.get_benchmark_folder()))
     }
 }

@@ -38,7 +38,7 @@ pub fn create_model(
         }
 
         // Run analysis
-        let res: Analysis = Analysis::new_from_finished_benchmark(benchmark, use_linear);
+        let res: Analysis = Analysis::new_from_finished_benchmark(benchmark, use_linear)?;
         analyzed.push(res);
     }
 
