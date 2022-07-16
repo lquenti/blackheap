@@ -40,7 +40,7 @@ pub struct Analysis {
 
 impl Analysis {
     pub fn new_from_finished_benchmark(
-        benchmark: PerformanceBenchmark<'_>,
+                                                                                                        benchmark: PerformanceBenchmark<'_>,
         use_linear: bool,
     ) -> Result<Self> {
         let mut jsons: Vec<BenchmarkJSON> =
