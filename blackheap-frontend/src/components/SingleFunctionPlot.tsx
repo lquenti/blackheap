@@ -8,9 +8,9 @@ const SingleFunctionPlot = ({ a }: { a: Analysis }) => {
   const scatter = {
     x: xs,
     y: ys,
-    mode: 'markers',
-    name: 'Maxima of all KDEs',
-    marker: { color: '#E779C1' },
+    mode: "markers",
+    name: "Maxima of all KDEs",
+    marker: { color: "#E779C1" },
   };
   const smallest_access_size = xs[0];
   const [biggest_access_size] = xs.slice(-1);
@@ -19,10 +19,10 @@ const SingleFunctionPlot = ({ a }: { a: Analysis }) => {
   const lgs = _.range(smallest_access_size, biggest_access_size, stepsize);
   const line = {
     x: lgs,
-    y: lgs.map(x => evaluate(a.model, x)),
-    mode: 'lines',
-    name: 'Linearly interpolated function',
-    marker: { color: '#f3cc30' },
+    y: lgs.map((x) => evaluate(a.model, x)),
+    mode: "lines",
+    name: "Linearly interpolated function",
+    marker: { color: "#f3cc30" },
   };
   const data = [scatter, line];
   return (
@@ -30,37 +30,37 @@ const SingleFunctionPlot = ({ a }: { a: Analysis }) => {
       data={data}
       layout={{
         autosize: true,
-        title: 'Model Overview',
-        paper_bgcolor: '#2d1b69',
-        plot_bgcolor: '#251655',
+        title: "Model Overview",
+        paper_bgcolor: "#2d1b69",
+        plot_bgcolor: "#251655",
         margin: {
           t: 50,
           l: 80,
           r: 80,
-          b: 50
+          b: 50,
         },
         font: {
-          color: "#f9f7fd"
+          color: "#f9f7fd",
         },
         xaxis: {
-          type: 'log' as const,
+          type: "log" as const,
           autorange: true,
           title: {
             text: "Access Size in Bytes" as const,
           },
-          tickformat: 'f' as const,
+          tickformat: "f" as const,
         },
         yaxis: {
-          type: 'log' as const,
+          type: "log" as const,
           autorange: true,
           title: {
             text: "Expected Speed in Seconds" as const,
           },
-          tickformat: 'f' as const,
-        }
+          tickformat: "f" as const,
+        },
       }}
     />
   );
-}
+};
 
 export default SingleFunctionPlot;
