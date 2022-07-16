@@ -8,9 +8,9 @@ mod create_model;
 use cli::Cli;
 
 fn main() {
-    let cli = Cli::parse();
+    let cli: Cli = Cli::parse();
 
-    match create_model::create_model(
+    if let Err(e) = create_model::create_model(
         &cli.to,
         &cli.file,
         &cli.benchmarker,
@@ -18,7 +18,6 @@ fn main() {
         cli.analyze_only,
         cli.model,
     ) {
-        Ok(_) => {}
-        Err(e) => eprintln!("{:?}", e),
+        eprintln!("{:?}", e)
     }
 }

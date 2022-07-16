@@ -26,11 +26,11 @@ pub struct Cluster {
 
 impl Cluster {
     fn merge(&self, next: &Cluster) -> Cluster {
-        let mut global_xs = self.xs.clone();
-        let mut global_ys = self.ys.clone();
+        let mut global_xs: Vec<f64> = self.xs.clone();
+        let mut global_ys: Vec<f64> = self.ys.clone();
         global_xs.append(&mut next.xs.clone());
         global_ys.append(&mut next.ys.clone());
-        let global_max = if self.maximum.1 > next.maximum.1 {
+        let global_max: (f64, f64) = if self.maximum.1 > next.maximum.1 {
             self.maximum
         } else {
             next.maximum
@@ -50,19 +50,20 @@ impl Cluster {
 impl BenchmarkKde {
     pub fn from_benchmark(b: &BenchmarkJSON, n: usize) -> BenchmarkKde {
         // Generate kde values
-        let slice = &b.durations[..];
-        let data = Sample::new(slice);
-        let kde = Kde::new(data, Gaussian, Bandwidth::Silverman);
-        let h = kde.bandwidth();
+        let slice: &[f64] = &b.durations[..];
+        let data: &Sample<f64> = Sample::new(slice);
+        let kde: Kde<f64, Gaussian> = Kde::new(data, Gaussian, Bandwidth::Silverman);
+        let h: f64 = kde.bandwidth();
         let (left, right): (f64, f64) = (data.min() - 5. * h, data.max() + 5. * h);
         let xs: Vec<f64> = linspace::<f64>(left, right, n).collect();
         let ys: Vec<f64> = kde.map(&xs).to_vec();
 
         // compute significant clusters
         let (minima, maxima) = Self::get_all_extrema(&xs, &ys);
-        let global_maximum = Self::get_global_maximum(&maxima);
-        let significant_clusters = Self::to_significant_clusters(&xs, &ys, minima, maxima);
-        let access_size = b.access_size_in_bytes;
+        let global_maximum: (f64, f64) = Self::get_global_maximum(&maxima);
+        let significant_clusters: Vec<Cluster> =
+            Self::to_significant_clusters(&xs, &ys, minima, maxima);
+        let access_size: u64 = b.access_size_in_bytes;
         BenchmarkKde {
             xs,
             ys,
@@ -74,11 +75,11 @@ impl BenchmarkKde {
 
     #[allow(clippy::type_complexity)] // Single function usage so it's fine
     fn get_all_extrema(xs: &[f64], ys: &[f64]) -> (Vec<(f64, f64)>, Vec<(f64, f64)>) {
-        let mut minima = Vec::new();
-        let mut maxima = Vec::new();
+        let mut minima: Vec<(f64, f64)> = Vec::new();
+        let mut maxima: Vec<(f64, f64)> = Vec::new();
         for i in 1..(xs.len() - 1) {
-            let is_increasing_before = ys[i - 1] <= ys[i];
-            let is_increasing_after = ys[i] <= ys[i + 1];
+            let is_increasing_before: bool = ys[i - 1] <= ys[i];
+            let is_increasing_after: bool = ys[i] <= ys[i + 1];
             if is_increasing_before == is_increasing_after {
                 continue;
             }
@@ -101,20 +102,20 @@ impl BenchmarkKde {
         minima.insert(0, (xs[0], ys[0]));
         minima.push((xs[xs.len() - 1], ys[ys.len() - 1]));
 
-        let mut ret = Vec::new();
+        let mut ret: Vec<Cluster> = Vec::new();
         for i in 0..maxima.len() {
-            let left_minimum = minima[i].0;
-            let maximum = maxima[i];
-            let right_minimum = minima[i + 1].0;
+            let left_minimum: f64 = minima[i].0;
+            let maximum: (f64, f64) = maxima[i];
+            let right_minimum: f64 = minima[i + 1].0;
 
             // this is inperformant but who cares for now
-            let left_index = xs.iter().position(|&x| x == left_minimum).unwrap();
-            let right_index = xs.iter().position(|&x| x == right_minimum).unwrap();
+            let left_index: usize = xs.iter().position(|&x| x == left_minimum).unwrap();
+            let right_index: usize = xs.iter().position(|&x| x == right_minimum).unwrap();
 
-            let xs = xs[left_index..right_index + 1].to_vec();
-            let ys = ys[left_index..right_index + 1].to_vec();
+            let xs: Vec<f64> = xs[left_index..right_index + 1].to_vec();
+            let ys: Vec<f64> = ys[left_index..right_index + 1].to_vec();
 
-            let cluster = Cluster { xs, ys, maximum };
+            let cluster: Cluster = Cluster { xs, ys, maximum };
 
             ret.push(cluster);
         }
@@ -127,8 +128,8 @@ impl BenchmarkKde {
         minima: Vec<(f64, f64)>,
         maxima: Vec<(f64, f64)>,
     ) -> Vec<Cluster> {
-        let clusters = Self::to_all_cluster(xs, ys, minima, maxima);
-        let global_maximum = clusters.iter().fold(0.0f64, |max, new| {
+        let clusters: Vec<Cluster> = Self::to_all_cluster(xs, ys, minima, maxima);
+        let global_maximum: f64 = clusters.iter().fold(0.0f64, |max, new| {
             if max > new.maximum.1 {
                 max
             } else {
@@ -141,8 +142,8 @@ impl BenchmarkKde {
         //
         // We join clusters together until that is true.
 
-        let mut res = Vec::new();
-        let mut curr_cluster = None;
+        let mut res: Vec<Cluster> = Vec::new();
+        let mut curr_cluster: Option<Cluster> = None;
         for c in clusters {
             // If we have none, this means last was significant, i.e we cut off
             // If we have some, this means it was not significant, so maybe our joined one will be.
