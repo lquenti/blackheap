@@ -93,5 +93,6 @@ size_t get_available_mem();
 void allocate_memory_until(size_t space_left_in_kib);
 /* See: https://unix.stackexchange.com/q/17936 */
 void drop_page_cache();
+void to_lower_str(char *p);
 
 #endif //IO_BENCHMARK_HELPER_H

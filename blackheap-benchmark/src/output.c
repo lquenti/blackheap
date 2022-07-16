@@ -8,7 +8,6 @@
 
 #include "output.h"
 
-// TODO move me
 static inline char *access_pattern_to_str(access_pattern_t pat)
 {
   switch (pat)

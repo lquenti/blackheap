@@ -28,15 +28,6 @@ const char *argp_program_bug_address = "https://github.com/lquenti/blackheap/iss
 const char *argp_program_version = "0.1.0";
 
 
-// TODO put me in helper
-static inline void to_lower_str(char *p)
-{
-  for (; *p; ++p)
-  {
-    *p = tolower(*p);
-  }
-}
-
 static inline access_pattern_t parse_access_pattern(char *p, struct argp_state *state)
 {
   to_lower_str(p);

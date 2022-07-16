@@ -56,7 +56,7 @@ impl Models {
     }
 }
 
-// TODO: helper
+// TODO document what xs_ys are
 fn get_xs_ys_interval(
     jsons: &[BenchmarkJSON],
     kdes: &[BenchmarkKde],
@@ -157,6 +157,7 @@ pub struct ConstantLinear {
     linear: Linear,
 }
 
+// TODO Explain why duplicated
 impl Constant {
     pub fn from_jsons_kdes_interval(
         jsons: &[BenchmarkJSON],

@@ -233,3 +233,10 @@ void drop_page_cache() {
   close(fd);
 }
 
+void to_lower_str(char *p)
+{
+  for (; *p; ++p)
+  {
+    *p = tolower(*p);
+  }
+}
