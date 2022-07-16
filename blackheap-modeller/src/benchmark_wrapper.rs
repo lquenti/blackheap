@@ -21,7 +21,6 @@ impl fmt::Display for AccessPattern {
     }
 }
 
-// TODO impl Copy, remove all clones
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum BenchmarkType {
     RandomUncached,
@@ -282,7 +281,6 @@ impl<'a> PerformanceBenchmark<'a> {
                 .iter()
                 .collect();
 
-            // TODO
             self.run_test_and_save_to_file(&access_size, path.to_str().unwrap());
         }
         Ok(())

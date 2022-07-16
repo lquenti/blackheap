@@ -72,7 +72,7 @@ impl BenchmarkKde {
         }
     }
 
-    #[allow(clippy::type_complexity)] // for now
+    #[allow(clippy::type_complexity)] // Single function usage so it's fine
     fn get_all_extrema(xs: &[f64], ys: &[f64]) -> (Vec<(f64, f64)>, Vec<(f64, f64)>) {
         let mut minima = Vec::new();
         let mut maxima = Vec::new();
@@ -107,7 +107,7 @@ impl BenchmarkKde {
             let maximum = maxima[i];
             let right_minimum = minima[i + 1].0;
 
-            // TODO god this is inperformant but who cares for now
+            // this is inperformant but who cares for now
             let left_index = xs.iter().position(|&x| x == left_minimum).unwrap();
             let right_index = xs.iter().position(|&x| x == right_minimum).unwrap();
 

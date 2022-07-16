@@ -52,7 +52,6 @@ static void print_results(const benchmark_results_t *results)
   fprintf(stdout, "]\n");
 }
 
-// TODO: make stdout variable via parameter
 // TODO: Version mitgeben
 void print_output(const benchmark_config_t *config, const benchmark_results_t *results)
 {

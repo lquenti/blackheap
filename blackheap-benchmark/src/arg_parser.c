@@ -83,7 +83,6 @@ static inline void get_size_t_or_fail(const char *str, size_t *out, struct argp_
  * 2. If they, by mistake or not, set the filepath to a directory, we create a file into
  *    that directory.
  */
-// TODO break me up
 static bool is_normal_file(char **path_ptr)
 {
   struct stat st;

@@ -6,7 +6,6 @@ use crate::benchmark_wrapper::PerformanceBenchmark;
 
 use serde::{Deserialize, Serialize};
 
-// TODO: How do i get a pathbuf from a path?
 fn get_all_jsons_from_directory(folder: &Path) -> Vec<PathBuf> {
     let folder: PathBuf = fs::canonicalize(&folder).unwrap();
     let dir: ReadDir = fs::read_dir(&folder).unwrap();

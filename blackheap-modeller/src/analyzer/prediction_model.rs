@@ -1,4 +1,3 @@
-// TODO: traitify me in the future
 use crate::analyzer::json_reader::BenchmarkJSON;
 use crate::analyzer::kde::BenchmarkKde;
 
@@ -23,7 +22,7 @@ impl Models {
     ) -> Self {
         Models::ConstantLinear(ConstantLinear::from_jsons_kdes_interval(jsons, kdes, xss))
     }
-    pub fn to_csv(&self) -> String {
+    pub fn _to_csv(&self) -> String {
         let headline = String::from("slope,y_intercept,begin,end");
         // TODO refactor
         match self {
@@ -209,9 +208,8 @@ impl ConstantLinear {
         kdes: &[BenchmarkKde],
         xss: Interval,
     ) -> Self {
-        // BIG TODO
         if !xss.contains(4096) {
-            panic!("todo find good generic split");
+            panic!("splitting didn't work. Unrecoverable. Quitting...");
         }
         // if xss is unbounded, let it be unbounded as well
         let lower_interval = match xss.lower {
