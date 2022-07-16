@@ -23,35 +23,57 @@ impl Models {
         Models::ConstantLinear(ConstantLinear::from_jsons_kdes_interval(jsons, kdes, xss))
     }
     pub fn _to_csv(&self) -> String {
-        let headline = String::from("slope,y_intercept,begin,end");
+        let headline: String = String::from("slope,y_intercept,begin,end");
         // TODO refactor
         match self {
-            Models::Linear(linear)  => {
-                let linear = format!(
+            Models::Linear(linear) => {
+                let linear: String = format!(
                     "{},{},{},{}",
                     linear.slope,
                     linear.y_intercept,
-                    linear.valid_interval.lower.map_or(String::new(), |x| x.to_string()),
-                    linear.valid_interval.upper.map_or(String::new(), |x| x.to_string())
+                    linear
+                        .valid_interval
+                        .lower
+                        .map_or(String::new(), |x| x.to_string()),
+                    linear
+                        .valid_interval
+                        .upper
+                        .map_or(String::new(), |x| x.to_string())
                 );
                 format!("{}\n{}", headline, linear)
-            },
+            }
             Models::ConstantLinear(constant_linear) => {
-                let constant = format!(
+                let constant: String = format!(
                     ",{},{},{}",
                     constant_linear.constant.const_value,
-                    constant_linear.constant.valid_interval.lower.map_or(String::new(), |x| x.to_string()),
-                    constant_linear.constant.valid_interval.upper.map_or(String::new(), |x| x.to_string())
+                    constant_linear
+                        .constant
+                        .valid_interval
+                        .lower
+                        .map_or(String::new(), |x| x.to_string()),
+                    constant_linear
+                        .constant
+                        .valid_interval
+                        .upper
+                        .map_or(String::new(), |x| x.to_string())
                 );
-                let linear = format!(
+                let linear: String = format!(
                     "{},{},{},{}",
                     constant_linear.linear.slope,
                     constant_linear.linear.y_intercept,
-                    constant_linear.linear.valid_interval.lower.map_or(String::new(), |x| x.to_string()),
-                    constant_linear.linear.valid_interval.upper.map_or(String::new(), |x| x.to_string())
+                    constant_linear
+                        .linear
+                        .valid_interval
+                        .lower
+                        .map_or(String::new(), |x| x.to_string()),
+                    constant_linear
+                        .linear
+                        .valid_interval
+                        .upper
+                        .map_or(String::new(), |x| x.to_string())
                 );
                 format!("{}\n{}\n{}", headline, constant, linear)
-            },
+            }
         }
     }
 }
@@ -62,8 +84,8 @@ fn get_xs_ys_interval(
     kdes: &[BenchmarkKde],
     xss: Interval,
 ) -> (Vec<f64>, Vec<f64>) {
-    let mut xs = Vec::new();
-    let mut ys = Vec::new();
+    let mut xs: Vec<f64> = Vec::new();
+    let mut ys: Vec<f64> = Vec::new();
     for i in 0..jsons.len() {
         // if codomain in valid interval, it is relevant for our analysis
         if xss.contains(jsons[i].access_size_in_bytes) {
@@ -74,9 +96,9 @@ fn get_xs_ys_interval(
     (xs, ys)
 }
 fn find_max_xs_ys(xs: &[f64], ys: &[f64]) -> (f64, f64) {
-    let (mut max_xs, mut max_ys) = (0.0f64, 0.0f64);
+    let (mut max_xs, mut max_ys): (f64, f64) = (0.0f64, 0.0f64);
     for i in 0..xs.len() {
-        let (curr_xs, curr_ys) = (xs[i], ys[i]);
+        let (curr_xs, curr_ys): (f64, f64) = (xs[i], ys[i]);
         if curr_ys > max_ys {
             max_xs = curr_xs;
             max_ys = curr_ys;
@@ -164,8 +186,8 @@ impl Constant {
         kdes: &[BenchmarkKde],
         xss: Interval,
     ) -> Self {
-        let (xs, ys) = get_xs_ys_interval(jsons, kdes, xss);
-        let (_max_xs, max_ys) = find_max_xs_ys(&xs, &ys);
+        let (xs, ys): (Vec<f64>, Vec<f64>) = get_xs_ys_interval(jsons, kdes, xss);
+        let (_max_xs, max_ys): (f64, f64) = find_max_xs_ys(&xs, &ys);
         Self {
             const_value: max_ys,
             valid_interval: xss,
@@ -179,21 +201,22 @@ impl Linear {
         kdes: &[BenchmarkKde],
         xss: Interval,
     ) -> Self {
-        let (xs, ys) = get_xs_ys_interval(jsons, kdes, xss);
-        let data = vec![("X", xs), ("Y", ys)];
-        let formula = "Y ~ X";
-        let data = RegressionDataBuilder::new().build_from(data).unwrap();
-        let model = FormulaRegressionBuilder::new()
+        let (xs, ys): (Vec<f64>, Vec<f64>) = get_xs_ys_interval(jsons, kdes, xss);
+        let data: Vec<(&str, Vec<f64>)> = vec![("X", xs), ("Y", ys)];
+        let formula: &str = "Y ~ X";
+        let data: linregress::RegressionData =
+            RegressionDataBuilder::new().build_from(data).unwrap();
+        let model: linregress::RegressionModel = FormulaRegressionBuilder::new()
             .data(&data)
             .formula(formula)
             .fit()
             .unwrap();
 
-        let parameters = model.parameters;
-        let slope = parameters.regressor_values[0];
-        let y_intercept = parameters.intercept_value;
+        let parameters: linregress::RegressionParameters = model.parameters;
+        let slope: f64 = parameters.regressor_values[0];
+        let y_intercept: f64 = parameters.intercept_value;
 
-        let valid_interval = xss;
+        let valid_interval: Interval = xss;
 
         Self {
             slope,
@@ -213,11 +236,11 @@ impl ConstantLinear {
             panic!("splitting didn't work. Unrecoverable. Quitting...");
         }
         // if xss is unbounded, let it be unbounded as well
-        let lower_interval = match xss.lower {
+        let lower_interval: Interval = match xss.lower {
             None => Interval::new_right_closed(4096),
             Some(lower_bound) => Interval::new_closed(lower_bound, 4096),
         };
-        let upper_interval = match xss.upper {
+        let upper_interval: Interval = match xss.upper {
             None => Interval::new_left_closed(4096),
             Some(upper_bound) => Interval::new_closed(4096, upper_bound),
         };

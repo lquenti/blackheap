@@ -22,7 +22,7 @@ fn get_all_jsons_from_directory(folder: &Path) -> Vec<PathBuf> {
         }
     }
 
-    let mut valid_jsons = Vec::new();
+    let mut valid_jsons: Vec<PathBuf> = Vec::new();
     for dir_entry in valid_dir_entries {
         match dir_entry.file_type() {
             Ok(file_type) => {
@@ -54,13 +54,13 @@ fn get_all_jsons_from_directory(folder: &Path) -> Vec<PathBuf> {
 // TODO: scream louder when something goes wrong
 // TODO: ANYHOW HERE
 fn benchmark_json_to_struct(file_path: &Path) -> Option<BenchmarkJSON> {
-    let file = File::open(file_path);
+    let file: Result<File, std::io::Error> = File::open(file_path);
 
     if file.is_err() {
         return None;
     }
-    let file = file.unwrap();
-    let reader = BufReader::new(file);
+    let file: File = file.unwrap();
+    let reader: BufReader<File> = BufReader::new(file);
     match serde_json::from_reader(reader) {
         Ok(json) => json,
         Err(e) => {

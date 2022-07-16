@@ -2,7 +2,7 @@ use std::fmt;
 use std::fs::{self, File};
 use std::io::prelude::Write;
 use std::path::PathBuf;
-use std::process::{Command, Stdio};
+use std::process::{Child, Command, Output, Stdio};
 use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
@@ -195,7 +195,7 @@ impl<'a> PerformanceBenchmark<'a> {
     }
 
     fn get_parameters(&self, access_size: &u64) -> Vec<String> {
-        let mut params = vec![
+        let mut params: Vec<String> = vec![
             String::from(if self.is_read_op { "--read" } else { "--write" }),
             format!("--mem-pattern={}", self.mem_pattern),
             format!("--file-pattern={}", self.file_pattern),
@@ -224,27 +224,27 @@ impl<'a> PerformanceBenchmark<'a> {
     }
 
     fn run_test(&self, access_size: &u64) -> Result<String> {
-        let child = Command::new(&self.benchmarker_path)
+        let child: Child = Command::new(&self.benchmarker_path)
             .args(self.get_parameters(access_size))
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()
             .expect("Process could not be spawned");
 
-        let output = child.wait_with_output().expect("failed to wait on child");
+        let output: Output = child.wait_with_output().expect("failed to wait on child");
 
         if !output.status.success() {
-            let error_message =
+            let error_message: &str =
                 std::str::from_utf8(&output.stderr).expect("Invalid UTF-8 sequence!");
             bail!(String::from(error_message));
         }
 
-        let ret = std::str::from_utf8(&output.stdout).expect("Invalid UTF-8 sequence!");
+        let ret: &str = std::str::from_utf8(&output.stdout).expect("Invalid UTF-8 sequence!");
         Ok(String::from(ret))
     }
 
     fn run_test_and_save_to_file(&self, access_size: &u64, file_path: &str) {
-        let run_res = self.run_test(access_size);
+        let run_res: Result<String, anyhow::Error> = self.run_test(access_size);
         match run_res {
             Ok(output) => {
                 let mut file = File::create(file_path).unwrap();
@@ -266,7 +266,7 @@ impl<'a> PerformanceBenchmark<'a> {
     }
 
     pub fn run_and_save_all_benchmarks(&self) -> Result<()> {
-        let benchmark_folder_path = self.get_benchmark_folder();
+        let benchmark_folder_path: String = self.get_benchmark_folder();
         fs::create_dir_all(&benchmark_folder_path)?;
 
         for i in 1..28 {

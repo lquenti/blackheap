@@ -17,15 +17,15 @@ pub fn create_model(
 ) -> Result<()> {
     // create folders
     fs::create_dir_all(model_path)?;
-    let use_linear = ModelEnum::Linear == model;
+    let use_linear: bool = ModelEnum::Linear == model;
 
-    let mut parent = PathBuf::from(benchmark_file_path);
+    let mut parent: PathBuf = PathBuf::from(benchmark_file_path);
     parent.pop();
     fs::create_dir_all(parent)?;
 
     let mut analyzed: Vec<Analysis> = Vec::new();
 
-    let all_benchmarks = PerformanceBenchmark::get_all_benchmarks(
+    let all_benchmarks: Vec<PerformanceBenchmark> = PerformanceBenchmark::get_all_benchmarks(
         model_path,
         benchmark_file_path,
         benchmarker_path,
@@ -38,7 +38,7 @@ pub fn create_model(
         }
 
         // Run analysis
-        let res = Analysis::new_from_finished_benchmark(benchmark, use_linear);
+        let res: Analysis = Analysis::new_from_finished_benchmark(benchmark, use_linear);
         analyzed.push(res);
     }
 
