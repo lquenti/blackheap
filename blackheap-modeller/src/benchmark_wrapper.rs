@@ -228,32 +228,24 @@ impl<'a> PerformanceBenchmark<'a> {
             .args(self.get_parameters(access_size))
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
-            .spawn()
-            .expect("Process could not be spawned");
+            .spawn()?;
 
-        let output: Output = child.wait_with_output().expect("failed to wait on child");
+        let output: Output = child.wait_with_output()?;
 
         if !output.status.success() {
-            let error_message: &str =
-                std::str::from_utf8(&output.stderr).expect("Invalid UTF-8 sequence!");
+            let error_message: &str = std::str::from_utf8(&output.stderr)?;
             bail!(String::from(error_message));
         }
 
-        let ret: &str = std::str::from_utf8(&output.stdout).expect("Invalid UTF-8 sequence!");
+        let ret: &str = std::str::from_utf8(&output.stdout)?;
         Ok(String::from(ret))
     }
 
-    fn run_test_and_save_to_file(&self, access_size: &u64, file_path: &str) {
-        let run_res: Result<String, anyhow::Error> = self.run_test(access_size);
-        match run_res {
-            Ok(output) => {
-                let mut file = File::create(file_path).unwrap();
-                file.write_all(output.as_bytes()).unwrap();
-            }
-            Err(error) => {
-                eprintln!("Error: {}", error);
-            }
-        }
+    fn run_test_and_save_to_file(&self, access_size: &u64, file_path: &str) -> Result<()> {
+        let output: String = self.run_test(access_size)?;
+        let mut file = File::create(file_path)?;
+        file.write_all(output.as_bytes())?;
+        Ok(())
     }
 
     pub fn get_benchmark_folder(&self) -> String {
