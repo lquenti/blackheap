@@ -27,7 +27,11 @@ jobs:
         cd blackheap-modeller
         cargo check
     - name: Run clippy
-      run: cargo clippy
+      run: |
+        cd blackheap-modeller
+        cargo clippy
     - name: Run Fmt
-      run: cargo fmt --check
+      run: |
+        cd blackheap-modeller
+        cargo fmt --check
 
