@@ -29,7 +29,7 @@ jobs:
     - name: Run clippy
       run: |
         cd blackheap-modeller
-        cargo clippy
+        cargo clippy -- -Dwarnings
     - name: Run Fmt
       run: |
         cd blackheap-modeller
