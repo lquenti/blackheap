@@ -273,7 +273,7 @@ impl<'a> PerformanceBenchmark<'a> {
                 .iter()
                 .collect();
 
-            self.run_test_and_save_to_file(&access_size, path.to_str().unwrap());
+            self.run_test_and_save_to_file(&access_size, path.to_str().unwrap())?;
         }
         Ok(())
     }

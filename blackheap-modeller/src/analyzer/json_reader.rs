@@ -80,15 +80,17 @@ pub struct BenchmarkJSON {
 }
 
 impl BenchmarkJSON {
-    pub fn new_from_dir(folder: &Path) -> Vec<Self> {
-        let json_paths: Vec<PathBuf> = get_all_jsons_from_directory(folder);
-        let jsons: Vec<BenchmarkJSON> = json_paths
+    pub fn new_from_dir(folder: &Path) -> Result<Vec<Self>> {
+        let json_paths: Vec<PathBuf> = get_all_jsons_from_directory(folder)?;
+        let jsons: Result<Vec<BenchmarkJSON>> = json_paths
             .iter()
-            .filter_map(|path| benchmark_json_to_struct(path))
+            .map(|path| benchmark_json_to_struct(path))
+            .collect::<Vec<Result<BenchmarkJSON>>>()
+            .into_iter()
             .collect();
         jsons
     }
-    pub fn new_from_performance_benchmark(benchmark: &PerformanceBenchmark) -> Vec<Self> {
+    pub fn new_from_performance_benchmark(benchmark: &PerformanceBenchmark) -> Result<Vec<Self>> {
         Self::new_from_dir(&PathBuf::from(benchmark.get_benchmark_folder()))
     }
 }

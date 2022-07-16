@@ -42,9 +42,9 @@ impl Analysis {
     pub fn new_from_finished_benchmark(
         benchmark: PerformanceBenchmark<'_>,
         use_linear: bool,
-    ) -> Self {
+    ) -> Result<Self> {
         let mut jsons: Vec<BenchmarkJSON> =
-            BenchmarkJSON::new_from_performance_benchmark(&benchmark);
+            BenchmarkJSON::new_from_performance_benchmark(&benchmark)?;
         jsons.sort_by_key(|j| j.access_size_in_bytes);
         let kdes: Vec<BenchmarkKde> = jsons
             .iter()
@@ -54,12 +54,12 @@ impl Analysis {
             true => Models::new_linear(&jsons, &kdes, Interval::new()),
             _ => Models::new_constant_linear(&jsons, &kdes, Interval::new()),
         };
-        Self {
+        Ok(Self {
             benchmark_type: benchmark.benchmark_type,
             is_read_op: benchmark.is_read_op,
             kdes,
             model,
-        }
+        })
     }
 
     pub fn all_to_json(xs: &[Self]) -> String {
