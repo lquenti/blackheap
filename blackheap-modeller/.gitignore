@@ -1,3 +1,4 @@
+assets/
 # used for local testing
 *.json
 *.csv

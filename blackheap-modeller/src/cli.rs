@@ -29,9 +29,6 @@ pub struct Cli {
     /// Whether the benchmark can be skipped (already computed)
     #[clap(long)]
     pub analyze_only: bool,
-    /// Path to the used benchmarker
-    #[clap(short, long, required = true)]
-    pub benchmarker: String,
     /// Whether root is required or not (used to drop caches)
     #[clap(short, long)]
     pub root: bool,

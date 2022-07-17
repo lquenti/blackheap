@@ -67,9 +67,8 @@ impl Analysis {
     }
 
     pub fn all_to_file(xs: &[Self], to_folder: &str) -> Result<()> {
-        let path: String = format!("{}/finished", to_folder);
         // write file
-        let mut output: File = File::create(format!("{}/Model.json", path))?;
+        let mut output: File = File::create(format!("{}/Model.json", to_folder))?;
         write!(output, "{}", Self::all_to_json(xs))?;
 
         Ok(())
