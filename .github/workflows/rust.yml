@@ -23,15 +23,12 @@ jobs:
         rustup component add clippy
         rustup component add rustfmt
     - name: Check
-      run: |
-        cd blackheap-modeller
-        cargo check
+      working-directory: ./blackheap-modeller
+      run: cargo check
     - name: Run clippy
-      run: |
-        cd blackheap-modeller
-        cargo clippy
+      working-directory: ./blackheap-modeller
+      run: cargo clippy -- -Dwarnings
     - name: Run Fmt
-      run: |
-        cd blackheap-modeller
-        cargo fmt --check
+      working-directory: ./blackheap-modeller
+      run: cargo fmt --check
 

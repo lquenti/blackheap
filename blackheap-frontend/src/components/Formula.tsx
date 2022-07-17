@@ -1,7 +1,7 @@
-import KaTeX from 'katex';
+import KaTeX from "katex";
 
 type FormulaProps = {
-  tex: string,
+  tex: string;
 };
 
 const Formula = ({ tex }: FormulaProps) => {
@@ -9,9 +9,7 @@ const Formula = ({ tex }: FormulaProps) => {
     displayMode: true,
     output: "mathml",
   });
-  return (
-    <span dangerouslySetInnerHTML={{ __html: html }} />
-  );
+  return <span dangerouslySetInnerHTML={{ __html: html }} />;
 };
 
 export default Formula;
