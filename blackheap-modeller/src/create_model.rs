@@ -11,7 +11,6 @@ use anyhow::{bail, Result};
 pub fn create_model(
     model_path: &str,
     benchmark_file_path: &str,
-    benchmarker_path: &str,
     root: bool,
     analyze_only: bool,
     model: ModelEnum,
@@ -26,15 +25,15 @@ pub fn create_model(
 
     // dump benchmarker and frontend
     assets::dump_static_files(model_path)?;
+    let benchmarker_path: String = format!("{}/blackheap-benchmark.exe", &model_path);
 
-    /*
     // begin the benchmarkey stuff
     let mut analyzed: Vec<Analysis> = Vec::new();
 
     let all_benchmarks: Vec<PerformanceBenchmark> = PerformanceBenchmark::get_all_benchmarks(
         model_path,
         benchmark_file_path,
-        benchmarker_path,
+        &benchmarker_path,
         root,
     );
     for benchmark in all_benchmarks {
@@ -58,6 +57,5 @@ pub fn create_model(
         }
     }
     Analysis::all_to_file(&analyzed, model_path)?;
-    */
     Ok(())
 }

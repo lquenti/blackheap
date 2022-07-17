@@ -14,7 +14,6 @@ fn main() {
     if let Err(e) = create_model::create_model(
         &cli.to,
         &cli.file,
-        &cli.benchmarker,
         cli.root,
         cli.analyze_only,
         cli.model,
