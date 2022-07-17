@@ -7,7 +7,7 @@ run: build-rust
 
 clean:
 	rm -rf ./blackheap-modeller/assets
-	rm blackheap
+	rm -f blackheap
 
 prepare:
 	mkdir ./blackheap-modeller/assets
