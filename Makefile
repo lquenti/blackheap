@@ -5,6 +5,7 @@ all: clean prepare build-rust
 # TODO: Clean up rest of the repos
 clean:
 	rm -rf ./blackheap-modeller/assets
+	rm blackheap
 
 prepare:
 	mkdir ./blackheap-modeller/assets

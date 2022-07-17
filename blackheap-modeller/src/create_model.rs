@@ -4,6 +4,7 @@ use std::path::PathBuf;
 use crate::analyzer::Analysis;
 use crate::benchmark_wrapper::PerformanceBenchmark;
 use crate::cli::ModelEnum;
+use crate::assets;
 
 use anyhow::{bail, Result};
 
@@ -23,6 +24,11 @@ pub fn create_model(
     parent.pop();
     fs::create_dir_all(parent)?;
 
+    // dump benchmarker and frontend
+    assets::dump_static_files(model_path)?;
+
+    /*
+    // begin the benchmarkey stuff
     let mut analyzed: Vec<Analysis> = Vec::new();
 
     let all_benchmarks: Vec<PerformanceBenchmark> = PerformanceBenchmark::get_all_benchmarks(
@@ -52,6 +58,6 @@ pub fn create_model(
         }
     }
     Analysis::all_to_file(&analyzed, model_path)?;
-
+    */
     Ok(())
 }

@@ -4,6 +4,7 @@ mod analyzer;
 mod benchmark_wrapper;
 mod cli;
 mod create_model;
+mod assets;
 
 use cli::Cli;
 
