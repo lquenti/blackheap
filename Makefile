@@ -2,7 +2,9 @@
 
 all: clean prepare build-rust
 
-# TODO: Clean up rest of the repos
+run: build-rust
+	./blackheap
+
 clean:
 	rm -rf ./blackheap-modeller/assets
 	rm blackheap
