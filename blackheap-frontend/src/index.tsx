@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
 
-import "./tailwind.css";
+import              "./tailwind.css";
 
 import { ModelProvider } from "./contexts/ModelContext";
 import FileUploader from "./routes/FileUploader";
