@@ -1,2 +1,5 @@
 .vscode
 blackheap
+
+# If you just use blackheap locally, please don't commit
+/**/default-model
