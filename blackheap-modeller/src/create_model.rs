@@ -2,9 +2,9 @@ use std::fs;
 use std::path::PathBuf;
 
 use crate::analyzer::Analysis;
+use crate::assets;
 use crate::benchmark_wrapper::PerformanceBenchmark;
 use crate::cli::ModelEnum;
-use crate::assets;
 
 use anyhow::{bail, Result};
 

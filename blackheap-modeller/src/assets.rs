@@ -1,5 +1,5 @@
 // If they aren't there: Generate them by running the main Makefile
-const BENCHMARKER: &'static [u8] = include_bytes!("../assets/blackheap-benchmark.exe");
+const BENCHMARKER: &[u8] = include_bytes!("../assets/blackheap-benchmark.exe");
 const FRONTEND: &str = include_str!("../assets/index.html");
 
 use std::fs::{self, File, Permissions};
