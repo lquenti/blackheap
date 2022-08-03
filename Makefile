@@ -1,5 +1,3 @@
-# TODO: Logging
-
 all: clean prepare build-rust
 
 run: build-rust
@@ -8,6 +6,9 @@ run: build-rust
 clean:
 	rm -rf ./blackheap-modeller/assets
 	rm -f blackheap
+	rm -rf ./blackheap-benchmark/build
+	rm -rf ./blackheap-frontend/{build,node_modules}
+
 
 prepare:
 	mkdir ./blackheap-modeller/assets
