@@ -66,10 +66,59 @@ impl Analysis {
         json![xs].to_string()
     }
 
+    pub fn to_csv(xs: &[Self]) -> String {
+        let mut all_models: Vec<String> = Vec::new();
+        // header
+        all_models.push(String::from(
+            "benchmark_type,is_read_op,slope,y_intercept,left_bound,right_bound"
+        ));
+        // body
+        for x in xs {
+            match &x.model {
+                Models::Linear(linear) => {
+                    all_models.push(format!(
+                        "{},{},{},{},{},{}",
+                        x.benchmark_type,
+                        if x.is_read_op { 1 } else { 0 },
+                        linear.slope,
+                        linear.y_intercept,
+                        linear.valid_interval.lower.unwrap_or_else(|| 0),
+                        linear.valid_interval.upper.unwrap_or_else(|| 0)
+                    ))
+                },
+                Models::ConstantLinear(constant_linear) => {
+                    all_models.push(format!(
+                        "{},{},{},{},{},{}",
+                        x.benchmark_type,
+                        if x.is_read_op { 1 } else { 0 },
+                        0,
+                        constant_linear.constant.const_value,
+                        constant_linear.constant.valid_interval.lower.unwrap_or_else(|| 0),
+                        constant_linear.constant.valid_interval.upper.unwrap_or_else(|| 0)
+                    ));
+                    all_models.push(format!(
+                        "{},{},{},{},{},{}",
+                        x.benchmark_type,
+                        if x.is_read_op { 1 } else { 0 },
+                        constant_linear.linear.slope,
+                        constant_linear.linear.y_intercept,
+                        constant_linear.linear.valid_interval.lower.unwrap_or_else(|| 0),
+                        constant_linear.linear.valid_interval.upper.unwrap_or_else(|| 0)
+                    ))
+                }
+            }
+        }
+        all_models.join("\n")
+    }
+
     pub fn all_to_file(xs: &[Self], to_folder: &str) -> Result<()> {
-        // write file
+        // write json for frontend
         let mut output: File = File::create(format!("{}/Model.json", to_folder))?;
         write!(output, "{}", Self::all_to_json(xs))?;
+
+        // write csv for iofs
+        let mut output: File = File::create(format!("{}/iofs.csv", to_folder))?;
+        write!(output, "{}", Self::to_csv(xs))?;
 
         Ok(())
     }

@@ -22,60 +22,6 @@ impl Models {
     ) -> Self {
         Models::ConstantLinear(ConstantLinear::from_jsons_kdes_interval(jsons, kdes, xss))
     }
-    pub fn _to_csv(&self) -> String {
-        let headline: String = String::from("slope,y_intercept,begin,end");
-        // TODO refactor
-        match self {
-            Models::Linear(linear) => {
-                let linear: String = format!(
-                    "{},{},{},{}",
-                    linear.slope,
-                    linear.y_intercept,
-                    linear
-                        .valid_interval
-                        .lower
-                        .map_or(String::new(), |x| x.to_string()),
-                    linear
-                        .valid_interval
-                        .upper
-                        .map_or(String::new(), |x| x.to_string())
-                );
-                format!("{}\n{}", headline, linear)
-            }
-            Models::ConstantLinear(constant_linear) => {
-                let constant: String = format!(
-                    ",{},{},{}",
-                    constant_linear.constant.const_value,
-                    constant_linear
-                        .constant
-                        .valid_interval
-                        .lower
-                        .map_or(String::new(), |x| x.to_string()),
-                    constant_linear
-                        .constant
-                        .valid_interval
-                        .upper
-                        .map_or(String::new(), |x| x.to_string())
-                );
-                let linear: String = format!(
-                    "{},{},{},{}",
-                    constant_linear.linear.slope,
-                    constant_linear.linear.y_intercept,
-                    constant_linear
-                        .linear
-                        .valid_interval
-                        .lower
-                        .map_or(String::new(), |x| x.to_string()),
-                    constant_linear
-                        .linear
-                        .valid_interval
-                        .upper
-                        .map_or(String::new(), |x| x.to_string())
-                );
-                format!("{}\n{}\n{}", headline, constant, linear)
-            }
-        }
-    }
 }
 
 // TODO document what xs_ys are
@@ -162,21 +108,21 @@ impl Interval {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Constant {
-    valid_interval: Interval,
-    const_value: f64,
+    pub valid_interval: Interval,
+    pub const_value: f64,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Linear {
-    valid_interval: Interval,
-    slope: f64,
-    y_intercept: f64,
+    pub valid_interval: Interval,
+    pub slope: f64,
+    pub y_intercept: f64,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ConstantLinear {
-    constant: Constant,
-    linear: Linear,
+    pub constant: Constant,
+    pub linear: Linear,
 }
 
 // TODO Explain why duplicated
