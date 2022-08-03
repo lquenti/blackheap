@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-      run: |
+    - run: |
         rustup update stable
         rustup default stable
         nvm install node --lts
