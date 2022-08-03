@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      uses: actions/checkout@v3
-      name: Run prettier
+    - uses: actions/checkout@v3
+    - name: Run prettier
       working-directory: ./blackheap-frontend
       run: yarn prettier --check .
