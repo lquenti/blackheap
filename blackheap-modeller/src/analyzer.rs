@@ -67,25 +67,22 @@ impl Analysis {
     }
 
     pub fn to_csv(xs: &[Self]) -> String {
-        let mut all_models: Vec<String> = Vec::new();
         // header
-        all_models.push(String::from(
-            "benchmark_type,is_read_op,slope,y_intercept,left_bound,right_bound"
-        ));
+        let mut all_models: Vec<String> = vec![String::from(
+            "benchmark_type,is_read_op,slope,y_intercept,left_bound,right_bound",
+        )];
         // body
         for x in xs {
             match &x.model {
-                Models::Linear(linear) => {
-                    all_models.push(format!(
-                        "{},{},{},{},{},{}",
-                        x.benchmark_type,
-                        if x.is_read_op { 1 } else { 0 },
-                        linear.slope,
-                        linear.y_intercept,
-                        linear.valid_interval.lower.unwrap_or_else(|| 0),
-                        linear.valid_interval.upper.unwrap_or_else(|| 0)
-                    ))
-                },
+                Models::Linear(linear) => all_models.push(format!(
+                    "{},{},{},{},{},{}",
+                    x.benchmark_type,
+                    if x.is_read_op { 1 } else { 0 },
+                    linear.slope,
+                    linear.y_intercept,
+                    linear.valid_interval.lower.unwrap_or(0),
+                    linear.valid_interval.upper.unwrap_or(0)
+                )),
                 Models::ConstantLinear(constant_linear) => {
                     all_models.push(format!(
                         "{},{},{},{},{},{}",
@@ -93,8 +90,8 @@ impl Analysis {
                         if x.is_read_op { 1 } else { 0 },
                         0,
                         constant_linear.constant.const_value,
-                        constant_linear.constant.valid_interval.lower.unwrap_or_else(|| 0),
-                        constant_linear.constant.valid_interval.upper.unwrap_or_else(|| 0)
+                        constant_linear.constant.valid_interval.lower.unwrap_or(0),
+                        constant_linear.constant.valid_interval.upper.unwrap_or(0)
                     ));
                     all_models.push(format!(
                         "{},{},{},{},{},{}",
@@ -102,8 +99,8 @@ impl Analysis {
                         if x.is_read_op { 1 } else { 0 },
                         constant_linear.linear.slope,
                         constant_linear.linear.y_intercept,
-                        constant_linear.linear.valid_interval.lower.unwrap_or_else(|| 0),
-                        constant_linear.linear.valid_interval.upper.unwrap_or_else(|| 0)
+                        constant_linear.linear.valid_interval.lower.unwrap_or(0),
+                        constant_linear.linear.valid_interval.upper.unwrap_or(0)
                     ))
                 }
             }
