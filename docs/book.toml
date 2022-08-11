@@ -1,0 +1,6 @@
+[book]
+authors = ["Lars Quentin"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Blackheap documentation"
