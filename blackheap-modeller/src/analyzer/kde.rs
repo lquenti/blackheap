@@ -138,7 +138,7 @@ impl BenchmarkKde {
         });
 
         // So a cluster is a cluster iff
-        // (maxima[i] - minima[i+1]) < 0.1 * global_maximum
+        // (maxima[i] - minima[i+1]) >= 0.1 * global_maximum
         //
         // We join clusters together until that is true.
 
