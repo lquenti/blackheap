@@ -4,7 +4,8 @@ run: build-rust
 	./blackheap
 
 clean:
-	rm -rf ./blackheap-modeller/assets
+	rm -f ./blackheap-modeller/assets/blackheap-benchmark.exe
+	rm -f ./blackheap-modeller/assets/index.html
 	rm -f blackheap
 	rm -rf ./blackheap-benchmark/build
 	rm -rf ./blackheap-frontend/{build,node_modules}
