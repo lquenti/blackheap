@@ -1,19 +1,16 @@
 # How does the Build Process work?
 
-- The architecture, and its reasoning, are described under [Architecture](../Architecture.md).
+Blackheap consists of 3 different programs written in C, Typescript and Rust respectively. A more detailed explanation of the architecture and its reasoning behind it can be found under [Architecture](../Architecture.md). In this section blackheap's build process is explained. To make this as language independent as possible, it is orchestrated using a Makefile.
 
-- In order to stay language agnostic, we use a simple `Makefile` to orchestrate the different build systems.
+## Step 1: Building the Benchmarker
+First, the benchmarker written in C is compiled. gcc is used as compiler; the compilation process is managed by a second Makefile. At the end, the built binary gets moved into the rust source code directory.
 
-## The Benchmarker
-- At first, we build the benchmarker. Its build process is also managed by a seperate Makefile.
+## Step 2: Building the Web-Frontend
 
+The next step is to build the web-frontend. This is a React frontend based on [CRA](https://create-react-app.dev/). [yarn](https://yarnpkg.com/) is used as a package manager.
 
-## The Web-Frontend
-- Next, we build the web frontend
-- Its build process is managed by yarn and CRA
-- CRA is ejected and extended with (PLUGIN A UND PLUGIN B) in order to create a single HTML file
+First the project gets installed via yarn. Here all external node-modules dependencies are resolved. After that a minimized, production level optimized single HTML file gets built. At the end, this HTML file also gets moved into the rust directory.
 
-## The Modeller / Main Program
-- This build process is done via cargo
-- Beforehand, we move the benchmarker and web frontend into the rust src folder
-- this way, we can embed both files in the binary, making it a single standalone workflow
+## Step 3: Building the Main Program
+
+The last thing to be built is the Rust binary. Here the previously built C and TS programs are embedded as binary BLOBs within the main program. Hence, the Rust program can ship the other software optimized for the current architecture at runtime and blackheap can be deployed as a single binary.
