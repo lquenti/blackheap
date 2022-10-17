@@ -1,4 +1,4 @@
-all: clean prepare build-rust
+all: clean build-rust
 
 run: build-rust
 	./blackheap
@@ -10,9 +10,6 @@ clean:
 	rm -rf ./blackheap-benchmark/build
 	rm -rf ./blackheap-frontend/{build,node_modules}
 
-
-prepare:
-	mkdir ./blackheap-modeller/assets
 
 build-rust: build-react build-c
 	cd blackheap-modeller && \
