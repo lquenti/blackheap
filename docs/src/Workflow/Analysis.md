@@ -1,8 +1,8 @@
 # Analysis
 
-After each benchmark, we get a lot of points `(access_size, time)` for each characteristics. Now, for each access size, we have to create a good prediction on how long we can expect the access to take. This way, we can correlate a given operation with the different characteristics we measured.
+After each benchmark, we get a lot of points `(access_size, time)` for each characteristics. Now, for each access size, we have to find a good prediction on how much time we can expect the access to take. This way, we can correlate a given operation with the different characteristics we measured.
 
-Importantly, we can't assume that we have a normal distribution. This makes intuitive sense: On the one hand, calculating access times is a highly multivariate problem. On the other hand, things like shared queues will lead to a Gamma distribution, which is also why we can't just assume a Gaussian Mixture Model.
+Importantly, we can't assume that we have a normal distribution. This makes intuitive sense: On the one hand, calculating access times is a highly multivariate problem. On the other hand, things like shared queues will lead to a Gamma distribution, which is also why we can't just just a Gaussian Mixture Model.
 
 Without any further assumptions, the trivial choice would be a histogram. Sadly, this leaves us with the problem of automatic bin number and width. Often times, those automatic rules can often hugely misrepresent the underlying PDF.
 
@@ -18,15 +18,13 @@ A KDE of points \\(x_1,\dots,x_n\\) can be simplified to
 \hat{f}(x) = \frac{1}{N} \sum_{i=1}^N K(x-x_i)
 \\]
 
-where \\(K\\) is a so-called _kernel function_. This function can be read as
+where \\(K\\) is a so-called _kernel function_. This function can be understood in the following way:
 
 - For each point \\(x_i, i \in \{1,\dots, n\}\\)
 - Move the kernel function \\(x_i\\) to the right, to center it on this point
 - Then take the already moved kernel function \\(K\\) with regard to \\(x\\)
-- Take the sum of all those evaluated points
-- And renormalize it so that the integral stays \\(1\\).
-
-Note that each kernel function has to be a proper distribution function, i.e. their integral has to be \\(1\\).
+- Take the sum of all those evaluated kernels
+- And renormalize it so that the integral equals \\(1\\) i.e. the whole domain has a probability of 100%.
 
 In our case, the kernel function is a [Gaussian](https://en.wikipedia.org/wiki/Gaussian_function).
 

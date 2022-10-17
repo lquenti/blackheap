@@ -24,4 +24,4 @@ It supports the following parameters:
 - `--drop-cache`: Drops the page cache [via `/proc/sys/vm/drop_caches`](https://www.kernel.org/doc/Documentation/sysctl/vm.txt)
 - `--free-ram` Aritificially allocates RAM until the number of bytes are met. This restriction is done in order to force cache eviction.
 - `--o-direct`: Uses Linux Direct I/O (see `O_DIRECT`)
-- `--reread`: Read each block twice, just benchmark the second time. This is done to get cache speeds.
+- `--reread`: Read each block twice, just benchmark the second time. This is used to get cache speeds.

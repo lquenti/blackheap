@@ -2,7 +2,7 @@
 
 ## Overview
 
-The workflow can be broken down into 3 components:
+The workflow can be split into 3 parts:
 
 - [Generating performance measurements via different benchmarks](./Benchmark.md)
 - [Analyzing the benchmarks](./Analysis.md)

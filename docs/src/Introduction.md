@@ -1,6 +1,6 @@
 # Introduction
 
-Analyzing I/O requets is very difficult. It requires a lot of specialized knowledge. One has to take into account the file system, server topology, other traffic sources and access patterns among other things. This is not feasible for the average computing cluster user, as they neither have the permissions nor the time or knowledge for this type of sophisticated analysis.
+Analyzing I/O requets is very difficult. It requires a lot of specialized knowledge. One has to take into account the file system, server topology, different traffic sources and access patterns among other things. This is not feasible for the average HPC user, as they neither have the permissions nor the time or knowledge for this type of sophisticated analysis.
 
 Furthermore, any formal, deterministic analysis is impossible, since the access time is dependent on too many parameters. It is not practical to try to model the relevance of disk seek times or the linux block layer schedulers.
 
