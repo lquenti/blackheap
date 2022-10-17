@@ -13,4 +13,3 @@
   - [How does the Build Process work?](./FAQ/BuildProcess.md)
   - [Why do we depend on glibc?](./FAQ/glibc.md)
   - [Why the name Blackheap?](./FAQ/Naming.md)
-- [File format specifications](./FileFormats.md)

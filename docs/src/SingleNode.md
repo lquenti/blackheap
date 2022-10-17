@@ -32,4 +32,4 @@ Afterwards, the measurements are done by running the to-be-analyzed binary with 
 LD_PRELOAD=./build/preloadee.so /path/to/my/program
 ```
 
-This will produce [a CSV file](./FileFormats.md) in the current working directory. This file can then be analyzed locally by the aforementioned web-frontend.
+This will produce a CSV file in the current working directory. This file can then be analyzed locally by the aforementioned web-frontend.

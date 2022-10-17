@@ -12,7 +12,7 @@ Note that those components are actually 3 different standalone programs, not jus
 
 At first, the rust program generates the proper parameters for each benchmark run. It then sequentially spawns a new process for each run. After each run the results get saved to disk. This allows reproducibility as well as reanalyzing old benchmarks once new models are developed.
 
-After all benchmarks were run, the rust program processes the same results as described above. It then saves the generated models as specified [here](./FileFormats.md).
+After all benchmarks were run, the rust program processes the same results as described above. It then saves the generated models.
 
 It lastly also saves a single HTML file based frontend for local analysis, see [the local workflow](./SingleNode.md) for more information. Note that this tool can be used without a local web server, since all assets are transpiled into one HTML file. See [the build section](./FAQ/BuildProcess.md) for more.
 
