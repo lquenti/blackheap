@@ -84,7 +84,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="Introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="Workflow/index.html"><strong aria-hidden="true">2.</strong> Workflow</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="Workflow/Benchmark.html"><strong aria-hidden="true">2.1.</strong> Benchmark</a></li><li class="chapter-item expanded "><a href="Workflow/Analysis.html"><strong aria-hidden="true">2.2.</strong> Analysis</a></li><li class="chapter-item expanded "><a href="Workflow/ModelCreation.html"><strong aria-hidden="true">2.3.</strong> Model Creation</a></li></ol></li><li class="chapter-item expanded "><a href="Architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="Build.html"><strong aria-hidden="true">4.</strong> Building</a></li><li class="chapter-item expanded "><a href="SingleNode.html"><strong aria-hidden="true">5.</strong> Local Single Node Setup</a></li><li class="chapter-item expanded "><a href="StreamedClassifications.html"><strong aria-hidden="true">6.</strong> Streamed Multi Node Classifications with iofs</a></li><li class="chapter-item expanded "><a href="FAQ/index.html"><strong aria-hidden="true">7.</strong> FAQ</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="FAQ/BuildProcess.html"><strong aria-hidden="true">7.1.</strong> How does the Build Process work?</a></li><li class="chapter-item expanded "><a href="FAQ/glibc.html"><strong aria-hidden="true">7.2.</strong> Why do we depend on glibc?</a></li><li class="chapter-item expanded "><a href="FAQ/Naming.html"><strong aria-hidden="true">7.3.</strong> Why the name Blackheap?</a></li></ol></li><li class="chapter-item expanded "><a href="FileFormats.html"><strong aria-hidden="true">8.</strong> File format specifications</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="Introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="Workflow/index.html"><strong aria-hidden="true">2.</strong> Workflow</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="Workflow/Benchmark.html"><strong aria-hidden="true">2.1.</strong> Benchmark</a></li><li class="chapter-item expanded "><a href="Workflow/Analysis.html"><strong aria-hidden="true">2.2.</strong> Analysis</a></li><li class="chapter-item expanded "><a href="Workflow/ModelCreation.html"><strong aria-hidden="true">2.3.</strong> Model Creation</a></li></ol></li><li class="chapter-item expanded "><a href="Architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="Build.html"><strong aria-hidden="true">4.</strong> Building</a></li><li class="chapter-item expanded "><a href="SingleNode.html"><strong aria-hidden="true">5.</strong> Local Single Node Setup</a></li><li class="chapter-item expanded "><a href="StreamedClassifications.html"><strong aria-hidden="true">6.</strong> Streamed Multi Node Classifications with iofs</a></li><li class="chapter-item expanded "><a href="FAQ/index.html"><strong aria-hidden="true">7.</strong> FAQ</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="FAQ/BuildProcess.html"><strong aria-hidden="true">7.1.</strong> How does the Build Process work?</a></li><li class="chapter-item expanded "><a href="FAQ/glibc.html"><strong aria-hidden="true">7.2.</strong> Why do we depend on glibc?</a></li><li class="chapter-item expanded "><a href="FAQ/Naming.html"><strong aria-hidden="true">7.3.</strong> Why the name Blackheap?</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -146,7 +146,7 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
-<p>Analyzing I/O requets is very difficult. It requires a lot of specialized knowledge. One has to take into account the file system, server topology, other traffic sources and access patterns among other things. This is not feasible for the average computing cluster user, as they neither have the permissions nor the time or knowledge for this type of sophisticated analysis.</p>
+<p>Analyzing I/O requets is very difficult. It requires a lot of specialized knowledge. One has to take into account the file system, server topology, different traffic sources and access patterns among other things. This is not feasible for the average HPC user, as they neither have the permissions nor the time or knowledge for this type of sophisticated analysis.</p>
 <p>Furthermore, any formal, deterministic analysis is impossible, since the access time is dependent on too many parameters. It is not practical to try to model the relevance of disk seek times or the linux block layer schedulers.</p>
 <p><a href="https://github.com/lquenti/blackheap"><em>Blackheap</em></a> approaches this problem with a blackbox methology. It generates a predictive performance model based on the access time alone.</p>
 <h2 id="goals"><a class="header" href="#goals">Goals</a></h2>
@@ -178,7 +178,7 @@
 using Statistical Methods</a>&quot; (<a href="https://hps.vi4io.org/bibtex?bibtex_source=publications&amp;bibtex_key=IRFITIUSMK15">BibTeX</a>).</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="workflow"><a class="header" href="#workflow">Workflow</a></h1>
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
-<p>The workflow can be broken down into 3 components:</p>
+<p>The workflow can be split into 3 parts:</p>
 <ul>
 <li><a href="Workflow/./Benchmark.html">Generating performance measurements via different benchmarks</a></li>
 <li><a href="Workflow/./Analysis.html">Analyzing the benchmarks</a></li>
@@ -209,11 +209,11 @@ The following patterns are implemented
 <li><code>--drop-cache</code>: Drops the page cache <a href="https://www.kernel.org/doc/Documentation/sysctl/vm.txt">via <code>/proc/sys/vm/drop_caches</code></a></li>
 <li><code>--free-ram</code> Aritificially allocates RAM until the number of bytes are met. This restriction is done in order to force cache eviction.</li>
 <li><code>--o-direct</code>: Uses Linux Direct I/O (see <code>O_DIRECT</code>)</li>
-<li><code>--reread</code>: Read each block twice, just benchmark the second time. This is done to get cache speeds.</li>
+<li><code>--reread</code>: Read each block twice, just benchmark the second time. This is used to get cache speeds.</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="analysis"><a class="header" href="#analysis">Analysis</a></h1>
-<p>After each benchmark, we get a lot of points <code>(access_size, time)</code> for each characteristics. Now, for each access size, we have to create a good prediction on how long we can expect the access to take. This way, we can correlate a given operation with the different characteristics we measured.</p>
-<p>Importantly, we can't assume that we have a normal distribution. This makes intuitive sense: On the one hand, calculating access times is a highly multivariate problem. On the other hand, things like shared queues will lead to a Gamma distribution, which is also why we can't just assume a Gaussian Mixture Model.</p>
+<p>After each benchmark, we get a lot of points <code>(access_size, time)</code> for each characteristics. Now, for each access size, we have to find a good prediction on how much time we can expect the access to take. This way, we can correlate a given operation with the different characteristics we measured.</p>
+<p>Importantly, we can't assume that we have a normal distribution. This makes intuitive sense: On the one hand, calculating access times is a highly multivariate problem. On the other hand, things like shared queues will lead to a Gamma distribution, which is also why we can't just just a Gaussian Mixture Model.</p>
 <p>Without any further assumptions, the trivial choice would be a histogram. Sadly, this leaves us with the problem of automatic bin number and width. Often times, those automatic rules can often hugely misrepresent the underlying PDF.</p>
 <p>Instead we use a so-called <a href="https://en.wikipedia.org/wiki/Kernel_density_estimation">Kernel Density Estimation</a>, which creates a &quot;smoother&quot; histogram by putting a kernel over each point, then summing all kernels and renormalizing it to \(\int f(x) = 1\).</p>
 <p>A more detailed introduction to KDEs and their advantages <a href="https://kdepy.readthedocs.io/en/latest/introduction.html">in the great KDEpy documentation</a>.</p>
@@ -222,15 +222,14 @@ The following patterns are implemented
 <p>\[
 \hat{f}(x) = \frac{1}{N} \sum_{i=1}^N K(x-x_i)
 \]</p>
-<p>where \(K\) is a so-called <em>kernel function</em>. This function can be read as</p>
+<p>where \(K\) is a so-called <em>kernel function</em>. This function can be understood in the following way:</p>
 <ul>
 <li>For each point \(x_i, i \in {1,\dots, n}\)</li>
 <li>Move the kernel function \(x_i\) to the right, to center it on this point</li>
 <li>Then take the already moved kernel function \(K\) with regard to \(x\)</li>
-<li>Take the sum of all those evaluated points</li>
-<li>And renormalize it so that the integral stays \(1\).</li>
+<li>Take the sum of all those evaluated kernels</li>
+<li>And renormalize it so that the integral equals \(1\) i.e. the whole domain has a probability of 100%.</li>
 </ul>
-<p>Note that each kernel function has to be a proper distribution function, i.e. their integral has to be \(1\).</p>
 <p>In our case, the kernel function is a <a href="https://en.wikipedia.org/wiki/Gaussian_function">Gaussian</a>.</p>
 <h2 id="the-bandwidth-problem"><a class="header" href="#the-bandwidth-problem">The bandwidth problem</a></h2>
 <p>In real computations, our actual formula is defined as</p>
@@ -273,21 +272,21 @@ The following patterns are implemented
 <li>Our frontend is written in React (Typescript)</li>
 <li>The modelling logic and main program is written in Rust</li>
 </ul>
-<p>Note that those components are actually 3 different standalone program, not just libraries linked together. Although those programs are fully functional on their own, blackheap still provides a fully automated process; no user input is required. Moreover, blackheap is shipped as a single binary, see <a href="./FAQ/BuildProcess.html">the build process for more</a>.</p>
+<p>Note that those components are actually 3 different standalone programs, not just libraries linked together. Although those programs are fully functional on their own, blackheap still provides a fully automated process; no user input is required. Moreover, blackheap is shipped as a single binary, see <a href="./FAQ/BuildProcess.html">the build process for more</a>.</p>
 <h2 id="how-does-this-work"><a class="header" href="#how-does-this-work">How does this work?</a></h2>
-<p>At first, the rust program generates the proper parameters for each benchmark run. It then sequentially spawns a new process for each run. After each runs the results get saved to disk. This allows reproducibility as well as reanalyzing old benchmarks once new models are developed.</p>
-<p>After all benchmarks were run, the rust program processes the same results as described above. It then saves the generated models as specified <a href="./FileFormats.html">here</a>.</p>
-<p>It lastly also saves a single HTML file for local analysis, see <a href="./SingleNode.html">the local workflow</a> for more information. Note that this file can be used without a local web server, since all assets are transpiled into the HTML file. See <a href="./FAQ/BuildProcess.html">the build section</a> for more.</p>
+<p>At first, the rust program generates the proper parameters for each benchmark run. It then sequentially spawns a new process for each run. After each run the results get saved to disk. This allows reproducibility as well as reanalyzing old benchmarks once new models are developed.</p>
+<p>After all benchmarks were run, the rust program processes the same results as described above. It then saves the generated models.</p>
+<p>It lastly also saves a single HTML file based frontend for local analysis, see <a href="./SingleNode.html">the local workflow</a> for more information. Note that this tool can be used without a local web server, since all assets are transpiled into one HTML file. See <a href="./FAQ/BuildProcess.html">the build section</a> for more.</p>
 <h2 id="why-was-rust-chosen"><a class="header" href="#why-was-rust-chosen">Why was Rust chosen?</a></h2>
 <p>The intial prototype was written in Python3. But, especially in lightweight HPC environments running old RHEL-based distributions, Python3 often is not installed.</p>
 <p>Although solutions like <a href="https://github.com/pyenv/pyenv">pyenv</a> exist, bootstrapping Python is not always trivial. Thus we wanted to create a dependency-less binary while keeping most advantages provided by the Python ecosystem.</p>
 <p>This is why we used Rust. Rust offers a huge high level ecosystem with <code>cargo</code>. Rust has zero runtime dependencies and bootstrapping Rust via <a href="https://rustup.rs/"><code>rustup</code></a> requires no preinstalled libraries.</p>
 <p>Furthermore, most Rust libraries don't have any 3rd party non-cargo dependencies as well.</p>
 <h3 id="why-was-c-chosen"><a class="header" href="#why-was-c-chosen">Why was C chosen?</a></h3>
-<p>Despire Rust being a very performant programming language with very few overhead, it didn't suffice for benchmarks. In order to get the best possible accuracy, we need to stay as near to the kernel API as possible. Also, some calls like <code>lseek</code> aren't even available in the Rust stdlib.</p>
+<p>Despire Rust being a very performant programming language with very little performance overhead, it didn't suffice for our benchmarks. In order to get the best possible accuracy, we need to stay as near to the kernel API as possible. Also, some calls like <code>lseek</code> aren't even available in the Rust stdlib.</p>
 <h3 id="why-was-react--ts-chosen"><a class="header" href="#why-was-react--ts-chosen">Why was React / TS chosen?</a></h3>
 <p>Rust plotting libraries are either very immature or have hard dependencies on 3rd-Party libraries. Since it was impractical to implement a plotting library from scratch, we chose to take advantage of the enormous Web ecosystem.</p>
-<p>We chose React since it is the most used frontend framework, which maximizes the likelyhood of being easy to maintain in the future. We furthermore chose Plotly as a plotting library since it has enough commercial support to finance its future maintenance.</p>
+<p>We chose React since it is the most used frontend framework, which maximizes the likelyhood of being easy to maintain in the future. We furthermore chose Plotly as a plotting library since it has enough commercial support to secure its future maintenance.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="how-to-build-blackheap"><a class="header" href="#how-to-build-blackheap">How to Build Blackheap</a></h1>
 <h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
 <ul>
@@ -312,119 +311,80 @@ nvm use node --lts
 <h2 id="building-blackheap"><a class="header" href="#building-blackheap">Building Blackheap</a></h2>
 <p>If everything worked, blackheap should be buildable via <code>make</code>.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="local-single-node-setup"><a class="header" href="#local-single-node-setup">Local Single Node Setup</a></h1>
-<p>The single node setup allows for local classification of I/O requests. This standalone process requires no server or any kind of running database. Additionally, no changes to the binary or workflow are required.</p>
+<p>The single node setup allows for local classification of I/O requests. This standalone process requires no remote server or any kind of running database. Additionally, no changes to the binary or workflow are required.</p>
 <h2 id="creating-a-performance-model"><a class="header" href="#creating-a-performance-model">Creating a performance model</a></h2>
 <p>After compiling, the performance model can be generated by running <code>blackheap</code>. No further configuration is required.</p>
-<p>One should run the benchmarks on the same decice as the program which one wants to analyze. The path used can be speicifed via the <code>--file</code> parameter, see <code>blackheap --help</code> for more information.</p>
+<p>One should run the benchmarks on the same decice as the program which one wants to analyze. The path used can be speicifed with the <code>--file</code> parameter, see <code>blackheap --help</code> for more information.</p>
 <h2 id="analyzing-the-created-model"><a class="header" href="#analyzing-the-created-model">Analyzing the created model</a></h2>
-<p>After running <code>blackheap</code>, a model folder will be created. The default path is <code>./default-model</code>, although this can be changed via the <code>--to</code> parameter.</p>
-<p>In this folder, the single file web-frontend is contained, named <code>index.html</code>. This can be viewed with any device and any modern browser; no extra webserver is required. After loading the <code>Model.json</code>, the analyzed data gets plotted for manual analysis.</p>
+<p>After running <code>blackheap</code>, a model folder will be created. The default path is <code>./default-model</code>, although this can be changed with the <code>--to</code> parameter.</p>
+<p>In this folder, the single file web-frontend is contained, named <code>index.html</code>. This can be viewed with any device and any modern browser; no extra webserver is required. After loading the generated <code>Model.json</code>, the analyzed data gets plotted for manual analysis.</p>
 <h2 id="using-the-created-model-locally"><a class="header" href="#using-the-created-model-locally">Using the created model locally</a></h2>
 <p>In order to locally measure any I/O requests, we preload custom I/O functions interjecting any I/O requests. Those I/O functions trace the time taken for each operation.</p>
-<p>This is done via the <code>LD_PRELOAD</code> environment variable. <a href="https://man7.org/linux/man-pages/man8/ld-linux.so.8.html">The Linux manual</a> defines it as follows:</p>
+<p>This is done through the <code>LD_PRELOAD</code> environment variable. <a href="https://man7.org/linux/man-pages/man8/ld-linux.so.8.html">The Linux manual</a> defines it as follows:</p>
 <p>&quot;A list of additional, user-specified, ELF shared objects to be loaded before all others. This feature can be used to selectively override functions in other shared objects.&quot;</p>
-<p>For a great, introduction, see <a href="http://www.goldsborough.me/c/low-level/kernel/2016/08/29/16-48-53-the_-ld_preload-_trick/">&quot;The <code>LD_PRELOAD</code> trick&quot;</a>.</p>
+<p>For a great introduction see <a href="http://www.goldsborough.me/c/low-level/kernel/2016/08/29/16-48-53-the_-ld_preload-_trick/">&quot;The <code>LD_PRELOAD</code> trick&quot;</a>.</p>
 <p>Our preloadee can be found under <code>./preloadee</code>. It can be built via <code>make</code>.</p>
 <p>Afterwards, the measurements are done by running the to-be-analyzed binary with the preloaded library injected, i.e.</p>
 <pre><code>LD_PRELOAD=./build/preloadee.so /path/to/my/program
 </code></pre>
-<p>This will produce <a href="./FileFormats.html">a CSV file</a> in the current working directory. This file can then be analyzed locally via the aforementioned web-frontend.</p>
+<p>This will produce a CSV file in the current working directory. This file can then be analyzed locally by the aforementioned web-frontend.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="streamed-multi-node-classifications-with-iofs"><a class="header" href="#streamed-multi-node-classifications-with-iofs">Streamed Multi Node Classifications with iofs</a></h1>
-<p>Blackheap also allows for aggregated, streamed classification to a remote TSDB via <a href="https://github.com/gwdg/iofs">iofs</a>. This allows for analysis of multiple nodes. It currently supports any monitoring system that supports Influxdb. Internally, it is used in combinaton with Grafana.</p>
-<p>Again, no changes to the binary are required, although some configuration may be required.</p>
-<h2 id="blackheap-and-iofs"><a class="header" href="#blackheap-and-iofs">Blackheap and iofs</a></h2>
-<p>iofs is a FUSE based tool for measuring I/O requests. It works by remounting a file system, then interjecting any incoming I/O requests. See <a href="https://gwdg.github.io/iofs/book/">the iofs documentation</a> for more information.</p>
-<h2 id="setting-up-iofs"><a class="header" href="#setting-up-iofs">Setting up iofs</a></h2>
-<h2 id="creating-a-performance-model-1"><a class="header" href="#creating-a-performance-model-1">Creating a performance model</a></h2>
-<p>After compiling, the performance model can be generated by running</p>
-<pre><code>blackheap --file /path/to/the
+<p>Blackheap also allows for aggregated, streamed classification to a remote TSDB via <a href="https://github.com/gwdg/iofs">iofs</a>. iofs is a FUSE based tool for measuring I/O requests. It works by remounting a file system, then interjecting any incoming I/O requests. See <a href="https://gwdg.github.io/iofs/book/">the iofs documentation</a> for more information.</p>
+<p>This allows for aggregate remote analysis of multiple nodes. It currently supports any monitoring system that is based on Influxdb. In our internal use case, it is used in combinaton with Grafana.</p>
+<p>Again, no changes to the recorded software binary is required, although some configuration may be needed in order to write to the correct mount point.</p>
+<h2 id="setup"><a class="header" href="#setup">Setup</a></h2>
+<p>Here we have a the chicken and the egg type of problem: On the one hand, we want to do access classification based on the expected values of the FUSE file system. On the other hand, we theoretically already need those classifications before starting iofs. This is a complex <a href="https://github.com/gwdg/iofs/issues/6">open problem</a>.</p>
+<p>As mentioned in the issue, there are basically two solutions. For now, this documentation will rely on the first idea since it cannot be assumed that one has that much computing time to create two seperate classification models. Feel free to use the other approach instead if you want, found <a href="https://github.com/gwdg/iofs/issues/6">in the issue</a> as well.</p>
+<h3 id="step-0-build-iofs-mount-it-with-fake-classifications"><a class="header" href="#step-0-build-iofs-mount-it-with-fake-classifications">Step 0: Build iofs; mount it with fake classifications</a></h3>
+<p>Of course, iofs has to be built first. See <a href="https://gwdg.github.io/iofs/book/setup/Installation.html">the related iofs documentation</a> for more.</p>
+<p>After that, iofs should be mounted with a fake set of models in order to have the approximately correct overhead for I/O requests. Download them here related to their CLI parameter name:</p>
+<ul>
+<li>constant-linear (DEFAULT): <a href="./DummyModels/constant-linear.csv">here</a></li>
+<li>linear: <a href="./DummyModels/linear.csv">here</a></li>
+</ul>
+<p>After that, mount iofs via</p>
+<pre><code>./iofs /new/mountpoint /where/real/data/is --classificationfile=/path/to/dummy.csv
 </code></pre>
-<ul>
-<li>again, same as in the single node docs</li>
-<li>Only difference: It needs to obviously run on the FUSE</li>
-</ul>
-<h2 id="setting-up-grafana-influxdb-and-iofs"><a class="header" href="#setting-up-grafana-influxdb-and-iofs">Setting up Grafana, Influxdb and iofs</a></h2>
-<ul>
-<li>if not already existent: We offer a configured docker compose solution. (LINK)</li>
-<li>Caveats: We currently only support Influxdb 1 with InfluxQL auth</li>
-<li>See iofs docs on how to build it</li>
-</ul>
-<h2 id="measuring-data"><a class="header" href="#measuring-data">Measuring data</a></h2>
-<ol>
-<li>Create the iofs fuse mount whereever the I/O accesses should be recorded</li>
-</ol>
-<ul>
-<li>use the following parameter... (especially classification file, influx parameters, outfile...)</li>
-</ul>
-<ol start="2">
-<li>Start the program whose I/O should be measured.</li>
-</ol>
-<ul>
-<li>The program may needs further configuration. Any I/O can just be tracked iff the access is done via
-the FUSE mount created by iofs</li>
-</ul>
-<ol start="3">
-<li>Process the incoming data via Grafana as needed</li>
-</ol>
-<ul>
-<li>In the future, we will provide premade dashboards for easier onboarding.</li>
-</ul>
-<h2 id="troubleshooting"><a class="header" href="#troubleshooting">Troubleshooting</a></h2>
-<ul>
-<li>check the out file (TODO cli param). If it doesn't generate any output, the problem is with iofs itself</li>
-<li>if it generates sane output, the problem is with the influx connection</li>
-<li>Check whether the port is open or not via telnet</li>
-<li>Afterwards, connect to the influx container (or server) and try to login locally with the same credentials</li>
-<li>Check whether InfluxQL is activated, not Flex provided by InfluxDB2</li>
-<li>Check whether the DB is created via <code>SHOW DATABASES;</code>. Influx doesn't automatically create the database on first
-incoming write</li>
-</ul>
+<p>or, if InfluxDB should be used:</p>
+<pre><code>iofs /new/fuse/mountpoint /where/real/data/is --classificationfile=/path/to/dummy.csv --in-server=http://influx_server:8086 --in-db=mydb
+</code></pre>
+<h3 id="step-1-create-a-performance-model-using-the-fake-initial-classifications"><a class="header" href="#step-1-create-a-performance-model-using-the-fake-initial-classifications">Step 1: Create a performance model using the fake initial classifications</a></h3>
+<p>Note: This, of course, will stream wrong data to Influx. But that is okay. We just want to have the correct data produced by blackheap, which requires the correct request time overhead.</p>
+<p>So, now the correct performance model can be created using blackheap. This requires that the benchmark is done on the iofs FUSE file system, which can be controlled via the <code>--file</code> parameter. Therefore, the minimal call would be</p>
+<pre><code>blackheap --file /path/to/somewhere/within/the/mountpoint
+</code></pre>
+<p>Afterwards, a model will be created at <code>$PWD/default_model</code>. This can be controlled via <code>--to</code>. See <code>blackheap --help</code> for more.</p>
+<h3 id="step-2-remount-iofs-with-the-real-classifications"><a class="header" href="#step-2-remount-iofs-with-the-real-classifications">Step 2: Remount iofs with the real classifications</a></h3>
+<p>Unmount iofs and remount with the newly created <code>default_model/iofs.csv</code>. Otherwise, the parameters are the same as in Step 0.</p>
+<p>Afterwards, it should record and classify the I/O requests according to the performance model created.</p>
+<h2 id="setting-up-grafana-and-influxdb-for-remote-analysis"><a class="header" href="#setting-up-grafana-and-influxdb-for-remote-analysis">Setting up Grafana and InfluxDB for Remote Analysis</a></h2>
+<p>We provide a full docker-compose setup for InfluxDB+Grafana <a href="https://gwdg.github.io/iofs/book/setup/LocalGrafana.html">in the iofs repository</a>.</p>
+<p>After the setup data can be streamed by mounting iofs with</p>
+<pre><code>iofs /new/fuse/mountpoint /where/real/data/is --classificationfile=/path/to/dummy.csv --in-server=http://influx_server:8086 --in-db=mydb
+</code></pre>
+<p>See <a href="https://gwdg.github.io/iofs/book">the iofs documentation</a> for more information.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="frequently-asked-questions-faq"><a class="header" href="#frequently-asked-questions-faq">Frequently Asked Questions (FAQ)</a></h1>
-<p>Those aren't <strong>actually</strong> frequently asked questions, but questions I anticipated or topics that didn't fit the documentation flow.</p>
+<p>Those aren't <strong>actually</strong> frequently asked questions, but questions we anticipated or topics that didn't fit the documentation flow.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="how-does-the-build-process-work"><a class="header" href="#how-does-the-build-process-work">How does the Build Process work?</a></h1>
-<ul>
-<li>
-<p>The architecture, and its reasoning, are described under <a href="FAQ/../Architecture.html">Architecture</a>.</p>
-</li>
-<li>
-<p>In order to stay language agnostic, we use a simple <code>Makefile</code> to orchestrate the different build systems.</p>
-</li>
-</ul>
-<h2 id="the-benchmarker"><a class="header" href="#the-benchmarker">The Benchmarker</a></h2>
-<ul>
-<li>At first, we build the benchmarker. Its build process is also managed by a seperate Makefile.</li>
-</ul>
-<h2 id="the-web-frontend"><a class="header" href="#the-web-frontend">The Web-Frontend</a></h2>
-<ul>
-<li>Next, we build the web frontend</li>
-<li>Its build process is managed by yarn and CRA</li>
-<li>CRA is ejected and extended with (PLUGIN A UND PLUGIN B) in order to create a single HTML file</li>
-</ul>
-<h2 id="the-modeller--main-program"><a class="header" href="#the-modeller--main-program">The Modeller / Main Program</a></h2>
-<ul>
-<li>This build process is done via cargo</li>
-<li>Beforehand, we move the benchmarker and web frontend into the rust src folder</li>
-<li>this way, we can embed both files in the binary, making it a single standalone workflow</li>
-</ul>
+<p>Blackheap consists of 3 different programs written in C, Typescript and Rust respectively. A more detailed explanation of the architecture and its reasoning behind it can be found under <a href="FAQ/../Architecture.html">Architecture</a>. In this section blackheap's build process is explained. To make this as language independent as possible, it is orchestrated using a Makefile.</p>
+<h2 id="step-1-building-the-benchmarker"><a class="header" href="#step-1-building-the-benchmarker">Step 1: Building the Benchmarker</a></h2>
+<p>First, the benchmarker written in C is compiled. gcc is used as compiler; the compilation process is managed by a second Makefile. At the end, the built binary gets moved into the rust source code directory.</p>
+<h2 id="step-2-building-the-web-frontend"><a class="header" href="#step-2-building-the-web-frontend">Step 2: Building the Web-Frontend</a></h2>
+<p>The next step is to build the web-frontend. This is a React frontend based on <a href="https://create-react-app.dev/">CRA</a>. <a href="https://yarnpkg.com/">yarn</a> is used as a package manager.</p>
+<p>First the project gets installed via yarn. Here all external node-modules dependencies are resolved. After that a minimized, production level optimized single HTML file gets built. At the end, this HTML file also gets moved into the rust directory.</p>
+<h2 id="step-3-building-the-main-program"><a class="header" href="#step-3-building-the-main-program">Step 3: Building the Main Program</a></h2>
+<p>The last thing to be built is the Rust binary. Here the previously built C and TS programs are embedded as binary BLOBs within the main program. Hence, the Rust program can ship the other software optimized for the current architecture at runtime and blackheap can be deployed as a single binary.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="why-do-we-require-depend-on-glibc"><a class="header" href="#why-do-we-require-depend-on-glibc">Why do we require depend on glibc?</a></h1>
-<p>We depend on glibc for multiple reasons:</p>
+<p>We depend on <a href="https://www.gnu.org/software/libc/">the GNU C library <code>glibc</code></a> for multiple reasons:</p>
 <ul>
-<li>It provides the most accurate clock via <a href="https://linux.die.net/man/2/clock_gettime"><code>CLOCK_MONOTONIC</code></a> <a href="https://stackoverflow.com/questions/12392278/measure-time-in-linux-time-vs-clock-vs-getrusage-vs-clock-gettime-vs-gettimeof/12480485#12480485">(see)</a></li>
-<li>It is required for <code>O_DIRECT</code> file access</li>
-<li>It makes argument parsing more elegant with argp instead of getopt</li>
+<li>It provides the <a href="https://stackoverflow.com/questions/12392278/measure-time-in-linux-time-vs-clock-vs-getrusage-vs-clock-gettime-vs-gettimeof/12480485#12480485">most accurate clock</a> via <a href="https://linux.die.net/man/2/clock_gettime"><code>CLOCK_MONOTONIC</code></a>.</li>
+<li>It is required for <a href="https://man7.org/linux/man-pages/man2/open.2.html"><code>O_DIRECT</code></a> file access</li>
+<li>It provides <a href="https://www.gnu.org/software/libc/manual/html_node/Argp.html"><code>argp</code></a> as a better argument parsing alternative to the POSIX <a href="https://en.wikipedia.org/wiki/Getopt"><code>getopt</code></a>.</li>
 </ul>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="why-the-name-blackheap"><a class="header" href="#why-the-name-blackheap">Why the name Blackheap?</a></h1>
-<ul>
-<li>We have a <strong>blackbox</strong> methodology for classifying I/O requests</li>
-<li>In Rust, the <a href="https://doc.rust-lang.org/book/ch15-01-box.html"><code>Box&lt;&gt;</code></a> is the simplest smart pointer used to store something on the <strong>Heap</strong></li>
-<li>Thus, <code>blackbox + Heap = blackheap</code></li>
-</ul>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="file-format-specifications"><a class="header" href="#file-format-specifications">File format specifications</a></h1>
-<ul>
-<li>JSON format for <code>Model.json</code></li>
-<li>CSV format used by iofs</li>
-<li>Output provided by the preloadee</li>
-</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="why-the-name-blackheap"><a class="header" href="#why-the-name-blackheap">Why the Name Blackheap?</a></h1>
+<p>In blackheap, we use a <strong>blackbox</strong> methodology for classifying I/O requests. So &quot;blackbox&quot; would be a obvious name choice. Of course, this would be a horrible name: Not only for SEO reasons but also for general name collisions.</p>
+<p>In Rust, the <a href="https://doc.rust-lang.org/book/ch15-01-box.html"><code>Box&lt;&gt;</code></a> is the simplest data type to provide a smart pointer. Basically, if you put something in a <code>Box</code>, you store it on the Heap while the only thing put on the stack is the corresponding pointer.</p>
+<p>Thus, substituting <code>Box</code> in blackheap for being a pointer on the heap, we have <strong>blackheap</strong>!</p>
 
                     </main>
 

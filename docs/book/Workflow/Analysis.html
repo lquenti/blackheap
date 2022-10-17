@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../Introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../Workflow/index.html"><strong aria-hidden="true">2.</strong> Workflow</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Workflow/Benchmark.html"><strong aria-hidden="true">2.1.</strong> Benchmark</a></li><li class="chapter-item expanded "><a href="../Workflow/Analysis.html" class="active"><strong aria-hidden="true">2.2.</strong> Analysis</a></li><li class="chapter-item expanded "><a href="../Workflow/ModelCreation.html"><strong aria-hidden="true">2.3.</strong> Model Creation</a></li></ol></li><li class="chapter-item expanded "><a href="../Architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../Build.html"><strong aria-hidden="true">4.</strong> Building</a></li><li class="chapter-item expanded "><a href="../SingleNode.html"><strong aria-hidden="true">5.</strong> Local Single Node Setup</a></li><li class="chapter-item expanded "><a href="../StreamedClassifications.html"><strong aria-hidden="true">6.</strong> Streamed Multi Node Classifications with iofs</a></li><li class="chapter-item expanded "><a href="../FAQ/index.html"><strong aria-hidden="true">7.</strong> FAQ</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../FAQ/BuildProcess.html"><strong aria-hidden="true">7.1.</strong> How does the Build Process work?</a></li><li class="chapter-item expanded "><a href="../FAQ/glibc.html"><strong aria-hidden="true">7.2.</strong> Why do we depend on glibc?</a></li><li class="chapter-item expanded "><a href="../FAQ/Naming.html"><strong aria-hidden="true">7.3.</strong> Why the name Blackheap?</a></li></ol></li><li class="chapter-item expanded "><a href="../FileFormats.html"><strong aria-hidden="true">8.</strong> File format specifications</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../Introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../Workflow/index.html"><strong aria-hidden="true">2.</strong> Workflow</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Workflow/Benchmark.html"><strong aria-hidden="true">2.1.</strong> Benchmark</a></li><li class="chapter-item expanded "><a href="../Workflow/Analysis.html" class="active"><strong aria-hidden="true">2.2.</strong> Analysis</a></li><li class="chapter-item expanded "><a href="../Workflow/ModelCreation.html"><strong aria-hidden="true">2.3.</strong> Model Creation</a></li></ol></li><li class="chapter-item expanded "><a href="../Architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../Build.html"><strong aria-hidden="true">4.</strong> Building</a></li><li class="chapter-item expanded "><a href="../SingleNode.html"><strong aria-hidden="true">5.</strong> Local Single Node Setup</a></li><li class="chapter-item expanded "><a href="../StreamedClassifications.html"><strong aria-hidden="true">6.</strong> Streamed Multi Node Classifications with iofs</a></li><li class="chapter-item expanded "><a href="../FAQ/index.html"><strong aria-hidden="true">7.</strong> FAQ</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../FAQ/BuildProcess.html"><strong aria-hidden="true">7.1.</strong> How does the Build Process work?</a></li><li class="chapter-item expanded "><a href="../FAQ/glibc.html"><strong aria-hidden="true">7.2.</strong> Why do we depend on glibc?</a></li><li class="chapter-item expanded "><a href="../FAQ/Naming.html"><strong aria-hidden="true">7.3.</strong> Why the name Blackheap?</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -145,8 +145,8 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="analysis"><a class="header" href="#analysis">Analysis</a></h1>
-<p>After each benchmark, we get a lot of points <code>(access_size, time)</code> for each characteristics. Now, for each access size, we have to create a good prediction on how long we can expect the access to take. This way, we can correlate a given operation with the different characteristics we measured.</p>
-<p>Importantly, we can't assume that we have a normal distribution. This makes intuitive sense: On the one hand, calculating access times is a highly multivariate problem. On the other hand, things like shared queues will lead to a Gamma distribution, which is also why we can't just assume a Gaussian Mixture Model.</p>
+<p>After each benchmark, we get a lot of points <code>(access_size, time)</code> for each characteristics. Now, for each access size, we have to find a good prediction on how much time we can expect the access to take. This way, we can correlate a given operation with the different characteristics we measured.</p>
+<p>Importantly, we can't assume that we have a normal distribution. This makes intuitive sense: On the one hand, calculating access times is a highly multivariate problem. On the other hand, things like shared queues will lead to a Gamma distribution, which is also why we can't just just a Gaussian Mixture Model.</p>
 <p>Without any further assumptions, the trivial choice would be a histogram. Sadly, this leaves us with the problem of automatic bin number and width. Often times, those automatic rules can often hugely misrepresent the underlying PDF.</p>
 <p>Instead we use a so-called <a href="https://en.wikipedia.org/wiki/Kernel_density_estimation">Kernel Density Estimation</a>, which creates a &quot;smoother&quot; histogram by putting a kernel over each point, then summing all kernels and renormalizing it to \(\int f(x) = 1\).</p>
 <p>A more detailed introduction to KDEs and their advantages <a href="https://kdepy.readthedocs.io/en/latest/introduction.html">in the great KDEpy documentation</a>.</p>
@@ -155,15 +155,14 @@
 <p>\[
 \hat{f}(x) = \frac{1}{N} \sum_{i=1}^N K(x-x_i)
 \]</p>
-<p>where \(K\) is a so-called <em>kernel function</em>. This function can be read as</p>
+<p>where \(K\) is a so-called <em>kernel function</em>. This function can be understood in the following way:</p>
 <ul>
 <li>For each point \(x_i, i \in {1,\dots, n}\)</li>
 <li>Move the kernel function \(x_i\) to the right, to center it on this point</li>
 <li>Then take the already moved kernel function \(K\) with regard to \(x\)</li>
-<li>Take the sum of all those evaluated points</li>
-<li>And renormalize it so that the integral stays \(1\).</li>
+<li>Take the sum of all those evaluated kernels</li>
+<li>And renormalize it so that the integral equals \(1\) i.e. the whole domain has a probability of 100%.</li>
 </ul>
-<p>Note that each kernel function has to be a proper distribution function, i.e. their integral has to be \(1\).</p>
 <p>In our case, the kernel function is a <a href="https://en.wikipedia.org/wiki/Gaussian_function">Gaussian</a>.</p>
 <h2 id="the-bandwidth-problem"><a class="header" href="#the-bandwidth-problem">The bandwidth problem</a></h2>
 <p>In real computations, our actual formula is defined as</p>

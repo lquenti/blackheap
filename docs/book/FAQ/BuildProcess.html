@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../Introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../Workflow/index.html"><strong aria-hidden="true">2.</strong> Workflow</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Workflow/Benchmark.html"><strong aria-hidden="true">2.1.</strong> Benchmark</a></li><li class="chapter-item expanded "><a href="../Workflow/Analysis.html"><strong aria-hidden="true">2.2.</strong> Analysis</a></li><li class="chapter-item expanded "><a href="../Workflow/ModelCreation.html"><strong aria-hidden="true">2.3.</strong> Model Creation</a></li></ol></li><li class="chapter-item expanded "><a href="../Architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../Build.html"><strong aria-hidden="true">4.</strong> Building</a></li><li class="chapter-item expanded "><a href="../SingleNode.html"><strong aria-hidden="true">5.</strong> Local Single Node Setup</a></li><li class="chapter-item expanded "><a href="../StreamedClassifications.html"><strong aria-hidden="true">6.</strong> Streamed Multi Node Classifications with iofs</a></li><li class="chapter-item expanded "><a href="../FAQ/index.html"><strong aria-hidden="true">7.</strong> FAQ</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../FAQ/BuildProcess.html" class="active"><strong aria-hidden="true">7.1.</strong> How does the Build Process work?</a></li><li class="chapter-item expanded "><a href="../FAQ/glibc.html"><strong aria-hidden="true">7.2.</strong> Why do we depend on glibc?</a></li><li class="chapter-item expanded "><a href="../FAQ/Naming.html"><strong aria-hidden="true">7.3.</strong> Why the name Blackheap?</a></li></ol></li><li class="chapter-item expanded "><a href="../FileFormats.html"><strong aria-hidden="true">8.</strong> File format specifications</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../Introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../Workflow/index.html"><strong aria-hidden="true">2.</strong> Workflow</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Workflow/Benchmark.html"><strong aria-hidden="true">2.1.</strong> Benchmark</a></li><li class="chapter-item expanded "><a href="../Workflow/Analysis.html"><strong aria-hidden="true">2.2.</strong> Analysis</a></li><li class="chapter-item expanded "><a href="../Workflow/ModelCreation.html"><strong aria-hidden="true">2.3.</strong> Model Creation</a></li></ol></li><li class="chapter-item expanded "><a href="../Architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../Build.html"><strong aria-hidden="true">4.</strong> Building</a></li><li class="chapter-item expanded "><a href="../SingleNode.html"><strong aria-hidden="true">5.</strong> Local Single Node Setup</a></li><li class="chapter-item expanded "><a href="../StreamedClassifications.html"><strong aria-hidden="true">6.</strong> Streamed Multi Node Classifications with iofs</a></li><li class="chapter-item expanded "><a href="../FAQ/index.html"><strong aria-hidden="true">7.</strong> FAQ</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../FAQ/BuildProcess.html" class="active"><strong aria-hidden="true">7.1.</strong> How does the Build Process work?</a></li><li class="chapter-item expanded "><a href="../FAQ/glibc.html"><strong aria-hidden="true">7.2.</strong> Why do we depend on glibc?</a></li><li class="chapter-item expanded "><a href="../FAQ/Naming.html"><strong aria-hidden="true">7.3.</strong> Why the name Blackheap?</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -145,30 +145,14 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="how-does-the-build-process-work"><a class="header" href="#how-does-the-build-process-work">How does the Build Process work?</a></h1>
-<ul>
-<li>
-<p>The architecture, and its reasoning, are described under <a href="../Architecture.html">Architecture</a>.</p>
-</li>
-<li>
-<p>In order to stay language agnostic, we use a simple <code>Makefile</code> to orchestrate the different build systems.</p>
-</li>
-</ul>
-<h2 id="the-benchmarker"><a class="header" href="#the-benchmarker">The Benchmarker</a></h2>
-<ul>
-<li>At first, we build the benchmarker. Its build process is also managed by a seperate Makefile.</li>
-</ul>
-<h2 id="the-web-frontend"><a class="header" href="#the-web-frontend">The Web-Frontend</a></h2>
-<ul>
-<li>Next, we build the web frontend</li>
-<li>Its build process is managed by yarn and CRA</li>
-<li>CRA is ejected and extended with (PLUGIN A UND PLUGIN B) in order to create a single HTML file</li>
-</ul>
-<h2 id="the-modeller--main-program"><a class="header" href="#the-modeller--main-program">The Modeller / Main Program</a></h2>
-<ul>
-<li>This build process is done via cargo</li>
-<li>Beforehand, we move the benchmarker and web frontend into the rust src folder</li>
-<li>this way, we can embed both files in the binary, making it a single standalone workflow</li>
-</ul>
+<p>Blackheap consists of 3 different programs written in C, Typescript and Rust respectively. A more detailed explanation of the architecture and its reasoning behind it can be found under <a href="../Architecture.html">Architecture</a>. In this section blackheap's build process is explained. To make this as language independent as possible, it is orchestrated using a Makefile.</p>
+<h2 id="step-1-building-the-benchmarker"><a class="header" href="#step-1-building-the-benchmarker">Step 1: Building the Benchmarker</a></h2>
+<p>First, the benchmarker written in C is compiled. gcc is used as compiler; the compilation process is managed by a second Makefile. At the end, the built binary gets moved into the rust source code directory.</p>
+<h2 id="step-2-building-the-web-frontend"><a class="header" href="#step-2-building-the-web-frontend">Step 2: Building the Web-Frontend</a></h2>
+<p>The next step is to build the web-frontend. This is a React frontend based on <a href="https://create-react-app.dev/">CRA</a>. <a href="https://yarnpkg.com/">yarn</a> is used as a package manager.</p>
+<p>First the project gets installed via yarn. Here all external node-modules dependencies are resolved. After that a minimized, production level optimized single HTML file gets built. At the end, this HTML file also gets moved into the rust directory.</p>
+<h2 id="step-3-building-the-main-program"><a class="header" href="#step-3-building-the-main-program">Step 3: Building the Main Program</a></h2>
+<p>The last thing to be built is the Rust binary. Here the previously built C and TS programs are embedded as binary BLOBs within the main program. Hence, the Rust program can ship the other software optimized for the current architecture at runtime and blackheap can be deployed as a single binary.</p>
 
                     </main>
 

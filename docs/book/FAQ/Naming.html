@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../Introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../Workflow/index.html"><strong aria-hidden="true">2.</strong> Workflow</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Workflow/Benchmark.html"><strong aria-hidden="true">2.1.</strong> Benchmark</a></li><li class="chapter-item expanded "><a href="../Workflow/Analysis.html"><strong aria-hidden="true">2.2.</strong> Analysis</a></li><li class="chapter-item expanded "><a href="../Workflow/ModelCreation.html"><strong aria-hidden="true">2.3.</strong> Model Creation</a></li></ol></li><li class="chapter-item expanded "><a href="../Architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../Build.html"><strong aria-hidden="true">4.</strong> Building</a></li><li class="chapter-item expanded "><a href="../SingleNode.html"><strong aria-hidden="true">5.</strong> Local Single Node Setup</a></li><li class="chapter-item expanded "><a href="../StreamedClassifications.html"><strong aria-hidden="true">6.</strong> Streamed Multi Node Classifications with iofs</a></li><li class="chapter-item expanded "><a href="../FAQ/index.html"><strong aria-hidden="true">7.</strong> FAQ</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../FAQ/BuildProcess.html"><strong aria-hidden="true">7.1.</strong> How does the Build Process work?</a></li><li class="chapter-item expanded "><a href="../FAQ/glibc.html"><strong aria-hidden="true">7.2.</strong> Why do we depend on glibc?</a></li><li class="chapter-item expanded "><a href="../FAQ/Naming.html" class="active"><strong aria-hidden="true">7.3.</strong> Why the name Blackheap?</a></li></ol></li><li class="chapter-item expanded "><a href="../FileFormats.html"><strong aria-hidden="true">8.</strong> File format specifications</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../Introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../Workflow/index.html"><strong aria-hidden="true">2.</strong> Workflow</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Workflow/Benchmark.html"><strong aria-hidden="true">2.1.</strong> Benchmark</a></li><li class="chapter-item expanded "><a href="../Workflow/Analysis.html"><strong aria-hidden="true">2.2.</strong> Analysis</a></li><li class="chapter-item expanded "><a href="../Workflow/ModelCreation.html"><strong aria-hidden="true">2.3.</strong> Model Creation</a></li></ol></li><li class="chapter-item expanded "><a href="../Architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="../Build.html"><strong aria-hidden="true">4.</strong> Building</a></li><li class="chapter-item expanded "><a href="../SingleNode.html"><strong aria-hidden="true">5.</strong> Local Single Node Setup</a></li><li class="chapter-item expanded "><a href="../StreamedClassifications.html"><strong aria-hidden="true">6.</strong> Streamed Multi Node Classifications with iofs</a></li><li class="chapter-item expanded "><a href="../FAQ/index.html"><strong aria-hidden="true">7.</strong> FAQ</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../FAQ/BuildProcess.html"><strong aria-hidden="true">7.1.</strong> How does the Build Process work?</a></li><li class="chapter-item expanded "><a href="../FAQ/glibc.html"><strong aria-hidden="true">7.2.</strong> Why do we depend on glibc?</a></li><li class="chapter-item expanded "><a href="../FAQ/Naming.html" class="active"><strong aria-hidden="true">7.3.</strong> Why the name Blackheap?</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -144,12 +144,10 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="why-the-name-blackheap"><a class="header" href="#why-the-name-blackheap">Why the name Blackheap?</a></h1>
-<ul>
-<li>We have a <strong>blackbox</strong> methodology for classifying I/O requests</li>
-<li>In Rust, the <a href="https://doc.rust-lang.org/book/ch15-01-box.html"><code>Box&lt;&gt;</code></a> is the simplest smart pointer used to store something on the <strong>Heap</strong></li>
-<li>Thus, <code>blackbox + Heap = blackheap</code></li>
-</ul>
+                        <h1 id="why-the-name-blackheap"><a class="header" href="#why-the-name-blackheap">Why the Name Blackheap?</a></h1>
+<p>In blackheap, we use a <strong>blackbox</strong> methodology for classifying I/O requests. So &quot;blackbox&quot; would be a obvious name choice. Of course, this would be a horrible name: Not only for SEO reasons but also for general name collisions.</p>
+<p>In Rust, the <a href="https://doc.rust-lang.org/book/ch15-01-box.html"><code>Box&lt;&gt;</code></a> is the simplest data type to provide a smart pointer. Basically, if you put something in a <code>Box</code>, you store it on the Heap while the only thing put on the stack is the corresponding pointer.</p>
+<p>Thus, substituting <code>Box</code> in blackheap for being a pointer on the heap, we have <strong>blackheap</strong>!</p>
 
                     </main>
 
@@ -159,9 +157,6 @@
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next" href="../FileFormats.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
-                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -173,9 +168,6 @@
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next" href="../FileFormats.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
-                    </a>
             </nav>
 
         </div>
