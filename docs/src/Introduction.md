@@ -1,10 +1,10 @@
 # Introduction
 
-Analyzing I/O requets is very difficult. It requires a lot of specialized knowledge. One has to take into account the file system, server topology, other traffic sources, access patterns among other things. This is not feasible for the average computing cluster user, as they have neither the permissions nor the time or knowledge for this type of sophisticated analysis.
+Analyzing I/O requets is very difficult. It requires a lot of specialized knowledge. One has to take into account the file system, server topology, other traffic sources and access patterns among other things. This is not feasible for the average computing cluster user, as they neither have the permissions nor the time or knowledge for this type of sophisticated analysis.
 
-Furthermore, any formal, deterministic analysis is impossible, since the access time is dependent on many parameters. It is not practical to try to model the influence of the disk seek time or linux block layer schedulers.
+Furthermore, any formal, deterministic analysis is impossible, since the access time is dependent on too many parameters. It is not practical to try to model the relevance of disk seek times or the linux block layer schedulers.
 
-*Blackheap* approaches this problem with a blackbox methology. It generates a predictive performance model based on the access time alone.
+[*Blackheap*](https://github.com/lquenti/blackheap) approaches this problem with a blackbox methology. It generates a predictive performance model based on the access time alone.
 
 ## Goals
 
@@ -13,7 +13,7 @@ We designed Blackheap with the following goals in mind:
 - Single binary without external dependencies
 - No required configuration
 - Self-contained, automatic end-to-end workflow
-- Hardware agnostic classification (remote or local storage)
+- Setup agnostic classification (remote or local storage)
 - Distribution agnostic: Any glibc-based Linux distribution will suffice
 - No root required
 - Easy to build: only non-userspace dependencies are `glibc`, `gcc` and `make`

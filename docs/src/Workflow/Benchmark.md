@@ -1,10 +1,10 @@
 # Creating Benchmarks
 
-In order to create accurate benchmarks of specific characteristics, we created the `blackheap-benchmark` benchmarker, which is based on [`io-modelling`](https://github.com/JulianKunkel/io-modelling).
+In order to create accurate benchmarks of specific characteristics, we created the [`blackheap-benchmark`](https://github.com/lquenti/blackheap/tree/master/blackheap-benchmark) benchmarker, which is based on [`io-modelling`](https://github.com/JulianKunkel/io-modelling).
 
 It is standalone, configurable via CLI parameters and prints any JSON output to stdout.
 
-When using blackheap as a closed solution, the benchmarker shouldn't be used directly.
+When using the [`blackheap-modeller`](https://github.com/lquenti/blackheap/tree/master/blackheap-modeller), maunal interaction with the benchmarker is not requried.
 
 ## Parameters
 
@@ -17,7 +17,7 @@ It supports the following parameters:
   - `seq`: Read/Write sequentially
   - `rnd`: Change the offset randomly after every I/O operation.
 - `--access-size`: The size of each I/O operation. This is primarily used to create different measurements of the same characteristics.
-- `--file`: On which file the benchmark should run. Note that the file at the given path will be zeroed out. Use this setting to implicitly set which file system gets benchmarked.
+- `--file`: On which file the benchmark should run. Note that the file at the given path will be zeroed out. Use this setting to implicitly set which file system is getting benchmarked.
 - `--file-buf`/`--mem-buf`: The size of the corresponding buffers in bytes. Note that the file buffer actually gets allocated via successive write operations; no fallocate is used.
 - `--repeats` The number of measurements with a given configuration.
 - `--delete-afterwards`: Whether the file should be deleted after the benchmark is done. This can be used to remove any page caching between benchmarks. Obviously, not deleting the file can significantly reduce the execution time of further benchmarks.

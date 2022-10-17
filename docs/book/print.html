@@ -1,0 +1,489 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Blackheap documentation</title>
+        <meta name="robots" content="noindex" />
+
+
+        <!-- Custom HTML head -->
+        
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+        <!-- MathJax -->
+        <script async type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="Introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="Workflow/index.html"><strong aria-hidden="true">2.</strong> Workflow</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="Workflow/Benchmark.html"><strong aria-hidden="true">2.1.</strong> Benchmark</a></li><li class="chapter-item expanded "><a href="Workflow/Analysis.html"><strong aria-hidden="true">2.2.</strong> Analysis</a></li><li class="chapter-item expanded "><a href="Workflow/ModelCreation.html"><strong aria-hidden="true">2.3.</strong> Model Creation</a></li></ol></li><li class="chapter-item expanded "><a href="Architecture.html"><strong aria-hidden="true">3.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="Build.html"><strong aria-hidden="true">4.</strong> Building</a></li><li class="chapter-item expanded "><a href="SingleNode.html"><strong aria-hidden="true">5.</strong> Local Single Node Setup</a></li><li class="chapter-item expanded "><a href="StreamedClassifications.html"><strong aria-hidden="true">6.</strong> Streamed Multi Node Classifications with iofs</a></li><li class="chapter-item expanded "><a href="FAQ/index.html"><strong aria-hidden="true">7.</strong> FAQ</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="FAQ/BuildProcess.html"><strong aria-hidden="true">7.1.</strong> How does the Build Process work?</a></li><li class="chapter-item expanded "><a href="FAQ/glibc.html"><strong aria-hidden="true">7.2.</strong> Why do we depend on glibc?</a></li><li class="chapter-item expanded "><a href="FAQ/Naming.html"><strong aria-hidden="true">7.3.</strong> Why the name Blackheap?</a></li></ol></li><li class="chapter-item expanded "><a href="FileFormats.html"><strong aria-hidden="true">8.</strong> File format specifications</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Blackheap documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
+<p>Analyzing I/O requets is very difficult. It requires a lot of specialized knowledge. One has to take into account the file system, server topology, other traffic sources and access patterns among other things. This is not feasible for the average computing cluster user, as they neither have the permissions nor the time or knowledge for this type of sophisticated analysis.</p>
+<p>Furthermore, any formal, deterministic analysis is impossible, since the access time is dependent on too many parameters. It is not practical to try to model the relevance of disk seek times or the linux block layer schedulers.</p>
+<p><a href="https://github.com/lquenti/blackheap"><em>Blackheap</em></a> approaches this problem with a blackbox methology. It generates a predictive performance model based on the access time alone.</p>
+<h2 id="goals"><a class="header" href="#goals">Goals</a></h2>
+<p>We designed Blackheap with the following goals in mind:</p>
+<ul>
+<li>Single binary without external dependencies</li>
+<li>No required configuration</li>
+<li>Self-contained, automatic end-to-end workflow</li>
+<li>Setup agnostic classification (remote or local storage)</li>
+<li>Distribution agnostic: Any glibc-based Linux distribution will suffice</li>
+<li>No root required</li>
+<li>Easy to build: only non-userspace dependencies are <code>glibc</code>, <code>gcc</code> and <code>make</code></li>
+</ul>
+<h2 id="high-level-workflow"><a class="header" href="#high-level-workflow">High Level Workflow</a></h2>
+<p>The internal workflow can be summarized as follows:</p>
+<ol>
+<li>
+<p>At first, we do a lot of benchmarks with different access patterns. Those access patterns are used to isolate different characteristics like hitting the page cache.</p>
+</li>
+<li>
+<p>After that, we analyze each benchmark run. By using a kernel density estimation, we find the most significant cluster. This cluster provides an upper bound for the expected time.</p>
+</li>
+<li>
+<p>Lastly, we take all those upper bounds and create a predictive model via linear regression.</p>
+</li>
+</ol>
+<h2 id="further-ressources"><a class="header" href="#further-ressources">Further Ressources</a></h2>
+<p>Blackheap is based on <a href="https://hps.vi4io.org/about/people/julian_kunkel">Julian Kunkels</a> 2015 paper &quot;<a href="https://hps.vi4io.org/_media/research/publications/2015/dlirfitiusmk15-identifying_relevant_factors_in_the_i_o_path_using_statistical_methods.pdf">Identifying Relevant Factors in the I/O-Path
+using Statistical Methods</a>&quot; (<a href="https://hps.vi4io.org/bibtex?bibtex_source=publications&amp;bibtex_key=IRFITIUSMK15">BibTeX</a>).</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="workflow"><a class="header" href="#workflow">Workflow</a></h1>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The workflow can be broken down into 3 components:</p>
+<ul>
+<li><a href="Workflow/./Benchmark.html">Generating performance measurements via different benchmarks</a></li>
+<li><a href="Workflow/./Analysis.html">Analyzing the benchmarks</a></li>
+<li><a href="Workflow/./ModelCreation.html">Creating a predictive performance model based on the single analyses</a></li>
+</ul>
+<p>Note that Blackheap does all of those 3 steps automatically, no manual work is required!</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="creating-benchmarks"><a class="header" href="#creating-benchmarks">Creating Benchmarks</a></h1>
+<p>In order to create accurate benchmarks of specific characteristics, we created the <a href="https://github.com/lquenti/blackheap/tree/master/blackheap-benchmark"><code>blackheap-benchmark</code></a> benchmarker, which is based on <a href="https://github.com/JulianKunkel/io-modelling"><code>io-modelling</code></a>.</p>
+<p>It is standalone, configurable via CLI parameters and prints any JSON output to stdout.</p>
+<p>When using the <a href="https://github.com/lquenti/blackheap/tree/master/blackheap-modeller"><code>blackheap-modeller</code></a>, maunal interaction with the benchmarker is not requried.</p>
+<h2 id="parameters"><a class="header" href="#parameters">Parameters</a></h2>
+<p>It supports the following parameters:</p>
+<ul>
+<li><code>-r</code>/<code>-w</code> for either read or write operations</li>
+<li><code>--file-pattern</code>/<code>--mem-pattern</code> for the access pattern of the file system or memory buffer.
+The following patterns are implemented
+<ul>
+<li><code>off0</code>: Always use the same to the same offset</li>
+<li><code>seq</code>: Read/Write sequentially</li>
+<li><code>rnd</code>: Change the offset randomly after every I/O operation.</li>
+</ul>
+</li>
+<li><code>--access-size</code>: The size of each I/O operation. This is primarily used to create different measurements of the same characteristics.</li>
+<li><code>--file</code>: On which file the benchmark should run. Note that the file at the given path will be zeroed out. Use this setting to implicitly set which file system is getting benchmarked.</li>
+<li><code>--file-buf</code>/<code>--mem-buf</code>: The size of the corresponding buffers in bytes. Note that the file buffer actually gets allocated via successive write operations; no fallocate is used.</li>
+<li><code>--repeats</code> The number of measurements with a given configuration.</li>
+<li><code>--delete-afterwards</code>: Whether the file should be deleted after the benchmark is done. This can be used to remove any page caching between benchmarks. Obviously, not deleting the file can significantly reduce the execution time of further benchmarks.</li>
+<li><code>--drop-cache</code>: Drops the page cache <a href="https://www.kernel.org/doc/Documentation/sysctl/vm.txt">via <code>/proc/sys/vm/drop_caches</code></a></li>
+<li><code>--free-ram</code> Aritificially allocates RAM until the number of bytes are met. This restriction is done in order to force cache eviction.</li>
+<li><code>--o-direct</code>: Uses Linux Direct I/O (see <code>O_DIRECT</code>)</li>
+<li><code>--reread</code>: Read each block twice, just benchmark the second time. This is done to get cache speeds.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="analysis"><a class="header" href="#analysis">Analysis</a></h1>
+<p>After each benchmark, we get a lot of points <code>(access_size, time)</code> for each characteristics. Now, for each access size, we have to create a good prediction on how long we can expect the access to take. This way, we can correlate a given operation with the different characteristics we measured.</p>
+<p>Importantly, we can't assume that we have a normal distribution. This makes intuitive sense: On the one hand, calculating access times is a highly multivariate problem. On the other hand, things like shared queues will lead to a Gamma distribution, which is also why we can't just assume a Gaussian Mixture Model.</p>
+<p>Without any further assumptions, the trivial choice would be a histogram. Sadly, this leaves us with the problem of automatic bin number and width. Often times, those automatic rules can often hugely misrepresent the underlying PDF.</p>
+<p>Instead we use a so-called <a href="https://en.wikipedia.org/wiki/Kernel_density_estimation">Kernel Density Estimation</a>, which creates a &quot;smoother&quot; histogram by putting a kernel over each point, then summing all kernels and renormalizing it to \(\int f(x) = 1\).</p>
+<p>A more detailed introduction to KDEs and their advantages <a href="https://kdepy.readthedocs.io/en/latest/introduction.html">in the great KDEpy documentation</a>.</p>
+<h2 id="kernel-density-estimations-kdes"><a class="header" href="#kernel-density-estimations-kdes">Kernel Density Estimations (KDEs)</a></h2>
+<p>A KDE of points \(x_1,\dots,x_n\) can be simplified to</p>
+<p>\[
+\hat{f}(x) = \frac{1}{N} \sum_{i=1}^N K(x-x_i)
+\]</p>
+<p>where \(K\) is a so-called <em>kernel function</em>. This function can be read as</p>
+<ul>
+<li>For each point \(x_i, i \in {1,\dots, n}\)</li>
+<li>Move the kernel function \(x_i\) to the right, to center it on this point</li>
+<li>Then take the already moved kernel function \(K\) with regard to \(x\)</li>
+<li>Take the sum of all those evaluated points</li>
+<li>And renormalize it so that the integral stays \(1\).</li>
+</ul>
+<p>Note that each kernel function has to be a proper distribution function, i.e. their integral has to be \(1\).</p>
+<p>In our case, the kernel function is a <a href="https://en.wikipedia.org/wiki/Gaussian_function">Gaussian</a>.</p>
+<h2 id="the-bandwidth-problem"><a class="header" href="#the-bandwidth-problem">The bandwidth problem</a></h2>
+<p>In real computations, our actual formula is defined as</p>
+<p>\[
+\hat{f}(x) = \frac{1}{Nh} \sum_{i=1}^N K\left(\frac{x-x_i}{h}\right)
+\]</p>
+<p>where \(h &gt; 0\) is the so-called <em>bandwidth</em>.</p>
+<p>The bandwidth describes how the kernel needs to be scaled. We use the commonly used <a href="https://doi.org/10.1201/9781315140919">Silverman's rule of thumb</a>, provided by the <a href="https://docs.rs/crate/criterion-stats/0.2.1"><code>criterion_stats</code></a> package.</p>
+<h2 id="cluster-detection"><a class="header" href="#cluster-detection">Cluster detection</a></h2>
+<p>Now that we have a proper kernel density estimation for each characteristic and access time, we can further analyze our measurements.</p>
+<p>At the time of this writing, we associate the time upper bound with the most likely access time, i.e. the global maximum of the corresponding KDE.</p>
+<p>In the future, we want to use more sophisticated cluster detection for creating multiple regression functions. We currently already create clusters, although they are not yet used in the actual classification. They can be seen via the web interface.</p>
+<h2 id="our-cluster-algorithm"><a class="header" href="#our-cluster-algorithm">Our cluster algorithm</a></h2>
+<p>A cluster is defined by a local maximum and it's surrounding local minima. Note that the fastest and slowest access times are automatically the outer local minima.</p>
+<p>At first, we just naively compute all cluster by numerically approximating their extrema.</p>
+<p>Next, we try to find the &quot;significant&quot; clusters. A cluster is significant if and only if</p>
+<p>\[
+\max_i - \min_{i+1} \geq 0.1 \cdot \text{global_max}
+\]</p>
+<p>If a cluster is not significant, it gets merged into the last significant cluster.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="model-creation"><a class="header" href="#model-creation">Model Creation</a></h1>
+<p>After creating and analyzing the KDEs, we now have for each type of benchmark many points <code>(access_size, time_of_global_maximum)</code>.</p>
+<p>Now we have to create a predictive model from those points. We currently have 2 different approaches:</p>
+<h2 id="linear-model"><a class="header" href="#linear-model">Linear Model</a></h2>
+<p>In order to create a linear model we do a <a href="https://en.wikipedia.org/wiki/Linear_least_squares">least square linear regression</a> on each points of a given type of benchmark.</p>
+<p>The regression functionality is provided by the great <a href="https://github.com/n1m3/linregress"><code>linregress</code></a> library.</p>
+<h2 id="constlinear-model"><a class="header" href="#constlinear-model">ConstLinear Model</a></h2>
+<p>This model works with the following assumption: We should expect linear speed below 4096 bytes, as this is the default page cache size.</p>
+<p>Thus we use a piecewise function. The piecewise function is defined as follows:</p>
+<pre><code>def f(x):
+  if x &lt;= 4096:
+    return global_maximum(1, 4096)
+  else:
+    return linear_model_beginning_at(4096)
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="architecture"><a class="header" href="#architecture">Architecture</a></h1>
+<p>We have a very specific and unusual architecture:</p>
+<ul>
+<li>Our benchmarker is written in C</li>
+<li>Our frontend is written in React (Typescript)</li>
+<li>The modelling logic and main program is written in Rust</li>
+</ul>
+<p>Note that those components are actually 3 different standalone program, not just libraries linked together. Although those programs are fully functional on their own, blackheap still provides a fully automated process; no user input is required. Moreover, blackheap is shipped as a single binary, see <a href="./FAQ/BuildProcess.html">the build process for more</a>.</p>
+<h2 id="how-does-this-work"><a class="header" href="#how-does-this-work">How does this work?</a></h2>
+<p>At first, the rust program generates the proper parameters for each benchmark run. It then sequentially spawns a new process for each run. After each runs the results get saved to disk. This allows reproducibility as well as reanalyzing old benchmarks once new models are developed.</p>
+<p>After all benchmarks were run, the rust program processes the same results as described above. It then saves the generated models as specified <a href="./FileFormats.html">here</a>.</p>
+<p>It lastly also saves a single HTML file for local analysis, see <a href="./SingleNode.html">the local workflow</a> for more information. Note that this file can be used without a local web server, since all assets are transpiled into the HTML file. See <a href="./FAQ/BuildProcess.html">the build section</a> for more.</p>
+<h2 id="why-was-rust-chosen"><a class="header" href="#why-was-rust-chosen">Why was Rust chosen?</a></h2>
+<p>The intial prototype was written in Python3. But, especially in lightweight HPC environments running old RHEL-based distributions, Python3 often is not installed.</p>
+<p>Although solutions like <a href="https://github.com/pyenv/pyenv">pyenv</a> exist, bootstrapping Python is not always trivial. Thus we wanted to create a dependency-less binary while keeping most advantages provided by the Python ecosystem.</p>
+<p>This is why we used Rust. Rust offers a huge high level ecosystem with <code>cargo</code>. Rust has zero runtime dependencies and bootstrapping Rust via <a href="https://rustup.rs/"><code>rustup</code></a> requires no preinstalled libraries.</p>
+<p>Furthermore, most Rust libraries don't have any 3rd party non-cargo dependencies as well.</p>
+<h3 id="why-was-c-chosen"><a class="header" href="#why-was-c-chosen">Why was C chosen?</a></h3>
+<p>Despire Rust being a very performant programming language with very few overhead, it didn't suffice for benchmarks. In order to get the best possible accuracy, we need to stay as near to the kernel API as possible. Also, some calls like <code>lseek</code> aren't even available in the Rust stdlib.</p>
+<h3 id="why-was-react--ts-chosen"><a class="header" href="#why-was-react--ts-chosen">Why was React / TS chosen?</a></h3>
+<p>Rust plotting libraries are either very immature or have hard dependencies on 3rd-Party libraries. Since it was impractical to implement a plotting library from scratch, we chose to take advantage of the enormous Web ecosystem.</p>
+<p>We chose React since it is the most used frontend framework, which maximizes the likelyhood of being easy to maintain in the future. We furthermore chose Plotly as a plotting library since it has enough commercial support to finance its future maintenance.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="how-to-build-blackheap"><a class="header" href="#how-to-build-blackheap">How to Build Blackheap</a></h1>
+<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
+<ul>
+<li>Have a <code>glibc</code> based linux distribution (no alpine support)</li>
+<li>Required: <code>gcc</code></li>
+<li>Optionally: <code>make</code></li>
+</ul>
+<h2 id="setting-up-userspace-tooling"><a class="header" href="#setting-up-userspace-tooling">Setting up userspace tooling</a></h2>
+<p>In order to compile it locally, we need the followind userspace tooling. This can be skipped if the tools are installed globally.</p>
+<h3 id="node-and-npm"><a class="header" href="#node-and-npm">Node and npm</a></h3>
+<p>The easiest way to install node is via the <a href="https://github.com/nvm-sh/nvm">Node version manager</a>. After installing nvm and reloading your <code>shellrc</code> node can be installed via</p>
+<pre><code>nvm install node --lts
+nvm use node --lts
+</code></pre>
+<p>This automatically installs npm as well.</p>
+<h3 id="yarn"><a class="header" href="#yarn">yarn</a></h3>
+<p>If node and npm are already installed, yarn can be globally installed via </p>
+<pre><code>npm i -g yarn
+</code></pre>
+<h3 id="rustc--cargo"><a class="header" href="#rustc--cargo">rustc + cargo</a></h3>
+<p>The easiest way to install Rust is via <a href="https://rustup.rs/">rustup</a>. It should automatically install the newest stable version.</p>
+<h2 id="building-blackheap"><a class="header" href="#building-blackheap">Building Blackheap</a></h2>
+<p>If everything worked, blackheap should be buildable via <code>make</code>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="local-single-node-setup"><a class="header" href="#local-single-node-setup">Local Single Node Setup</a></h1>
+<p>The single node setup allows for local classification of I/O requests. This standalone process requires no server or any kind of running database. Additionally, no changes to the binary or workflow are required.</p>
+<h2 id="creating-a-performance-model"><a class="header" href="#creating-a-performance-model">Creating a performance model</a></h2>
+<p>After compiling, the performance model can be generated by running <code>blackheap</code>. No further configuration is required.</p>
+<p>One should run the benchmarks on the same decice as the program which one wants to analyze. The path used can be speicifed via the <code>--file</code> parameter, see <code>blackheap --help</code> for more information.</p>
+<h2 id="analyzing-the-created-model"><a class="header" href="#analyzing-the-created-model">Analyzing the created model</a></h2>
+<p>After running <code>blackheap</code>, a model folder will be created. The default path is <code>./default-model</code>, although this can be changed via the <code>--to</code> parameter.</p>
+<p>In this folder, the single file web-frontend is contained, named <code>index.html</code>. This can be viewed with any device and any modern browser; no extra webserver is required. After loading the <code>Model.json</code>, the analyzed data gets plotted for manual analysis.</p>
+<h2 id="using-the-created-model-locally"><a class="header" href="#using-the-created-model-locally">Using the created model locally</a></h2>
+<p>In order to locally measure any I/O requests, we preload custom I/O functions interjecting any I/O requests. Those I/O functions trace the time taken for each operation.</p>
+<p>This is done via the <code>LD_PRELOAD</code> environment variable. <a href="https://man7.org/linux/man-pages/man8/ld-linux.so.8.html">The Linux manual</a> defines it as follows:</p>
+<p>&quot;A list of additional, user-specified, ELF shared objects to be loaded before all others. This feature can be used to selectively override functions in other shared objects.&quot;</p>
+<p>For a great, introduction, see <a href="http://www.goldsborough.me/c/low-level/kernel/2016/08/29/16-48-53-the_-ld_preload-_trick/">&quot;The <code>LD_PRELOAD</code> trick&quot;</a>.</p>
+<p>Our preloadee can be found under <code>./preloadee</code>. It can be built via <code>make</code>.</p>
+<p>Afterwards, the measurements are done by running the to-be-analyzed binary with the preloaded library injected, i.e.</p>
+<pre><code>LD_PRELOAD=./build/preloadee.so /path/to/my/program
+</code></pre>
+<p>This will produce <a href="./FileFormats.html">a CSV file</a> in the current working directory. This file can then be analyzed locally via the aforementioned web-frontend.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="streamed-multi-node-classifications-with-iofs"><a class="header" href="#streamed-multi-node-classifications-with-iofs">Streamed Multi Node Classifications with iofs</a></h1>
+<p>Blackheap also allows for aggregated, streamed classification to a remote TSDB via <a href="https://github.com/gwdg/iofs">iofs</a>. This allows for analysis of multiple nodes. It currently supports any monitoring system that supports Influxdb. Internally, it is used in combinaton with Grafana.</p>
+<p>Again, no changes to the binary are required, although some configuration may be required.</p>
+<h2 id="blackheap-and-iofs"><a class="header" href="#blackheap-and-iofs">Blackheap and iofs</a></h2>
+<p>iofs is a FUSE based tool for measuring I/O requests. It works by remounting a file system, then interjecting any incoming I/O requests. See <a href="https://gwdg.github.io/iofs/book/">the iofs documentation</a> for more information.</p>
+<h2 id="setting-up-iofs"><a class="header" href="#setting-up-iofs">Setting up iofs</a></h2>
+<h2 id="creating-a-performance-model-1"><a class="header" href="#creating-a-performance-model-1">Creating a performance model</a></h2>
+<p>After compiling, the performance model can be generated by running</p>
+<pre><code>blackheap --file /path/to/the
+</code></pre>
+<ul>
+<li>again, same as in the single node docs</li>
+<li>Only difference: It needs to obviously run on the FUSE</li>
+</ul>
+<h2 id="setting-up-grafana-influxdb-and-iofs"><a class="header" href="#setting-up-grafana-influxdb-and-iofs">Setting up Grafana, Influxdb and iofs</a></h2>
+<ul>
+<li>if not already existent: We offer a configured docker compose solution. (LINK)</li>
+<li>Caveats: We currently only support Influxdb 1 with InfluxQL auth</li>
+<li>See iofs docs on how to build it</li>
+</ul>
+<h2 id="measuring-data"><a class="header" href="#measuring-data">Measuring data</a></h2>
+<ol>
+<li>Create the iofs fuse mount whereever the I/O accesses should be recorded</li>
+</ol>
+<ul>
+<li>use the following parameter... (especially classification file, influx parameters, outfile...)</li>
+</ul>
+<ol start="2">
+<li>Start the program whose I/O should be measured.</li>
+</ol>
+<ul>
+<li>The program may needs further configuration. Any I/O can just be tracked iff the access is done via
+the FUSE mount created by iofs</li>
+</ul>
+<ol start="3">
+<li>Process the incoming data via Grafana as needed</li>
+</ol>
+<ul>
+<li>In the future, we will provide premade dashboards for easier onboarding.</li>
+</ul>
+<h2 id="troubleshooting"><a class="header" href="#troubleshooting">Troubleshooting</a></h2>
+<ul>
+<li>check the out file (TODO cli param). If it doesn't generate any output, the problem is with iofs itself</li>
+<li>if it generates sane output, the problem is with the influx connection</li>
+<li>Check whether the port is open or not via telnet</li>
+<li>Afterwards, connect to the influx container (or server) and try to login locally with the same credentials</li>
+<li>Check whether InfluxQL is activated, not Flex provided by InfluxDB2</li>
+<li>Check whether the DB is created via <code>SHOW DATABASES;</code>. Influx doesn't automatically create the database on first
+incoming write</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="frequently-asked-questions-faq"><a class="header" href="#frequently-asked-questions-faq">Frequently Asked Questions (FAQ)</a></h1>
+<p>Those aren't <strong>actually</strong> frequently asked questions, but questions I anticipated or topics that didn't fit the documentation flow.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="how-does-the-build-process-work"><a class="header" href="#how-does-the-build-process-work">How does the Build Process work?</a></h1>
+<ul>
+<li>
+<p>The architecture, and its reasoning, are described under <a href="FAQ/../Architecture.html">Architecture</a>.</p>
+</li>
+<li>
+<p>In order to stay language agnostic, we use a simple <code>Makefile</code> to orchestrate the different build systems.</p>
+</li>
+</ul>
+<h2 id="the-benchmarker"><a class="header" href="#the-benchmarker">The Benchmarker</a></h2>
+<ul>
+<li>At first, we build the benchmarker. Its build process is also managed by a seperate Makefile.</li>
+</ul>
+<h2 id="the-web-frontend"><a class="header" href="#the-web-frontend">The Web-Frontend</a></h2>
+<ul>
+<li>Next, we build the web frontend</li>
+<li>Its build process is managed by yarn and CRA</li>
+<li>CRA is ejected and extended with (PLUGIN A UND PLUGIN B) in order to create a single HTML file</li>
+</ul>
+<h2 id="the-modeller--main-program"><a class="header" href="#the-modeller--main-program">The Modeller / Main Program</a></h2>
+<ul>
+<li>This build process is done via cargo</li>
+<li>Beforehand, we move the benchmarker and web frontend into the rust src folder</li>
+<li>this way, we can embed both files in the binary, making it a single standalone workflow</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="why-do-we-require-depend-on-glibc"><a class="header" href="#why-do-we-require-depend-on-glibc">Why do we require depend on glibc?</a></h1>
+<p>We depend on glibc for multiple reasons:</p>
+<ul>
+<li>It provides the most accurate clock via <a href="https://linux.die.net/man/2/clock_gettime"><code>CLOCK_MONOTONIC</code></a> <a href="https://stackoverflow.com/questions/12392278/measure-time-in-linux-time-vs-clock-vs-getrusage-vs-clock-gettime-vs-gettimeof/12480485#12480485">(see)</a></li>
+<li>It is required for <code>O_DIRECT</code> file access</li>
+<li>It makes argument parsing more elegant with argp instead of getopt</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="why-the-name-blackheap"><a class="header" href="#why-the-name-blackheap">Why the name Blackheap?</a></h1>
+<ul>
+<li>We have a <strong>blackbox</strong> methodology for classifying I/O requests</li>
+<li>In Rust, the <a href="https://doc.rust-lang.org/book/ch15-01-box.html"><code>Box&lt;&gt;</code></a> is the simplest smart pointer used to store something on the <strong>Heap</strong></li>
+<li>Thus, <code>blackbox + Heap = blackheap</code></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="file-format-specifications"><a class="header" href="#file-format-specifications">File format specifications</a></h1>
+<ul>
+<li>JSON format for <code>Model.json</code></li>
+<li>CSV format used by iofs</li>
+<li>Output provided by the preloadee</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+
+        <script type="text/javascript">
+        window.addEventListener('load', function() {
+            MathJax.Hub.Register.StartupHook('End', function() {
+                window.setTimeout(window.print, 100);
+            });
+        });
+        </script>
+
+    </body>
+</html>
