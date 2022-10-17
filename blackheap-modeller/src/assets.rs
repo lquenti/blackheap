@@ -1,6 +1,7 @@
 // If they aren't there: Generate them by running the main Makefile
 const BENCHMARKER: &[u8] = include_bytes!("../assets/blackheap-benchmark.exe");
 const FRONTEND: &str = include_str!("../assets/index.html");
+const README: &str = include_str!("../assets/README_TO_EMBED.md");
 
 use std::fs::{self, File, Permissions};
 use std::io::Write;
@@ -16,5 +17,8 @@ pub fn dump_static_files(to: &str) -> Result<()> {
 
     let mut frontend: File = File::create(format!("{}/index.html", to))?;
     write!(frontend, "{}", FRONTEND)?;
+
+    let mut readme: File = File::create(format!("{}/README.md", to))?;
+    write!(readme, "{}", README)?;
     Ok(())
 }

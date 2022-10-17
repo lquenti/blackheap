@@ -24,7 +24,6 @@ impl Models {
     }
 }
 
-// TODO document what xs_ys are
 fn get_xs_ys_interval(
     jsons: &[BenchmarkJSON],
     kdes: &[BenchmarkKde],
