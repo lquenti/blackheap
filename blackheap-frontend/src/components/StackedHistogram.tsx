@@ -11,7 +11,7 @@ type Parameters = {
 };
 
 function StackedHistogram({ allCombinations, classifiedData }: Parameters) {
-    /*
+  /*
     const data: Plotly.data = [...allCombinations.map(({type, is_read_op}) =>
         {
             return {
@@ -24,9 +24,7 @@ function StackedHistogram({ allCombinations, classifiedData }: Parameters) {
         }
     )];
     */
-  return (
-    <div></div>
-  );
+  return <div></div>;
 }
 
 export default StackedHistogram;

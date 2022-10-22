@@ -12,13 +12,18 @@ type PreloadeeRecord = {
 };
 
 type ClassifiedPreloadeeRecord = {
-  preloadeeRecord: PreloadeeRecord,
-  predictedModel: BenchmarkType
+  preloadeeRecord: PreloadeeRecord;
+  predictedModel: BenchmarkType;
 };
 
 type ClassifiedPreloadeeRecords = Array<ClassifiedPreloadeeRecord>;
 
-export type { ClassifiedPreloadeeRecord, ClassifiedPreloadeeRecords, PreloadeeIOType, PreloadeeRecord };
+export type {
+  ClassifiedPreloadeeRecord,
+  ClassifiedPreloadeeRecords,
+  PreloadeeIOType,
+  PreloadeeRecord,
+};
 
 type PreloadeeRecords = Array<PreloadeeRecord>;
 

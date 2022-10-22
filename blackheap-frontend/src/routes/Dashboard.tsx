@@ -56,7 +56,9 @@ const Dashboard = () => {
             <hr className="my-2" />
           </div>
           <li>
-            <a href="https://lquenti.github.io/blackheap/book/">Documentation</a>
+            <a href="https://lquenti.github.io/blackheap/book/">
+              Documentation
+            </a>
             <a href="https://github.com/lquenti/blackheap">Repository</a>
           </li>
           <li style={{ marginTop: "auto" }}>

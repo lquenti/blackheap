@@ -1,5 +1,10 @@
 import Model, { BenchmarkType } from "../types/Model";
-import { PreloadeeRecord, PreloadeeIOType, ClassifiedPreloadeeRecords, ClassifiedPreloadeeRecord } from "../types/PreloadeeRecords";
+import {
+  PreloadeeRecord,
+  PreloadeeIOType,
+  ClassifiedPreloadeeRecords,
+  ClassifiedPreloadeeRecord,
+} from "../types/PreloadeeRecords";
 import { equation_str, evaluate } from "./ModelUtils";
 
 const parsePreloadeeData = (unparsed: string) => {
@@ -9,10 +14,8 @@ const parsePreloadeeData = (unparsed: string) => {
   // should look sth along the lines of
   // io_type,bytes,sec
   arr.shift();
-  return arr
-    .filter(s => s !== '')
-    .map(parseSingleLine);
-}
+  return arr.filter((s) => s !== "").map(parseSingleLine);
+};
 
 const parseSingleLine = (line: string): PreloadeeRecord => {
   // A line should look like
@@ -22,14 +25,17 @@ const parseSingleLine = (line: string): PreloadeeRecord => {
   return {
     io_type,
     bytes: parseInt(bytesStr),
-    sec: parseFloat(secStr)
+    sec: parseFloat(secStr),
   };
-}
+};
 
-const classifyRecord = (model: Model, preloadeeRecord: PreloadeeRecord): ClassifiedPreloadeeRecord => {
-  const {io_type, bytes, sec} = preloadeeRecord;
+const classifyRecord = (
+  model: Model,
+  preloadeeRecord: PreloadeeRecord
+): ClassifiedPreloadeeRecord => {
+  const { io_type, bytes, sec } = preloadeeRecord;
   const isReadOp = io_type === "r";
-  
+
   // Initialization of the return types
   let predictedModel = "Unclassified" as BenchmarkType;
   let upperBound = Number.POSITIVE_INFINITY;
@@ -58,6 +64,6 @@ const classifyRecord = (model: Model, preloadeeRecord: PreloadeeRecord): Classif
     preloadeeRecord,
     predictedModel,
   };
-}
+};
 
-export {classifyRecord, parsePreloadeeData, parseSingleLine};
+export { classifyRecord, parsePreloadeeData, parseSingleLine };

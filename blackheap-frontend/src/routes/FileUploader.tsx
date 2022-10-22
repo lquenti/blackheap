@@ -32,7 +32,9 @@ const FileUploader = () => {
           <h1 className="text-5xl font-bold">
             Welcome to <Blackheap />
           </h1>
-          <p className="py-6">Please upload your performance model (Model.json):</p>
+          <p className="py-6">
+            Please upload your performance model (Model.json):
+          </p>
           <button onClick={openFileSelector} className="btn btn-primary">
             <FiUpload className="mr-3" />
             Select
