@@ -15,6 +15,9 @@ const EvaluationDashboard = ({preloadeeRecords}: {preloadeeRecords: PreloadeeRec
 
     const [classifiedData, setClassifiedData] = useState<ClassifiedPreloadeeRecords | null>(null);
 
+    const [lowerSelection, setLowerSelection] = useState<number>(0);
+    const [upperSelection, setUpperSelection] = useState<number>(Number.POSITIVE_INFINITY);
+
     useEffect(() => {
         // process once, but non-blockingly...
         setClassifiedData(preloadeeRecords.map(r => classifyRecord(model, r)));
@@ -37,6 +40,15 @@ const EvaluationDashboard = ({preloadeeRecords}: {preloadeeRecords: PreloadeeRec
         {type, is_read_op: true}
     ]);
 
+    const updateView = () => {
+        const lower = parseInt((document.getElementById("lower") as HTMLInputElement).value) || 0;
+        const upper = parseInt((document.getElementById("upper") as HTMLInputElement).value) || Number.POSITIVE_INFINITY;
+        setLowerSelection(lower);
+        setUpperSelection(upper);
+
+
+    }
+
     return (
         // T
         <div className="mx-auto max-w-2xl">
@@ -44,6 +56,15 @@ const EvaluationDashboard = ({preloadeeRecords}: {preloadeeRecords: PreloadeeRec
                 Classification Report
             </h1>
             <p>{classifiedData.length} measurements classified.</p>
+            <h2>Select Access Sizes to View:</h2>
+            <div>
+                <div className="flex items-center mx-auto shadow rounded border-0 py-3">
+                    <input type="number" className="flex-grow input bg-neutral input-bordered mr-3" id="lower" placeholder="Lower Bound" />
+                    <input type="number" className="flex-grow input bg-neutral input-bordered mx-3" id="upper" placeholder="Upper Bound" />
+                    <button className="btn btn-primary ml-3" onClick={updateView}>Update</button>
+                </div>
+            </div>
+
             <div className="overflow-x-auto m-9">
                 <table className="table table-compact table-zebra w-full">
                     <thead>
@@ -56,22 +77,30 @@ const EvaluationDashboard = ({preloadeeRecords}: {preloadeeRecords: PreloadeeRec
                     </thead>
                     <tbody>
                         {allCombinations.map(({type, is_read_op}, i) => {
-                            const count = classifiedData
+                            const all = classifiedData
+                                .filter(({preloadeeRecord}) =>
+                                        preloadeeRecord.bytes >= lowerSelection &&
+                                        preloadeeRecord.bytes <= upperSelection
+                                );
+                                const count = all
                                 .filter(({predictedModel, preloadeeRecord}) =>
-                                    predictedModel === type && (preloadeeRecord.io_type == "r") === is_read_op)
+                                        predictedModel === type &&
+                                        (preloadeeRecord.io_type == "r") === is_read_op
+                                )
                                 .length;
                             return (
-                            <tr key={`classification-{i}`}>
+                            <tr key={`classification-${i}`}>
                                 <th>{type}</th>
                                 <th>{is_read_op_str(is_read_op)}</th>
                                 <th>{count}</th>
-                                <th>{count / classifiedData.length * 100}%</th>
+                                <th>{(count / all.length * 100).toFixed(2)}%</th>
                             </tr>
                             );
                         }
                         )}
                     </tbody>
                 </table>
+                
             </div>
         </div>
     );
