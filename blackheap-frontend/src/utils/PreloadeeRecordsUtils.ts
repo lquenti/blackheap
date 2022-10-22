@@ -1,6 +1,6 @@
 import Model, { BenchmarkType } from "../types/Model";
 import { PreloadeeRecord, PreloadeeIOType, ClassifiedPreloadeeRecords, ClassifiedPreloadeeRecord } from "../types/PreloadeeRecords";
-import { evaluate } from "./ModelUtils";
+import { equation_str, evaluate } from "./ModelUtils";
 
 const parsePreloadeeData = (unparsed: string) => {
   const arr: Array<string> = unparsed.split("\n");
@@ -42,10 +42,6 @@ const classifyRecord = (model: Model, preloadeeRecord: PreloadeeRecord): Classif
 
     // if it took less than our expected time we can disquality it
     // (something is classified as X iff X expected value is the lowest upper bound)
-    //
-    // TODO: WE CURRENTLY HAVE A LOT OF ROUNDING ERRORS TO ZERO (THANKS JS)
-    // THUS, FOR NOW THAT WE DONT GET FALSE RESULTS, IT HAS TO BE SMALLER EQUAL
-    // ONCE THATS FIXED, CHANGE ME TO STRICTLY SMALLER
     const expectedTime = evaluate(analysis.model, bytes);
     if (expectedTime <= sec) {
       continue;
