@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import StackedHistogram from "../../components/StackedHistogram";
 import ModelContext from "../../contexts/ModelContext";
 import Model, { BenchmarkType } from "../../types/Model";
 import PreloadeeRecords, { ClassifiedPreloadeeRecords } from "../../types/PreloadeeRecords";
@@ -52,11 +53,13 @@ const EvaluationDashboard = ({preloadeeRecords}: {preloadeeRecords: PreloadeeRec
     return (
         // T
         <div className="mx-auto max-w-2xl">
-            <h1 className="text-4xl underline my-5">
+            <h1 className="text-4xl underline mt-9 mb-3">
                 Classification Report
             </h1>
             <p>{classifiedData.length} measurements classified.</p>
-            <h2>Select Access Sizes to View:</h2>
+            <h2 className="text-3xl underline">All Measurements</h2>
+            <StackedHistogram allCombinations={allCombinations} classifiedData={classifiedData} />
+            <h2 className="text-3xl underline">Select Access Sizes to View:</h2>
             <div>
                 <div className="flex items-center mx-auto shadow rounded border-0 py-3">
                     <input type="number" className="flex-grow input bg-neutral input-bordered mr-3" id="lower" placeholder="Lower Bound" />
@@ -100,7 +103,6 @@ const EvaluationDashboard = ({preloadeeRecords}: {preloadeeRecords: PreloadeeRec
                         )}
                     </tbody>
                 </table>
-                
             </div>
         </div>
     );
