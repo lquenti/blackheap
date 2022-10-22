@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import ModelContext from "../../contexts/ModelContext";
 import Model, { BenchmarkType } from "../../types/Model";
 import PreloadeeRecords, { ClassifiedPreloadeeRecords } from "../../types/PreloadeeRecords";
+import { classifyRecord } from "../../utils/PreloadeeRecordsUtils";
 
 // TODO any
 const EvaluationDashboard = ({preloadeeRecords}: {preloadeeRecords: PreloadeeRecords}) => {
@@ -13,19 +14,9 @@ const EvaluationDashboard = ({preloadeeRecords}: {preloadeeRecords: PreloadeeRec
 
     const [classifiedData, setClassifiedData] = useState<ClassifiedPreloadeeRecords | null>(null);
 
-    // TODO MOVE ME OUT
-    const classifyData = (preloadeeRecords: PreloadeeRecords): ClassifiedPreloadeeRecords => {
-        return [
-            {
-                preloadeeRecord: preloadeeRecords[0],
-                predictedModel: "RandomUncached" as BenchmarkType
-            }
-        ];
-    } 
-
     useEffect(() => {
         // process once, but non-blockingly...
-        setClassifiedData(classifyData(preloadeeRecords));
+        setClassifiedData(preloadeeRecords.map(r => classifyRecord(model, r)));
         console.log("processing done");
     }, [])
 

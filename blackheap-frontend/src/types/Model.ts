@@ -1,6 +1,7 @@
 const enum BenchmarkType {
   RandomUncached = "RandomUncached",
   SameOffset = "SameOffset",
+  Unclassified = "Unclassified",
 }
 
 type Cluster = {

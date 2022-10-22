@@ -12,6 +12,8 @@ const benchmark_type_str = (b: BenchmarkType): string => {
       return "Random Uncached";
     case BenchmarkType.SameOffset:
       return "Same Offset";
+    case BenchmarkType.Unclassified:
+      return "Unclassified";
   }
 };
 
@@ -65,6 +67,7 @@ const evaluate_constant_linear = (f: ConstantLinear, x: number): number => {
 };
 const evaluate_linear = (f: Linear, x: number): number =>
   f.slope * x + f.y_intercept;
+
 const evaluate = (
   f: { ConstantLinear: ConstantLinear } | { Linear: Linear },
   x: number

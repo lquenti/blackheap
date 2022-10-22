@@ -18,7 +18,7 @@ type ClassifiedPreloadeeRecord = {
 
 type ClassifiedPreloadeeRecords = Array<ClassifiedPreloadeeRecord>;
 
-export type { ClassifiedPreloadeeRecords, PreloadeeIOType, PreloadeeRecord };
+export type { ClassifiedPreloadeeRecord, ClassifiedPreloadeeRecords, PreloadeeIOType, PreloadeeRecord };
 
 type PreloadeeRecords = Array<PreloadeeRecord>;
 
