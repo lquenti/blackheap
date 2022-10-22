@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { useFilePicker } from "use-file-picker";
+import PreloadeeRecords, {PreloadeeIOType, PreloadeeRecord} from "../types/PreloadeeRecords";
 
 // OF BOTH UPLOADERS
 const Evaluation = () => {
@@ -13,9 +14,39 @@ const Evaluation = () => {
   });
   const [enableRedirect, setEnableRedirect] = useState(false);
   
+  // TODO: Move outside of here into a helper folder
+  const parsePreloadeeData = (unparsed: string) => {
+    const arr: Array<string> = unparsed.split("\n");
+
+    // First line is the csv header which we can skip
+    // should look sth along the lines of
+    // io_type,bytes,sec
+    arr.shift();
+    return arr
+      .filter(s => s !== '')
+      .map(parseSingleLine);
+  }
+
+  // TODO: Move outside as well
+  const parseSingleLine = (line: string): PreloadeeRecord => {
+    // A line should look like
+    // r,704,1.2119999155402184e-06
+    const [typeStr, bytesStr, secStr] = line.split(",");
+    const io_type: PreloadeeIOType = typeStr as PreloadeeIOType;
+    return {
+      io_type,
+      bytes: parseInt(bytesStr),
+      sec: parseFloat(secStr)
+    };
+  }
+
   useEffect(() => {
     if (filesContent.length !== 0) {
-      console.log(filesContent[0].content);
+      const unparsedCsv: string = filesContent[0].content;
+      const parsed: PreloadeeRecords = parsePreloadeeData(unparsedCsv);
+      console.log("b4");
+      console.log(parsed);
+      console.log("after");
     }
   }, [filesContent]);
 
