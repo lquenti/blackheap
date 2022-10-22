@@ -51,6 +51,14 @@ const Dashboard = () => {
           <li>
             <NavLink to="evaluation">New Measurements</NavLink>
           </li>
+          <div className="py-3">
+            <h3 className="text-lg font-semibold ml-3">Other</h3>
+            <hr className="my-2" />
+          </div>
+          <li>
+            <a href="https://lquenti.github.io/blackheap/book/">Documentation</a>
+            <a href="https://github.com/lquenti/blackheap">Repository</a>
+          </li>
           <li style={{ marginTop: "auto" }}>
             <Link to="/">
               <FiLogOut /> Logout
