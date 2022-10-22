@@ -12,7 +12,7 @@ import NotFound from "./routes/NotFound";
 import PlotView from "./routes/Plotview";
 import { BenchmarkType } from "./types/Model";
 import Overview from "./routes/Overview";
-import Evaluation from "./routes/Evaluation";
+import Evaluation from "./routes/Evaluation/Evaluation";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement

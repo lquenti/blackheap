@@ -1,24 +1,27 @@
-// TODO remove utils from all utils names
+import { PreloadeeRecord, PreloadeeIOType } from "../types/PreloadeeRecords";
 
-import PreloadeeRecords, {
-  PreloadeeIOType,
-  PreloadeeRecord,
-} from "../types/PreloadeeRecords";
+const parsePreloadeeData = (unparsed: string) => {
+  const arr: Array<string> = unparsed.split("\n");
 
-const parsePreloadee = (recordStr: string): PreloadeeRecord => {
-  const [io_type_str, bytes_str, sec_str] = recordStr.trim().split(",");
-  const io_type = io_type_str as PreloadeeIOType;
-  const bytes = parseInt(bytes_str);
-  const sec = parseFloat(sec_str);
+  // First line is the csv header which we can skip
+  // should look sth along the lines of
+  // io_type,bytes,sec
+  arr.shift();
+  return arr
+    .filter(s => s !== '')
+    .map(parseSingleLine);
+}
+
+const parseSingleLine = (line: string): PreloadeeRecord => {
+  // A line should look like
+  // r,704,1.2119999155402184e-06
+  const [typeStr, bytesStr, secStr] = line.split(",");
+  const io_type: PreloadeeIOType = typeStr as PreloadeeIOType;
   return {
     io_type,
-    bytes,
-    sec,
+    bytes: parseInt(bytesStr),
+    sec: parseFloat(secStr)
   };
-};
+}
 
-// first == csv col declaration
-const parsePreloadees = (csvStr: string): PreloadeeRecords =>
-  csvStr.trim().split(",").slice(1).map(parsePreloadee);
-
-export { parsePreloadees };
+export {parsePreloadeeData, parseSingleLine};
