@@ -1,3 +1,5 @@
+import { BenchmarkType } from "./Model";
+
 enum PreloadeeIOType {
   w = "w",
   r = "r",
@@ -9,7 +11,14 @@ type PreloadeeRecord = {
   sec: number;
 };
 
-export type { PreloadeeIOType, PreloadeeRecord };
+type ClassifiedPreloadeeRecord = {
+  preloadeeRecord: PreloadeeRecord,
+  predictedModel: BenchmarkType
+};
+
+type ClassifiedPreloadeeRecords = Array<ClassifiedPreloadeeRecord>;
+
+export type { ClassifiedPreloadeeRecords, PreloadeeIOType, PreloadeeRecord };
 
 type PreloadeeRecords = Array<PreloadeeRecord>;
 
