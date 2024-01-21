@@ -2,12 +2,8 @@ name: Everything C
 on:
   push:
     branches: [ master ]
-    paths:
-      - 'src/c_code/**'
   pull_request:
     branches: [ master ]
-    paths:
-      - 'src/c_code/**'
 jobs:
   static_analysis:
     name: Run gcc with warnings
