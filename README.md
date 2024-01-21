@@ -30,8 +30,10 @@ There is a **big recode** right now. But how does one eat an elephant...
 - [ ] Design a high level architecture based on the requirements
 - [ ] Start writing the benchmarker
   - [x] Figure out how C/Rust interop work with a simple test (do some computations in C, test in Rust)
-  - [ ] Have a way to be sure that it isnt leaking memory
   - [ ] Find a way to have C linting (all warnings, formatter, pedantic C standard)
+    - [ ] Have a minimal C program that calls all functions
+      - [ ] Build with `-fsanitize=address,undefined`
+    - [ ] add `valgrind --leak-check=full`
   - [ ] 
 - [ ] ...
 
