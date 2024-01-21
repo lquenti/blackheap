@@ -1,0 +1,21 @@
+name: Everything C
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'src/c_code/**'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'src/c_code/**'
+jobs:
+  static_analysis:
+    name: Run gcc with warnings
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Dependencies
+        run: sudo apt-get install gcc cppcheck
+      - name: Compile Library with Warnings
+        run: gcc -Wall -Wextra -Wpedantic -std=c11 -c -o /dev/null ./src/c_code/benchmarker.c
+      - name: Run cppcheck
+        run: cppcheck --enable=all --error-exitcode=1 ./src/c_code/benchmarker.c
