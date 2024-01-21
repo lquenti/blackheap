@@ -13,6 +13,6 @@ jobs:
       - name: Install Dependencies
         run: sudo apt-get install gcc cppcheck
       - name: Compile Library with Warnings
-        run: gcc -Wall -Wextra -Wpedantic -std=c11 -c -o /dev/null ./src/c_code/benchmarker.c
+        run: gcc -Wall -Wextra -Wpedantic -std=c11 -c -o /dev/null ./blackheap-benchmarker/src/c_code/benchmarker.c
       - name: Run cppcheck
-        run: cppcheck --enable=all --error-exitcode=1 ./src/c_code/benchmarker.c
+        run: cppcheck --enable=all --error-exitcode=1 ./blackheap-benchmarker/src/c_code/benchmarker.c

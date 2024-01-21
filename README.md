@@ -25,12 +25,13 @@ There is a **big recode** right now. But how does one eat an elephant...
       - be able to re-analyze raw data again
       - Provide machine generated README in the data
       - `blackheap-benchmarker` does not rely on bindgen compile time since this would create LLVM as dep
-      - [ ] Have a way to be sure that it isnt leaking memory
       - [ ] Also provide a standalone binary for the benchmarker?
       - [ ] Find a way to have C linting (all warnings, formatter, pedantic C standard)
 - [ ] Design a high level architecture based on the requirements
 - [ ] Start writing the benchmarker
-  - [ ] Figure out how C/Rust interop work with a simple test (do some computations in C, test in Rust)
+  - [x] Figure out how C/Rust interop work with a simple test (do some computations in C, test in Rust)
+  - [ ] Have a way to be sure that it isnt leaking memory
+  - [ ] Find a way to have C linting (all warnings, formatter, pedantic C standard)
   - [ ] 
 - [ ] ...
 
