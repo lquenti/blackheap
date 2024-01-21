@@ -1,0 +1,12 @@
+[package]
+name = "blackheap"
+version = "0.1.0"
+edition = "2021"
+description = "An blackbox approach to I/O modelling."
+homepage = "https://github.com/lquenti/blackheap"
+repository = "https://github.com/lquenti/blackheap"
+license = "MIT"
+authors = ["Lars Quentin <lars@lquenti.de>"]
+readme = "./README.md"
+
+[dependencies]
