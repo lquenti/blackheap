@@ -1,3 +1,5 @@
+mod c_code;
+
 pub fn add(left: usize, right: usize) -> usize {
     left + right
 }
