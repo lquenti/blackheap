@@ -7,21 +7,69 @@ on:
 env:
   CARGO_TERM_COLOR: always
 jobs:
-  build:
+  build_works:
+    name: Build Works
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - run: |
-        rustup update
-        rustup component add clippy
-        rustup component add rustfmt
-    - name: Check
-      working-directory: ./blackheap-modeller
-      run: cargo check
-    - name: Run clippy
-      working-directory: ./blackheap-modeller
-      run: cargo clippy -- -Dwarnings
-    - name: Run Fmt
-      working-directory: ./blackheap-modeller
-      run: cargo fmt --check
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: run cargo build --release
+        run: |
+          cargo build --release 
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: run cargo test
+        run: |
+          cargo test
+  fmt:
+    name: fmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: run cargo fmt --check
+        run: |
+          cargo fmt --check
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: run cargo clippy
+        run: |
+          cargo clippy
+  doc:
+    name: Doc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: run cargo doc
+        run: |
+          cargo doc
 

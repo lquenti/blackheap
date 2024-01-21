@@ -1,7 +1,0 @@
-# build stuff
-build
-node_modules
-
-# cra eject stuff
-config
-scripts
