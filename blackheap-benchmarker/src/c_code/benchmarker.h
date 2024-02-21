@@ -17,6 +17,28 @@ enum access_pattern {
   ACCESS_PATTERN_RANDOM = 2,
 };
 
+enum error_codes {
+  ERROR_CODES_SUCCESS = 0,
+
+  /* Linux operations that failed */
+  ERROR_CODES_MALLOC_FAILED = 1,
+  ERROR_CODES_OPEN_FAILED = 2,
+  ERROR_CODES_READ_FAILED = 3,
+  ERROR_CODES_WRITE_FAILED = 4,
+  ERROR_CODES_LSEEK_FAILED = 5,
+  ERROR_CODES_FSYNC_FAILED = 6,
+  ERROR_CODES_FSTAT_FAILED = 7,
+  ERROR_CODES_IO_OP_FAILED = 8,
+  ERROR_CODES_REMOVE_FAILED = 9,
+
+  /* Higher level operations */
+  ERROR_CODES_DROP_PAGE_CACHE_FAILED_NO_PERMISSIONS = 10,
+  ERROR_CODES_DROP_PAGE_CACHE_FAILED_OTHER = 11,
+
+  ERROR_CODES_INCORRECT_FILE_BUFFER_SIZE = 12,
+};
+
+
 struct benchmark_config {
   const char *filepath;
   const size_t memory_buffer_in_bytes;
@@ -34,31 +56,17 @@ struct benchmark_config {
    */
   const bool prepare_file_size;
   const bool use_o_direct;
+
+  /* Note that this requires root */
   const bool drop_cache_first;
   const bool do_reread;
-  const bool delete_afterwards;
   const size_t restrict_free_ram_to;
 };
 
 struct benchmark_results {
+  enum error_codes res;
   size_t length;
   double *durations;
-};
-
-enum error_codes {
-  SUCCESS = 0,
-
-  /* Linux operations that failed */
-  MALLOC_FAILED = 1,
-  OPEN_FAILED = 2,
-  READ_FAILED = 3,
-  WRITE_FAILED = 4,
-  CLOSE_FAILED = 5,
-  LSEEK_FAILED = 6,
-  FSYNC_FAILED = 7,
-  FSTAT_FAILED = 8,
-  IO_OP_FAILED = 9,
-  REMOVE_FAILED = 10
 };
 
 struct benchmark_results benchmark_file(const struct benchmark_config *config);
