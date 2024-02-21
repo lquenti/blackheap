@@ -13,7 +13,7 @@ jobs:
       - name: Install Dependencies
         run: sudo apt-get install gcc cppcheck
       - name: Compile Library with Warnings
-        run: gcc -Wall -Wextra -Wpedantic -Werror -std=c11 -c -o /dev/null ./blackheap-benchmarker/src/c_code/benchmarker.c
+        run: gcc -Wall -Wextra -Wpedantic -Werror -std=c11 -c -o /dev/null ./blackheap-benchmarker/src/c_code/benchmarker_internal.c
       - name: Run cppcheck
         # This is everything but `unusedFunction` enabled
         run: cppcheck --enable=warning,style,performance,portability,information,missingInclude --error-exitcode=1 ./blackheap-benchmarker/src/c_code/benchmarker.c
