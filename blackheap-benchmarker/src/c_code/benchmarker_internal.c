@@ -111,7 +111,7 @@ enum error_codes init_file(const struct benchmark_config *config, struct benchma
     }
 
     write_result = write(state->fd, state->buffer, bytes_to_write);
-    if (bytes_to_write == -1) {
+    if (write_result == -1) {
       fprintf(stderr, "Failed to write to \"%s\"\nError: %s\n", config->filepath, strerror(errno));
       close(state->fd);
       return ERROR_CODES_WRITE_FAILED;
@@ -134,7 +134,7 @@ enum error_codes init_file(const struct benchmark_config *config, struct benchma
 
   close(state->fd);
 
-  if (st.st_size != config->file_size_in_bytes) {
+  if ((long long)st.st_size != (long long)config->file_size_in_bytes) {
     fprintf(
       stderr, 
       "Incorrect file size after filling \"%s\". Expected: %zu Actual: %lld\n",
@@ -251,7 +251,7 @@ struct allocation_result allocate_memory_until(size_t space_left_in_kib) {
 
   /* If it failed, we will clean up... */
   if (!was_successful) {
-    for (size_t i=0; i<result.length; ++i) {
+    for (ssize_t i=0; i<result.length; ++i) {
       free(result.pointers[i]);
     }
     free(result.pointers);
@@ -291,6 +291,11 @@ void pick_next_mem_position(const struct benchmark_config *config, struct benchm
       return;
     case ACCESS_PATTERN_SEQUENTIAL:
       state->last_mem_offset += config->access_size_in_bytes;
+
+      /* Check if we have to wrap */
+      if (state->last_mem_offset + config->access_size_in_bytes > config->memory_buffer_in_bytes) {
+        state->last_mem_offset = 0;
+      }
       return;
     case ACCESS_PATTERN_RANDOM:
       state->last_mem_offset = ((size_t)rand() * 128) % (config->memory_buffer_in_bytes - config->access_size_in_bytes);
@@ -350,6 +355,13 @@ enum error_codes do_benchmark(const struct benchmark_config *config, struct benc
   enum error_codes ret = ERROR_CODES_SUCCESS;
   struct allocation_result mallocs;
 
+  /* Open fd (closed by cleanup) */
+  state->fd = open(config->filepath, O_RDWR, 0644); 
+  if (state->fd == -1) {
+    fprintf(stderr, "Error opening \"%s\".\nError: %s\n", config->filepath, strerror(errno));
+    return ERROR_CODES_OPEN_FAILED;
+  }
+
   /* restrict memory if configured */
   if (config->restrict_free_ram_to != 0) {
     mallocs = allocate_memory_until(config->restrict_free_ram_to/1024);
@@ -371,6 +383,7 @@ enum error_codes do_benchmark(const struct benchmark_config *config, struct benc
     res = state->io_op(state->fd, state->buffer, config->access_size_in_bytes);
     clock_gettime(CLOCK_MONOTONIC, &end);
 
+
     /* did it work? */
     if (res != -1) {
       results->durations[i] = timespec_to_double(&end) - timespec_to_double(&start);
@@ -386,11 +399,9 @@ enum error_codes do_benchmark(const struct benchmark_config *config, struct benc
     }
   }
 
-  return ERROR_CODES_SUCCESS;
-
 cleanup_do_benchmark:
   if (config->restrict_free_ram_to != 0) {
-    for (size_t i=0; i<mallocs.length; ++i) {
+    for (ssize_t i=0; i<mallocs.length; ++i) {
       free(mallocs.pointers[i]);
     }
     free(mallocs.pointers);
@@ -399,7 +410,7 @@ cleanup_do_benchmark:
 }
 
 
-void do_cleanup(const struct benchmark_config *config, struct benchmark_state *state) {
+void do_cleanup(struct benchmark_state *state) {
   close(state->fd);
   free(state->buffer);
 }
@@ -438,7 +449,7 @@ struct benchmark_results benchmark_file(const struct benchmark_config *config) {
   }
 
   /* cleanup */
-  do_cleanup(config, &state);
+  do_cleanup(&state);
   
   return results;
 }

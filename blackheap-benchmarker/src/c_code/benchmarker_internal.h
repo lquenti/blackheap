@@ -38,6 +38,6 @@ enum error_codes do_benchmark(const struct benchmark_config *config, struct benc
 
 
 /* do_cleanup is best effort */
-void do_cleanup(const struct benchmark_config *config, struct benchmark_state *state);
+void do_cleanup(struct benchmark_state *state);
 
 #endif
