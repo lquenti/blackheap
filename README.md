@@ -28,17 +28,13 @@ There is a **big recode** right now. But how does one eat an elephant...
       - [ ] Also provide a standalone binary for the benchmarker?
       - [ ] Find a way to have C linting (all warnings, formatter, pedantic C standard)
 - [ ] Design a high level architecture based on the requirements
-- [ ] Start writing the benchmarker
-  - [x] Figure out how C/Rust interop work with a simple test (do some computations in C, test in Rust)
-  - [ ] Find a way to have C linting (all warnings, formatter, pedantic C standard)
-    - [ ] Have a minimal C program that calls all functions
-      - [ ] Build with `-fsanitize=address,undefined`
-    - [ ] add `valgrind --leak-check=full`
-  - [ ] 
-- [ ] ...
+- [x] Finish the benchmarker
+- [ ] Finish the Rust Code
 
-- [ ] rewrite docs
-  - [ ] Check whether there was some information in the old docs that is lost
+- [ ] Try to move stuff out of the `bin` into the `lib` crates
+
+## Issues for when the recode is done
+- Add `O_DIRECT` support
 
 ## Architecture
 Cargo workspace with the following crates
