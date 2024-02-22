@@ -14,4 +14,7 @@ blackheap-analyzer = { path = "../blackheap-analyzer" }
 blackheap-benchmarker = { path = "../blackheap-benchmarker" }
 blackheap-core = { path = "../blackheap-core" }
 clap = { version = "4.5", features = ["derive"] }
-human-panic = "1.2.3"
+human-panic = "1.2"
+libc = "0.2"
+thiserror = "1.0"
+uuid = { version = "1.7", features = ["v4", "fast-rng"] }
