@@ -98,8 +98,12 @@ enum error_codes init_file(const struct benchmark_config *config, struct benchma
     return ERROR_CODES_OPEN_FAILED;
   }
 
-  /* 64k is a good write size */
-  const size_t block_size = 64*1024;
+  /* 64k is a good write size (if our buffer is big enough) */
+  size_t block_size = 64*1024;
+  if (block_size > config->memory_buffer_in_bytes) {
+    block_size = config->memory_buffer_in_bytes;
+  }
+
   size_t bytes_written = 0;
   ssize_t write_result;
 
