@@ -9,6 +9,7 @@
 #include<sys/types.h>
 #include<sys/stat.h>
 #include<fcntl.h>
+#include<time.h>
 #include<unistd.h>
 
 enum error_codes drop_page_cache() {
@@ -155,6 +156,123 @@ enum error_codes init_results(const struct benchmark_config *config, struct benc
   return (results->durations == NULL) ? ERROR_CODES_MALLOC_FAILED : ERROR_CODES_SUCCESS;
 }
 
+enum error_codes reread(const struct benchmark_config *config, const struct benchmark_state *state) {
+  int res = state->io_op(state->fd, state->buffer, config->access_size_in_bytes);
+  if (res == -1) {
+    fprintf(stderr, "Failed to write to \"%s\"\nError: %s\n", config->filepath, strerror(errno));
+    return ERROR_CODES_WRITE_FAILED;
+  }
+
+  /* Seek back so that we read it twice */
+  off_t seek_res = lseek(state->fd, state->last_file_offset, SEEK_SET);
+  if (seek_res == -1) {
+    fprintf(stderr, "Failed to seek \"%s\" to %zu \nError: %s\n", config->filepath, state->last_file_offset, strerror(errno));
+    return ERROR_CODES_LSEEK_FAILED;
+  }
+
+  return ERROR_CODES_SUCCESS;
+}
+
+double timespec_to_double(const struct timespec *time) {
+  return time->tv_sec + 0.001 * 0.001 * 0.001 * time->tv_nsec;
+}
+
+void pick_next_mem_position(const struct benchmark_config *config, struct benchmark_state *state) {
+  switch (config->access_pattern_in_memory) {
+    case ACCESS_PATTERN_CONST:
+      /* After one io-op the pointer does not get moved like the fd-state for the file */
+      return;
+    case ACCESS_PATTERN_SEQUENTIAL:
+      state->last_mem_offset += config->access_size_in_bytes;
+      return;
+    case ACCESS_PATTERN_RANDOM:
+      state->last_mem_offset = ((size_t)rand() * 128) % (config->memory_buffer_in_bytes - config->access_size_in_bytes);
+      return;
+  }
+}
+
+enum error_codes pick_next_file_position(const struct benchmark_config *config, struct benchmark_state *state) {
+  switch (config->access_pattern_in_file) {
+    case ACCESS_PATTERN_CONST: {
+        /* Update file descriptor */
+        off_t new_offset = lseek(state->fd, 0, SEEK_SET);
+        if (new_offset == -1) {
+          fprintf(stderr, "Failed to seek \"%s\" to 0. \nError: %s\n", config->filepath, strerror(errno));
+          return ERROR_CODES_LSEEK_FAILED;
+        }
+      }
+      break;
+    case ACCESS_PATTERN_SEQUENTIAL: {
+        /* update state */
+        state->last_file_offset += config->access_size_in_bytes;
+        
+        /* Check if we have to wrap */
+        if (state->last_file_offset + config->access_size_in_bytes > config->file_size_in_bytes) {
+          /* Lets start at zero again */
+          state->last_file_offset = 0;
+          
+          off_t new_offset = lseek(state->fd, 0, SEEK_SET);
+          if (new_offset == -1) {
+            fprintf(stderr, "Failed to seek \"%s\" to 0. \nError: %s\n", config->filepath, strerror(errno));
+            return ERROR_CODES_LSEEK_FAILED;
+          }
+        }
+      }
+      break;
+    case ACCESS_PATTERN_RANDOM: {
+        size_t new_file_pos = ((size_t)rand() * 128) % (config->file_size_in_bytes - config->access_size_in_bytes);
+
+        /* Update state */
+        state->last_file_offset = new_file_pos;
+
+        /* Update file descriptor */
+        off_t new_offset = lseek(state->fd, new_file_pos, SEEK_SET);
+        if (new_offset == -1) {
+          fprintf(stderr, "Failed to seek \"%s\" to %zu. \nError: %s\n", config->filepath, (size_t)new_offset, strerror(errno));
+          return ERROR_CODES_LSEEK_FAILED;
+        }
+      }
+      break;
+  }
+  return ERROR_CODES_SUCCESS;
+}
+
+enum error_codes do_benchmark(const struct benchmark_config *config, struct benchmark_state *state, struct benchmark_results *results) {
+  struct timespec start, end;
+  int res;
+  enum error_codes ret = ERROR_CODES_SUCCESS;
+
+  for (size_t i=0; i<config->number_of_io_op_tests; ++i) {
+    if (config->do_reread) {
+      ret = reread(config, state);
+      if (ret != ERROR_CODES_SUCCESS) {
+        return ret;
+      }
+    }
+
+    /* Do the operation */
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    res = state->io_op(state->fd, state->buffer, config->access_size_in_bytes);
+    clock_gettime(CLOCK_MONOTONIC, &end);
+
+    /* did it work? */
+    if (res != -1) {
+      results->durations[i] = timespec_to_double(&end) - timespec_to_double(&start);
+    } else {
+      results->durations[i] = -1.0;
+    }
+
+    /* update offsets */
+    pick_next_mem_position(config, state);
+    ret = pick_next_file_position(config, state);
+    if (ret != ERROR_CODES_SUCCESS) {
+      return ret;
+    }
+  }
+
+  return ERROR_CODES_SUCCESS;
+}
+
 
 void do_cleanup(const struct benchmark_config *config, struct benchmark_state *state) {
   close(state->fd);
@@ -165,6 +283,9 @@ struct benchmark_results benchmark_file(const struct benchmark_config *config) {
   struct benchmark_state state;
   struct benchmark_results results;
   results.res = ERROR_CODES_SUCCESS;
+
+  /* init randomness */
+  srand((unsigned int)time(NULL));
   
   /* Drop page cache if set (note that this requires root) */
   if (config->drop_cache_first) {

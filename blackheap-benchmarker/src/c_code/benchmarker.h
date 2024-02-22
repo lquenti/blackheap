@@ -46,7 +46,7 @@ struct benchmark_config {
   const size_t access_size_in_bytes;
   const size_t number_of_io_op_tests;
   const enum access_pattern access_pattern_in_memory;
-  const enum access_pattern access_pattern_in_ile;
+  const enum access_pattern access_pattern_in_file;
   const bool is_read_operation;
   /* Whether the file should be bloated up to file_size_in_bytes.
    *
@@ -55,7 +55,6 @@ struct benchmark_config {
    * special devices.
    */
   const bool prepare_file_size;
-  const bool use_o_direct;
 
   /* Note that this requires root */
   const bool drop_cache_first;

@@ -53,6 +53,20 @@ pub const access_pattern_ACCESS_PATTERN_CONST: access_pattern = 0;
 pub const access_pattern_ACCESS_PATTERN_SEQUENTIAL: access_pattern = 1;
 pub const access_pattern_ACCESS_PATTERN_RANDOM: access_pattern = 2;
 pub type access_pattern = ::std::os::raw::c_uint;
+pub const error_codes_ERROR_CODES_SUCCESS: error_codes = 0;
+pub const error_codes_ERROR_CODES_MALLOC_FAILED: error_codes = 1;
+pub const error_codes_ERROR_CODES_OPEN_FAILED: error_codes = 2;
+pub const error_codes_ERROR_CODES_READ_FAILED: error_codes = 3;
+pub const error_codes_ERROR_CODES_WRITE_FAILED: error_codes = 4;
+pub const error_codes_ERROR_CODES_LSEEK_FAILED: error_codes = 5;
+pub const error_codes_ERROR_CODES_FSYNC_FAILED: error_codes = 6;
+pub const error_codes_ERROR_CODES_FSTAT_FAILED: error_codes = 7;
+pub const error_codes_ERROR_CODES_IO_OP_FAILED: error_codes = 8;
+pub const error_codes_ERROR_CODES_REMOVE_FAILED: error_codes = 9;
+pub const error_codes_ERROR_CODES_DROP_PAGE_CACHE_FAILED_NO_PERMISSIONS: error_codes = 10;
+pub const error_codes_ERROR_CODES_DROP_PAGE_CACHE_FAILED_OTHER: error_codes = 11;
+pub const error_codes_ERROR_CODES_INCORRECT_FILE_BUFFER_SIZE: error_codes = 12;
+pub type error_codes = ::std::os::raw::c_uint;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct benchmark_config {
@@ -62,13 +76,11 @@ pub struct benchmark_config {
     pub access_size_in_bytes: usize,
     pub number_of_io_op_tests: usize,
     pub access_pattern_in_memory: access_pattern,
-    pub access_pattern_in_ile: access_pattern,
+    pub access_pattern_in_file: access_pattern,
     pub is_read_operation: bool,
     pub prepare_file_size: bool,
-    pub use_o_direct: bool,
     pub drop_cache_first: bool,
     pub do_reread: bool,
-    pub delete_afterwards: bool,
     pub restrict_free_ram_to: usize,
 }
 #[test]
@@ -146,13 +158,13 @@ fn bindgen_test_layout_benchmark_config() {
         )
     );
     assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).access_pattern_in_ile) as usize - ptr as usize },
+        unsafe { ::std::ptr::addr_of!((*ptr).access_pattern_in_file) as usize - ptr as usize },
         44usize,
         concat!(
             "Offset of field: ",
             stringify!(benchmark_config),
             "::",
-            stringify!(access_pattern_in_ile)
+            stringify!(access_pattern_in_file)
         )
     );
     assert_eq!(
@@ -176,18 +188,8 @@ fn bindgen_test_layout_benchmark_config() {
         )
     );
     assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).use_o_direct) as usize - ptr as usize },
-        50usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(benchmark_config),
-            "::",
-            stringify!(use_o_direct)
-        )
-    );
-    assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).drop_cache_first) as usize - ptr as usize },
-        51usize,
+        50usize,
         concat!(
             "Offset of field: ",
             stringify!(benchmark_config),
@@ -197,22 +199,12 @@ fn bindgen_test_layout_benchmark_config() {
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).do_reread) as usize - ptr as usize },
-        52usize,
+        51usize,
         concat!(
             "Offset of field: ",
             stringify!(benchmark_config),
             "::",
             stringify!(do_reread)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).delete_afterwards) as usize - ptr as usize },
-        53usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(benchmark_config),
-            "::",
-            stringify!(delete_afterwards)
         )
     );
     assert_eq!(
@@ -229,6 +221,7 @@ fn bindgen_test_layout_benchmark_config() {
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct benchmark_results {
+    pub res: error_codes,
     pub length: usize,
     pub durations: *mut f64,
 }
@@ -238,7 +231,7 @@ fn bindgen_test_layout_benchmark_results() {
     let ptr = UNINIT.as_ptr();
     assert_eq!(
         ::std::mem::size_of::<benchmark_results>(),
-        16usize,
+        24usize,
         concat!("Size of: ", stringify!(benchmark_results))
     );
     assert_eq!(
@@ -247,8 +240,18 @@ fn bindgen_test_layout_benchmark_results() {
         concat!("Alignment of ", stringify!(benchmark_results))
     );
     assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).length) as usize - ptr as usize },
+        unsafe { ::std::ptr::addr_of!((*ptr).res) as usize - ptr as usize },
         0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(benchmark_results),
+            "::",
+            stringify!(res)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).length) as usize - ptr as usize },
+        8usize,
         concat!(
             "Offset of field: ",
             stringify!(benchmark_results),
@@ -258,7 +261,7 @@ fn bindgen_test_layout_benchmark_results() {
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).durations) as usize - ptr as usize },
-        8usize,
+        16usize,
         concat!(
             "Offset of field: ",
             stringify!(benchmark_results),
@@ -267,18 +270,6 @@ fn bindgen_test_layout_benchmark_results() {
         )
     );
 }
-pub const error_codes_SUCCESS: error_codes = 0;
-pub const error_codes_MALLOC_FAILED: error_codes = 1;
-pub const error_codes_OPEN_FAILED: error_codes = 2;
-pub const error_codes_READ_FAILED: error_codes = 3;
-pub const error_codes_WRITE_FAILED: error_codes = 4;
-pub const error_codes_CLOSE_FAILED: error_codes = 5;
-pub const error_codes_LSEEK_FAILED: error_codes = 6;
-pub const error_codes_FSYNC_FAILED: error_codes = 7;
-pub const error_codes_FSTAT_FAILED: error_codes = 8;
-pub const error_codes_IO_OP_FAILED: error_codes = 9;
-pub const error_codes_REMOVE_FAILED: error_codes = 10;
-pub type error_codes = ::std::os::raw::c_uint;
 extern "C" {
     pub fn benchmark_file(config: *const benchmark_config) -> benchmark_results;
 }
