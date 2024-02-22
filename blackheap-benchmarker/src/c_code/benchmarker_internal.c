@@ -52,6 +52,7 @@ enum error_codes init_state(const struct benchmark_config *config, struct benchm
   /* enforce that the buffer actually exists */
   memset(ptr, '1', (unsigned long)config->memory_buffer_in_bytes);
   state->buffer = ptr;
+
   state->last_mem_offset = 0;
   state->last_file_offset = 0;
 
@@ -156,6 +157,112 @@ enum error_codes init_results(const struct benchmark_config *config, struct benc
   return (results->durations == NULL) ? ERROR_CODES_MALLOC_FAILED : ERROR_CODES_SUCCESS;
 }
 
+long parse_from_meminfo(char *key) {
+  long res = -1;
+  size_t keylen = strlen(key);
+
+  FILE *fp = fopen(MEMINFO, "r");
+  if (!fp) {
+    perror("Failed to open MEMINFO");
+    return res;
+  }
+
+  char buf[100];
+  while (fgets(buf, sizeof(buf), fp)) {
+
+    /* is it not out match? */
+    if (strncmp(buf, key, keylen) != 0) {
+      continue;
+    }
+    printf("%s\n", buf);
+
+    /* It is out match. */
+    char *colon = strchr(buf, ':');
+    if (colon) {
+      res = atol(colon+1);
+      break;
+    }
+  }
+
+  fclose(fp);
+  return res;
+}
+
+size_t get_available_mem_kib() {
+  long free = parse_from_meminfo("MemFree");
+  long cached = parse_from_meminfo("Cached");
+  long buffers = parse_from_meminfo("Buffers");
+
+  /* Log if any of them failed... */
+  if (free == -1) {
+    fprintf(stderr, "Reading \"MemFree\" from /proc/meminfo failed...");
+    return -1;
+  }
+  if (cached == -1) {
+    fprintf(stderr, "Reading \"Cached\" from /proc/meminfo failed...");
+    return -1;
+  }
+  if (buffers == -1) {
+    fprintf(stderr, "Reading \"Buffers\" from /proc/meminfo failed...");
+    return -1;
+  }
+
+  return free+cached+buffers;
+}
+
+/* Note that the callee has to free if it succeeded */
+struct allocation_result allocate_memory_until(size_t space_left_in_kib) {
+  struct allocation_result result;
+  result.pointers = NULL;
+  result.length = 0;
+  
+  bool was_successful = true;
+
+  size_t current_available = get_available_mem_kib();
+  while (current_available > space_left_in_kib) {
+    size_t delta = current_available - space_left_in_kib;
+    size_t n = (delta < 128 ? delta : 128) * 1024;
+
+    void *p = malloc(n);
+    if (!p) {
+      fprintf(stderr, "Mallocing %zu bytes to restrict the memory failed. Currently still available: %zu KiB\n", n, current_available);
+      was_successful = false;
+      break;
+    }
+
+    /* Ensure the memory is allocated */
+    memset(p, '1', n); 
+
+    /* add to ptrs */
+    void **new_pointers = realloc(result.pointers, (result.length + 1) * sizeof(void *));
+    if (!new_pointers) {
+      fprintf(stderr, "Reallocating pointers array failed. Current length: %zu\n", result.length);
+      /* free the last allocation */
+      free(p);
+      break;
+    }
+
+    result.pointers = new_pointers;
+    result.pointers[result.length] = p;
+    result.length++;
+
+    current_available = get_available_mem_kib();
+  }
+
+  /* If it failed, we will clean up... */
+  if (!was_successful) {
+    for (size_t i=0; i<result.length; ++i) {
+      free(result.pointers[i]);
+    }
+    free(result.pointers);
+    result.pointers = NULL;
+    result.length = -1;
+  }
+
+  return result;
+}
+
+
 enum error_codes reread(const struct benchmark_config *config, const struct benchmark_state *state) {
   int res = state->io_op(state->fd, state->buffer, config->access_size_in_bytes);
   if (res == -1) {
@@ -241,12 +348,21 @@ enum error_codes do_benchmark(const struct benchmark_config *config, struct benc
   struct timespec start, end;
   int res;
   enum error_codes ret = ERROR_CODES_SUCCESS;
+  struct allocation_result mallocs;
+
+  /* restrict memory if configured */
+  if (config->restrict_free_ram_to != 0) {
+    mallocs = allocate_memory_until(config->restrict_free_ram_to/1024);
+    if (mallocs.length == -1) {
+        return ERROR_CODES_MALLOC_FAILED;
+    }
+  }
 
   for (size_t i=0; i<config->number_of_io_op_tests; ++i) {
     if (config->do_reread) {
       ret = reread(config, state);
       if (ret != ERROR_CODES_SUCCESS) {
-        return ret;
+        goto cleanup_do_benchmark;
       }
     }
 
@@ -266,11 +382,20 @@ enum error_codes do_benchmark(const struct benchmark_config *config, struct benc
     pick_next_mem_position(config, state);
     ret = pick_next_file_position(config, state);
     if (ret != ERROR_CODES_SUCCESS) {
-      return ret;
+      goto cleanup_do_benchmark;
     }
   }
 
   return ERROR_CODES_SUCCESS;
+
+cleanup_do_benchmark:
+  if (config->restrict_free_ram_to != 0) {
+    for (size_t i=0; i<mallocs.length; ++i) {
+      free(mallocs.pointers[i]);
+    }
+    free(mallocs.pointers);
+  }
+  return ret;
 }
 
 
@@ -308,6 +433,9 @@ struct benchmark_results benchmark_file(const struct benchmark_config *config) {
   }
 
   /* Do the benchmark! */
+  if (results.res == ERROR_CODES_SUCCESS) {
+    do_benchmark(config, &state, &results);
+  }
 
   /* cleanup */
   do_cleanup(config, &state);
