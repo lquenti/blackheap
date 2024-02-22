@@ -9,7 +9,7 @@ use std::ffi::CString;
 
 use benchmarker::{access_pattern_ACCESS_PATTERN_SEQUENTIAL, benchmark_config, error_codes_ERROR_CODES_SUCCESS};
 
-fn run_benchmark() {
+pub fn run_benchmark() {
     let filepath = CString::new("/tmp/test_file.bin").expect("CString::new failed");
     let config = benchmark_config {
         filepath: filepath.as_ptr(),

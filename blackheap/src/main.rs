@@ -1,5 +1,5 @@
 fn main() {
-    println!("Hello, world!");
+    blackheap_benchmarker::run_benchmark();
 }
 
 #[cfg(test)]

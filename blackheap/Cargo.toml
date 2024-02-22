@@ -10,3 +10,4 @@ authors = ["Lars Quentin <lars@lquenti.de>"]
 readme = "./README.md"
 
 [dependencies]
+blackheap-benchmarker = { path = "../blackheap-benchmarker" }
