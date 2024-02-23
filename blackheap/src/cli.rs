@@ -1,9 +1,12 @@
-use std::{path::{PathBuf, Path}, io, fs::{self, File}};
+use std::{
+    fs::{self, File},
+    io,
+    path::{Path, PathBuf},
+};
 
 use clap::{Parser, ValueEnum};
 use thiserror::Error;
 use uuid::Uuid;
-
 
 #[derive(Error, Debug)]
 pub enum CliError {
@@ -41,7 +44,7 @@ fn validate_output_directory(dir: &Path) -> Result<(), CliError> {
       - the path exists but is not a directory
       - the path exists, is a directory but not writable
     */
-    
+
     if !dir.exists() {
         fs::create_dir_all(dir).map_err(|_| CliError::CannotCreateDirectory(dir.to_path_buf()))?;
     }
@@ -61,7 +64,8 @@ fn validate_output_directory(dir: &Path) -> Result<(), CliError> {
         }
         test_file
     };
-    File::create(&test_file).and_then(|_| fs::remove_file(&test_file))
+    File::create(&test_file)
+        .and_then(|_| fs::remove_file(&test_file))
         .map_err(|_| CliError::DirectoryNotWritable(dir.to_path_buf()))?;
 
     Ok(())
@@ -69,7 +73,7 @@ fn validate_output_directory(dir: &Path) -> Result<(), CliError> {
 
 fn validate_benchmark_file(file: &Path) -> Result<(), CliError> {
     /*
-    The benchmark file is invalid if 
+    The benchmark file is invalid if
     - it doesnt exist and cannot be created
     - it cannot be removed
     */
@@ -118,6 +122,4 @@ pub struct Cli {
     /// Drop caches (requires root)
     #[clap(long)]
     drop_caches: bool,
-
 }
-
