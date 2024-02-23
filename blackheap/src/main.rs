@@ -39,10 +39,10 @@ fn main() {
         let missing_access_sizes = {
             let tmp_progress = progress.clone();
             tmp_progress
-                .get_missing_access_sizes(&b)
+                .get_missing_access_sizes(b)
                 .map(|slice| slice.to_vec())
         };
-        if None == missing_access_sizes {
+        if missing_access_sizes.is_none() {
             info!(
                 "Benchmark {:?} ({:?}) already computed",
                 &b.scenario,
@@ -85,7 +85,7 @@ fn main() {
             /* Save the result; update and save the progress struct */
             info!("Saving the results");
             let res =
-                benchmark::save_and_update_progress(&b, access_size, &results, &cli, &mut progress);
+                benchmark::save_and_update_progress(b, access_size, &results, &cli, &mut progress);
             if let Err(e) = res {
                 error!("{:?}", e);
                 std::process::exit(1);

@@ -98,7 +98,7 @@ pub fn validate_cli(cli: &Cli) -> Result<(), CliError> {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
-enum Model {
+pub enum Model {
     Linear,
     ConstantLinear,
 }

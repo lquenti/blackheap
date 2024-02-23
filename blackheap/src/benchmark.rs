@@ -160,7 +160,7 @@ pub fn save_and_update_progress(
         .join("\n");
 
     /* save the file */
-    fs::write(&file_path, &durations_str)?;
+    fs::write(file_path, durations_str)?;
 
     /* Update the progress */
     progress.update_access_sizes_done(b, access_size);

@@ -10,13 +10,13 @@ pub const FILE_NAME: &str = "BlackheapProgress.toml";
 #[derive(Error, Debug)]
 pub enum ProgressError {
     #[error("Serialization failed with: {0}")]
-    SerializeError(#[from] toml::ser::Error),
+    Serialize(#[from] toml::ser::Error),
 
     #[error("Deserialization failed with: {0}")]
-    DeserializeError(#[from] toml::de::Error),
+    Deserialize(#[from] toml::de::Error),
 
     #[error("IO failed with: {0}")]
-    IOError(#[from] std::io::Error),
+    IO(#[from] std::io::Error),
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
@@ -78,9 +78,7 @@ impl BenchmarkProgressToml {
                 access_sizes_missing: access_sizes.to_vec(),
             };
 
-            let scenario_map = benchmarks_map
-                .entry(benchmark.scenario)
-                .or_insert_with(HashMap::new);
+            let scenario_map = benchmarks_map.entry(benchmark.scenario).or_default();
             scenario_map.insert(operation, status);
         }
 
@@ -124,7 +122,7 @@ impl BenchmarkProgressToml {
 
     pub fn to_file(&self, path: &str) -> Result<(), ProgressError> {
         let toml_str = toml::to_string(&self)?;
-        fs::write(path, &toml_str)?;
+        fs::write(path, toml_str)?;
         Ok(())
     }
 
