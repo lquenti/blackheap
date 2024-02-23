@@ -20,13 +20,13 @@ pub enum ProgressError {
     IOError(#[from] std::io::Error),
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 struct Meta {
     version: u32,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
-enum Operation {
+pub enum Operation {
     Read,
     Write,
 }
@@ -40,7 +40,17 @@ impl ToString for Operation {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+impl Operation {
+    pub fn from_is_read_op(b: bool) -> Self {
+        if b {
+            Self::Read
+        } else {
+            Self::Write
+        }
+    }
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 struct BenchmarkStatus {
     done: bool,
     #[serde(rename = "access-sizes-done")]
@@ -50,7 +60,7 @@ struct BenchmarkStatus {
 }
 
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 pub struct BenchmarkProgressToml {
     meta: Meta,
     benchmarks: HashMap<BenchmarkScenario, HashMap<Operation, BenchmarkStatus>>,
@@ -62,11 +72,7 @@ impl BenchmarkProgressToml {
         let mut benchmarks_map: HashMap<BenchmarkScenario, HashMap<Operation, BenchmarkStatus>> = HashMap::new();
 
         for benchmark in benchmarks {
-            let operation = if benchmark.config.is_read_operation {
-                Operation::Read
-            } else {
-                Operation::Write
-            };
+            let operation = Operation::from_is_read_op(benchmark.config.is_read_operation);
 
             let status = BenchmarkStatus {
                 done: false,
@@ -85,10 +91,7 @@ impl BenchmarkProgressToml {
     }
 
     pub fn get_done_access_sizes(&self, b: &Benchmark) -> Option<&[u32]> {
-        let operation = match b.config.is_read_operation {
-            true => Operation::Read,
-            false => Operation::Write,
-        };
+        let operation = Operation::from_is_read_op(b.config.is_read_operation);
 
         self.benchmarks.get(&b.scenario)
             .and_then(|scenario_map| scenario_map.get(&operation))
@@ -96,14 +99,21 @@ impl BenchmarkProgressToml {
     }
     
     pub fn get_missing_access_sizes(&self, b: &Benchmark) -> Option<&[u32]> {
-        let operation = match b.config.is_read_operation {
-            true => Operation::Read,
-            false => Operation::Write,
-        };
+        let operation = Operation::from_is_read_op(b.config.is_read_operation);
 
         self.benchmarks.get(&b.scenario)
             .and_then(|scenario_map| scenario_map.get(&operation))
             .map(|status| status.access_sizes_missing.as_slice())
+    }
+
+    pub fn update_access_sizes_done(&mut self, b: &Benchmark, access_size: u32) {
+        if let Some(operation_hashmap) = self.benchmarks.get_mut(&b.scenario) {
+            let operation = Operation::from_is_read_op(b.config.is_read_operation);
+            if let Some(status) = operation_hashmap.get_mut(&operation) {
+                status.access_sizes_done.push(access_size);
+                status.access_sizes_missing.retain(|&size| size != access_size);
+            }
+        }
     }
 
 

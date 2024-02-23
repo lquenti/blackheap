@@ -1,12 +1,13 @@
-use std::{collections::HashMap, io, path::{Path, PathBuf}};
+use std::{collections::HashMap, io, path::{Path, PathBuf}, fs};
 
-use crate::cli::Cli;
+use crate::{cli::Cli, assets::progress::Operation};
 
 use assets::progress::{BenchmarkProgressToml, ProgressError, FILE_NAME};
-use blackheap_benchmarker::{AccessPattern, BenchmarkConfig};
+use blackheap_benchmarker::{AccessPattern, BenchmarkConfig, ErrorCodes, BenchmarkResults};
 use clap::Parser;
 use serde::{Serialize, Deserialize};
 use tracing::{debug, error, info};
+use tracing_subscriber::fmt::layer;
 
 mod assets;
 mod cli;
@@ -121,6 +122,7 @@ fn load_or_create_progress(directory_path: &Path, benchmarks: &[Benchmark]) -> R
 
     /* If it does not exist, create a new one based on our benchmarks */
     if !full_path.exists() {
+        info!("No previous results were found. Creating new ones");
         let toml = BenchmarkProgressToml::new_from_benchmarks(benchmarks, &ACCESS_SIZES);
         toml.to_file(full_path.to_str().unwrap())?;
         return Ok(toml);
@@ -128,7 +130,42 @@ fn load_or_create_progress(directory_path: &Path, benchmarks: &[Benchmark]) -> R
 
     /* If it does exist, try to parse it */
     let toml = BenchmarkProgressToml::from_file(full_path.to_str().unwrap())?;
+    info!("Previous results loaded");
     Ok(toml)
+}
+
+fn save_and_update_progress(
+    b: &Benchmark,
+    access_size: u32,
+    results: &BenchmarkResults,
+    cli: &Cli,
+    progress: &mut BenchmarkProgressToml
+) -> Result<(), ProgressError> {
+    let operation = Operation::from_is_read_op(b.config.is_read_operation).to_string();
+    let file_path = format!(
+        "{}/{}/{}/{}.txt",
+        cli.to.to_str().unwrap(),
+        b.scenario.to_string(),
+        operation,
+        access_size
+    );
+
+    /* we save it as newline seperated f64s */
+    let durations_str = results.durations.iter()
+        .map(|d| d.to_string())
+        .collect::<Vec<String>>()
+        .join("\n");
+
+    /* save the file */
+    fs::write(&file_path, &durations_str)?;
+
+    /* Update the progress */
+    progress.update_access_sizes_done(b, access_size);
+
+    let progress_file_path = format!("{}/{}", cli.to.to_str().unwrap(), &FILE_NAME);
+    progress.to_file(&progress_file_path)?;
+
+    Ok(())
 }
 
 fn main() {
@@ -146,29 +183,57 @@ fn main() {
     }
 
     /* Load previous results */
+    info!("Trying to load previous results");
     let benchmarks = Benchmark::get_all_benchmarks(cli.drop_caches, cli.file.to_str().unwrap());
     let progress = load_or_create_progress(&cli.to, &benchmarks);
-    
-    /*
-    Old Logic:
-    - Create output folder
-    - dump static files
-    - Create a vector of all performance benchmarks
-    - For all benchmarks:
-        - if not `analyze_only` run and save the benchmark
-        - run the analysis
-    - dump all to file
-        - model.json
-        - iofs.csv
-    */
+    if let Err(e) = progress {
+        error!("{:?}", e);
+        std::process::exit(1);
+    }
+    let mut progress = progress.unwrap();
 
-    /*
-    New Logic:
-    - run all benchmarks one by one
-      - update afterwards
-    - start analysis
-      - TODO if the plotting libraries arent good enough dump a python script in there
-        - lin reg should still be done in here
-      - Maybe do that in general?
-    */
+    /* The actual benchmarking */
+    for b in benchmarks.iter() {
+        /* Which access sizes do we still have to do? */
+        let missing_access_sizes = {
+            let tmp_progress = progress.clone();
+            tmp_progress.get_missing_access_sizes(&b).map(|slice| slice.to_vec())
+        };
+        if None == missing_access_sizes {
+            info!("Benchmark {:?} ({:?}) already computed", &b.scenario, Operation::from_is_read_op(b.config.is_read_operation));
+            continue;
+        }
+        let missing_access_sizes: Vec<u32> = missing_access_sizes.unwrap();
+        info!("Benchmark {:?} ({:?}): Missing Access Sizes: {:?}", &b.scenario, Operation::from_is_read_op(b.config.is_read_operation), &missing_access_sizes);
+
+        /* Do a benchmark for each access size */
+        for access_size in missing_access_sizes {
+            /* Set the access size */
+            let mut config = b.config.clone();
+            config.access_size_in_bytes = access_size as usize;
+
+            /* Run the benchmark */
+            info!("Running {:?} ({:?}): Access Sizes: {:?}", &b.scenario, Operation::from_is_read_op(b.config.is_read_operation), access_size);
+            let results = blackheap_benchmarker::benchmark_file(&config);
+            if results.res != ErrorCodes::Success {
+                info!("Error {:?} ({:?}): Access Sizes: {:?} failed with {:?}", &b.scenario, Operation::from_is_read_op(b.config.is_read_operation), access_size, &results.res);
+            } 
+
+            /* Save the result; update and save the progress struct */
+            info!("Saving the results");
+            let res = save_and_update_progress(&b, access_size, &results, &cli, &mut progress);
+            if let Err(e) = res {
+                error!("{:?}", e);
+                std::process::exit(1);
+            }
+        }
+    }
+
+    /* Do the regression for all benchmarks */
+    
+    /* Save the regression (should be part of impl Model) */
+
+    /* Dump all assets for Analysis */
+    
+    /* Print out how to use the assets, refer to the README */
 }

@@ -34,7 +34,7 @@ impl AccessPattern {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ErrorCodes {
     Success,
 
