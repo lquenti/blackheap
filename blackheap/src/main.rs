@@ -93,11 +93,14 @@ fn main() {
         }
     }
 
-    /* Do the regression for all benchmarks */
-
-    /* Save the regression (should be part of impl Model) */
-
     /* Dump all assets for Analysis */
+    info!("Saving all assets info {:?}", cli.to);
+    let res = assets::dump_assets(&cli.to);
+    if let Err(e) = res {
+        error!("{:?}", e);
+        std::process::exit(1);
+    }
 
     /* Print out how to use the assets, refer to the README */
+    info!("Benchmark ran successfully! See the README for how to run the automated, Python-based analysis.");
 }

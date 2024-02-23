@@ -2,8 +2,7 @@
 
 members = [
     "blackheap",
-    "blackheap-benchmarker",
-    "blackheap-core"
+    "blackheap-benchmarker"
 ]
 
 resolver = "2"
