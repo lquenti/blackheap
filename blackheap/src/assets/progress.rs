@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs};
 use thiserror::Error;
 
-use crate::{Benchmark, BenchmarkScenario};
+use crate::benchmark::{Benchmark, BenchmarkScenario};
 
 const VERSION_NUMBER: u32 = 1;
 pub const FILE_NAME: &str = "BlackheapProgress.toml";
