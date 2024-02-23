@@ -1,0 +1,8 @@
+[workspace]
+
+members = [
+    "blackheap",
+    "blackheap-benchmarker"
+]
+
+resolver = "2"
