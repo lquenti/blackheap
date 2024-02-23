@@ -1,18 +1,25 @@
-use std::{collections::HashMap, io, path::{Path, PathBuf}, fs};
+use std::{
+    collections::HashMap,
+    fs, io,
+    path::{Path, PathBuf},
+};
 
-use crate::{cli::Cli, assets::progress::Operation};
+use crate::{assets::progress::Operation, cli::Cli};
 
 use assets::progress::{BenchmarkProgressToml, ProgressError, FILE_NAME};
-use blackheap_benchmarker::{AccessPattern, BenchmarkConfig, ErrorCodes, BenchmarkResults};
+use blackheap_benchmarker::{AccessPattern, BenchmarkConfig, BenchmarkResults, ErrorCodes};
 use clap::Parser;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use tracing::{debug, error, info};
 use tracing_subscriber::fmt::layer;
 
 mod assets;
 mod cli;
 
-const ACCESS_SIZES: [u32; 24] = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216];
+const ACCESS_SIZES: [u32; 24] = [
+    2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072,
+    262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216,
+];
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum BenchmarkScenario {
@@ -33,14 +40,11 @@ impl ToString for BenchmarkScenario {
 struct Benchmark {
     scenario: BenchmarkScenario,
     config: BenchmarkConfig,
-    results: HashMap<u32, Vec<f64>>
+    results: HashMap<u32, Vec<f64>>,
 }
 
 impl Benchmark {
-    pub fn get_all_benchmarks(
-        root: bool,
-        file_path: &str,
-    ) -> Vec<Self> {
+    pub fn get_all_benchmarks(root: bool, file_path: &str) -> Vec<Self> {
         vec![
             Self::new_random_uncached_read(file_path, root),
             Self::new_random_uncached_write(file_path, root),
@@ -116,7 +120,10 @@ impl Benchmark {
     }
 }
 
-fn load_or_create_progress(directory_path: &Path, benchmarks: &[Benchmark]) -> Result<BenchmarkProgressToml, ProgressError> {
+fn load_or_create_progress(
+    directory_path: &Path,
+    benchmarks: &[Benchmark],
+) -> Result<BenchmarkProgressToml, ProgressError> {
     let mut full_path = PathBuf::from(directory_path);
     full_path.push(FILE_NAME);
 
@@ -139,7 +146,7 @@ fn save_and_update_progress(
     access_size: u32,
     results: &BenchmarkResults,
     cli: &Cli,
-    progress: &mut BenchmarkProgressToml
+    progress: &mut BenchmarkProgressToml,
 ) -> Result<(), ProgressError> {
     let operation = Operation::from_is_read_op(b.config.is_read_operation).to_string();
     let file_path = format!(
@@ -151,7 +158,9 @@ fn save_and_update_progress(
     );
 
     /* we save it as newline seperated f64s */
-    let durations_str = results.durations.iter()
+    let durations_str = results
+        .durations
+        .iter()
         .map(|d| d.to_string())
         .collect::<Vec<String>>()
         .join("\n");
@@ -197,14 +206,25 @@ fn main() {
         /* Which access sizes do we still have to do? */
         let missing_access_sizes = {
             let tmp_progress = progress.clone();
-            tmp_progress.get_missing_access_sizes(&b).map(|slice| slice.to_vec())
+            tmp_progress
+                .get_missing_access_sizes(&b)
+                .map(|slice| slice.to_vec())
         };
         if None == missing_access_sizes {
-            info!("Benchmark {:?} ({:?}) already computed", &b.scenario, Operation::from_is_read_op(b.config.is_read_operation));
+            info!(
+                "Benchmark {:?} ({:?}) already computed",
+                &b.scenario,
+                Operation::from_is_read_op(b.config.is_read_operation)
+            );
             continue;
         }
         let missing_access_sizes: Vec<u32> = missing_access_sizes.unwrap();
-        info!("Benchmark {:?} ({:?}): Missing Access Sizes: {:?}", &b.scenario, Operation::from_is_read_op(b.config.is_read_operation), &missing_access_sizes);
+        info!(
+            "Benchmark {:?} ({:?}): Missing Access Sizes: {:?}",
+            &b.scenario,
+            Operation::from_is_read_op(b.config.is_read_operation),
+            &missing_access_sizes
+        );
 
         /* Do a benchmark for each access size */
         for access_size in missing_access_sizes {
@@ -213,11 +233,22 @@ fn main() {
             config.access_size_in_bytes = access_size as usize;
 
             /* Run the benchmark */
-            info!("Running {:?} ({:?}): Access Sizes: {:?}", &b.scenario, Operation::from_is_read_op(b.config.is_read_operation), access_size);
+            info!(
+                "Running {:?} ({:?}): Access Sizes: {:?}",
+                &b.scenario,
+                Operation::from_is_read_op(b.config.is_read_operation),
+                access_size
+            );
             let results = blackheap_benchmarker::benchmark_file(&config);
             if results.res != ErrorCodes::Success {
-                info!("Error {:?} ({:?}): Access Sizes: {:?} failed with {:?}", &b.scenario, Operation::from_is_read_op(b.config.is_read_operation), access_size, &results.res);
-            } 
+                info!(
+                    "Error {:?} ({:?}): Access Sizes: {:?} failed with {:?}",
+                    &b.scenario,
+                    Operation::from_is_read_op(b.config.is_read_operation),
+                    access_size,
+                    &results.res
+                );
+            }
 
             /* Save the result; update and save the progress struct */
             info!("Saving the results");
@@ -230,10 +261,10 @@ fn main() {
     }
 
     /* Do the regression for all benchmarks */
-    
+
     /* Save the regression (should be part of impl Model) */
 
     /* Dump all assets for Analysis */
-    
+
     /* Print out how to use the assets, refer to the README */
 }

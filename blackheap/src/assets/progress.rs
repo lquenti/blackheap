@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs};
 use thiserror::Error;
 
-use crate::{BenchmarkScenario, Benchmark};
+use crate::{Benchmark, BenchmarkScenario};
 
 const VERSION_NUMBER: u32 = 1;
 pub const FILE_NAME: &str = "BlackheapProgress.toml";
@@ -14,7 +14,6 @@ pub enum ProgressError {
 
     #[error("Deserialization failed with: {0}")]
     DeserializeError(#[from] toml::de::Error),
-
 
     #[error("IO failed with: {0}")]
     IOError(#[from] std::io::Error),
@@ -59,17 +58,16 @@ struct BenchmarkStatus {
     access_sizes_missing: Vec<u32>,
 }
 
-
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 pub struct BenchmarkProgressToml {
     meta: Meta,
     benchmarks: HashMap<BenchmarkScenario, HashMap<Operation, BenchmarkStatus>>,
 }
 
-
 impl BenchmarkProgressToml {
     pub fn new_from_benchmarks(benchmarks: &[Benchmark], access_sizes: &[u32]) -> Self {
-        let mut benchmarks_map: HashMap<BenchmarkScenario, HashMap<Operation, BenchmarkStatus>> = HashMap::new();
+        let mut benchmarks_map: HashMap<BenchmarkScenario, HashMap<Operation, BenchmarkStatus>> =
+            HashMap::new();
 
         for benchmark in benchmarks {
             let operation = Operation::from_is_read_op(benchmark.config.is_read_operation);
@@ -80,12 +78,16 @@ impl BenchmarkProgressToml {
                 access_sizes_missing: access_sizes.to_vec(),
             };
 
-            let scenario_map = benchmarks_map.entry(benchmark.scenario).or_insert_with(HashMap::new);
+            let scenario_map = benchmarks_map
+                .entry(benchmark.scenario)
+                .or_insert_with(HashMap::new);
             scenario_map.insert(operation, status);
         }
 
         BenchmarkProgressToml {
-            meta: Meta { version: VERSION_NUMBER },
+            meta: Meta {
+                version: VERSION_NUMBER,
+            },
             benchmarks: benchmarks_map,
         }
     }
@@ -93,15 +95,17 @@ impl BenchmarkProgressToml {
     pub fn get_done_access_sizes(&self, b: &Benchmark) -> Option<&[u32]> {
         let operation = Operation::from_is_read_op(b.config.is_read_operation);
 
-        self.benchmarks.get(&b.scenario)
+        self.benchmarks
+            .get(&b.scenario)
             .and_then(|scenario_map| scenario_map.get(&operation))
             .map(|status| status.access_sizes_done.as_slice())
     }
-    
+
     pub fn get_missing_access_sizes(&self, b: &Benchmark) -> Option<&[u32]> {
         let operation = Operation::from_is_read_op(b.config.is_read_operation);
 
-        self.benchmarks.get(&b.scenario)
+        self.benchmarks
+            .get(&b.scenario)
             .and_then(|scenario_map| scenario_map.get(&operation))
             .map(|status| status.access_sizes_missing.as_slice())
     }
@@ -111,11 +115,12 @@ impl BenchmarkProgressToml {
             let operation = Operation::from_is_read_op(b.config.is_read_operation);
             if let Some(status) = operation_hashmap.get_mut(&operation) {
                 status.access_sizes_done.push(access_size);
-                status.access_sizes_missing.retain(|&size| size != access_size);
+                status
+                    .access_sizes_missing
+                    .retain(|&size| size != access_size);
             }
         }
     }
-
 
     pub fn to_file(&self, path: &str) -> Result<(), ProgressError> {
         let toml_str = toml::to_string(&self)?;

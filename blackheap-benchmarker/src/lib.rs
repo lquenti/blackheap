@@ -2,9 +2,8 @@ mod c_code;
 
 use c_code::benchmarker as b;
 
-use std::ffi::CString;
 use libc::c_char;
-
+use std::ffi::CString;
 
 #[derive(Debug, Clone)]
 pub enum AccessPattern {
@@ -68,8 +67,12 @@ impl ErrorCodes {
             Self::FstatFailed => b::error_codes_ERROR_CODES_FSTAT_FAILED,
             Self::IOOpFailed => b::error_codes_ERROR_CODES_IO_OP_FAILED,
             Self::RemoveFailed => b::error_codes_ERROR_CODES_REMOVE_FAILED,
-            Self::DropPageCacheFailedNoPermissions => b::error_codes_ERROR_CODES_DROP_PAGE_CACHE_FAILED_NO_PERMISSIONS,
-            Self::DropPageCacheFailedOther => b::error_codes_ERROR_CODES_DROP_PAGE_CACHE_FAILED_OTHER,
+            Self::DropPageCacheFailedNoPermissions => {
+                b::error_codes_ERROR_CODES_DROP_PAGE_CACHE_FAILED_NO_PERMISSIONS
+            }
+            Self::DropPageCacheFailedOther => {
+                b::error_codes_ERROR_CODES_DROP_PAGE_CACHE_FAILED_OTHER
+            }
             Self::IncorrectFileBufferSize => b::error_codes_ERROR_CODES_INCORRECT_FILE_BUFFER_SIZE,
         }
     }
@@ -86,8 +89,12 @@ impl ErrorCodes {
             b::error_codes_ERROR_CODES_FSTAT_FAILED => Self::FstatFailed,
             b::error_codes_ERROR_CODES_IO_OP_FAILED => Self::IOOpFailed,
             b::error_codes_ERROR_CODES_REMOVE_FAILED => Self::RemoveFailed,
-            b::error_codes_ERROR_CODES_DROP_PAGE_CACHE_FAILED_NO_PERMISSIONS => Self::DropPageCacheFailedNoPermissions,
-            b::error_codes_ERROR_CODES_DROP_PAGE_CACHE_FAILED_OTHER => Self::DropPageCacheFailedOther,
+            b::error_codes_ERROR_CODES_DROP_PAGE_CACHE_FAILED_NO_PERMISSIONS => {
+                Self::DropPageCacheFailedNoPermissions
+            }
+            b::error_codes_ERROR_CODES_DROP_PAGE_CACHE_FAILED_OTHER => {
+                Self::DropPageCacheFailedOther
+            }
             b::error_codes_ERROR_CODES_INCORRECT_FILE_BUFFER_SIZE => Self::IncorrectFileBufferSize,
             _ => panic!("Unknown Error Code! Probably forgot to update Rust to C logic"),
         }
@@ -128,7 +135,7 @@ impl BenchmarkConfig {
             restrict_free_ram_to: match self.restrict_free_ram_to {
                 Some(n) => n,
                 None => 0,
-            }
+            },
         }
     }
 }
@@ -154,7 +161,6 @@ impl BenchmarkResults {
         BenchmarkResults { res, durations }
     }
 }
-
 
 pub fn benchmark_file(config: &BenchmarkConfig) -> BenchmarkResults {
     let c_config = config.to_c_code();
