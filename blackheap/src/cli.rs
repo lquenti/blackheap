@@ -109,17 +109,17 @@ enum Model {
 pub struct Cli {
     /// Output directory for all the benchmarks and results.
     /// Also used to store progress.
-    to: PathBuf,
+    pub to: PathBuf,
 
     /// Path to where the benchmark should be done
     #[clap(short, long, default_value = "/tmp/blackheap_benchmark_test_file.dat")]
-    file: PathBuf,
+    pub file: PathBuf,
 
     /// Which PredictionModel to use
     #[clap(short, long, value_enum, default_value_t = Model::ConstantLinear)]
-    model: Model,
+    pub model: Model,
 
     /// Drop caches (requires root)
     #[clap(long)]
-    drop_caches: bool,
+    pub drop_caches: bool,
 }

@@ -5,6 +5,7 @@ use thiserror::Error;
 use crate::{BenchmarkScenario, Benchmark};
 
 const VERSION_NUMBER: u32 = 1;
+pub const FILE_NAME: &str = "BlackheapProgress.toml";
 
 #[derive(Error, Debug)]
 pub enum ProgressError {
@@ -50,7 +51,7 @@ struct BenchmarkStatus {
 
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
-struct BenchmarkProgressToml {
+pub struct BenchmarkProgressToml {
     meta: Meta,
     benchmarks: HashMap<BenchmarkScenario, HashMap<Operation, BenchmarkStatus>>,
 }
@@ -83,10 +84,21 @@ impl BenchmarkProgressToml {
         }
     }
 
+    pub fn get_done_access_sizes(&self, b: &Benchmark) -> Option<&[u32]> {
+        let operation = match b.config.is_read_operation {
+            true => Operation::Read,
+            false => Operation::Write,
+        };
+
+        self.benchmarks.get(&b.scenario)
+            .and_then(|scenario_map| scenario_map.get(&operation))
+            .map(|status| status.access_sizes_done.as_slice())
+    }
+    
     pub fn get_missing_access_sizes(&self, b: &Benchmark) -> Option<&[u32]> {
         let operation = match b.config.is_read_operation {
-            True => Operation::Read,
-            False => Operation::Write,
+            true => Operation::Read,
+            false => Operation::Write,
         };
 
         self.benchmarks.get(&b.scenario)

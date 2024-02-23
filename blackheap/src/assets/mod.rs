@@ -1,1 +1,1 @@
-mod progress;
+pub mod progress;
