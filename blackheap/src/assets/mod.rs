@@ -1,6 +1,6 @@
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, Write};
-use std::collections::HashMap;
 use std::path::Path;
 
 use lazy_static::lazy_static;

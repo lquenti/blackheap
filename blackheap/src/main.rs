@@ -3,7 +3,7 @@ use crate::{assets::progress::Operation, cli::Cli};
 use benchmark::Benchmark;
 use blackheap_benchmarker::ErrorCodes;
 use clap::Parser;
-use tracing::{debug, error, info};
+use tracing::{error, info};
 
 mod assets;
 mod benchmark;
@@ -17,7 +17,6 @@ fn main() {
     /* CLI parsing */
     info!("Parsing and validating CLI");
     let cli = Cli::parse();
-    debug!("{:?}", &cli);
     if let Err(e) = cli::validate_cli(&cli) {
         error!("{:?}", e);
         std::process::exit(1);
@@ -66,7 +65,7 @@ fn main() {
 
             /* Run the benchmark */
             info!(
-                "Running {:?} ({:?}): Access Sizes: {:?}",
+                "Running {:?} ({:?}): Access Size: {:?}",
                 &b.scenario,
                 Operation::from_is_read_op(b.config.is_read_operation),
                 access_size
@@ -74,7 +73,7 @@ fn main() {
             let results = blackheap_benchmarker::benchmark_file(&config);
             if results.res != ErrorCodes::Success {
                 info!(
-                    "Error {:?} ({:?}): Access Sizes: {:?} failed with {:?}",
+                    "Error {:?} ({:?}): Access Size: {:?} failed with {:?}",
                     &b.scenario,
                     Operation::from_is_read_op(b.config.is_read_operation),
                     access_size,

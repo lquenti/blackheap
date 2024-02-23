@@ -358,6 +358,9 @@ enum error_codes do_benchmark(const struct benchmark_config *config, struct benc
   int res;
   enum error_codes ret = ERROR_CODES_SUCCESS;
   struct allocation_result mallocs;
+  /* to make clang happy */
+  mallocs.pointers = NULL;
+  mallocs.length = 0;
 
   /* Open fd (closed by cleanup) */
   state->fd = open(config->filepath, O_RDWR, 0644); 

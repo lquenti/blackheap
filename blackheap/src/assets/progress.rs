@@ -90,15 +90,6 @@ impl BenchmarkProgressToml {
         }
     }
 
-    pub fn get_done_access_sizes(&self, b: &Benchmark) -> Option<&[u32]> {
-        let operation = Operation::from_is_read_op(b.config.is_read_operation);
-
-        self.benchmarks
-            .get(&b.scenario)
-            .and_then(|scenario_map| scenario_map.get(&operation))
-            .map(|status| status.access_sizes_done.as_slice())
-    }
-
     pub fn get_missing_access_sizes(&self, b: &Benchmark) -> Option<&[u32]> {
         let operation = Operation::from_is_read_op(b.config.is_read_operation);
 

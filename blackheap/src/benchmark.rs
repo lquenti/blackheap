@@ -3,6 +3,7 @@ use crate::assets::progress::{BenchmarkProgressToml, ProgressError, FILE_NAME};
 use crate::cli::Cli;
 use blackheap_benchmarker::{AccessPattern, BenchmarkConfig, BenchmarkResults};
 use serde::{Deserialize, Serialize};
+use std::fs::File;
 use std::{
     collections::HashMap,
     fs,
@@ -143,13 +144,15 @@ pub fn save_and_update_progress(
     progress: &mut BenchmarkProgressToml,
 ) -> Result<(), ProgressError> {
     let operation = Operation::from_is_read_op(b.config.is_read_operation).to_string();
-    let file_path = format!(
-        "{}/{}/{}/{}.txt",
+    let dir = format!(
+        "{}/{}/{}",
         cli.to.to_str().unwrap(),
         b.scenario.to_string(),
         operation,
-        access_size
     );
+    let file_path = format!("{}/{}.txt", &dir, access_size,);
+    fs::create_dir_all(dir)?;
+    File::create(&file_path)?;
 
     /* we save it as newline seperated f64s */
     let durations_str = results
