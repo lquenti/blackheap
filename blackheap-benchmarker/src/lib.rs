@@ -132,10 +132,7 @@ impl BenchmarkConfig {
             prepare_file_size: self.prepare_file_size,
             drop_cache_first: self.drop_cache_first,
             do_reread: self.do_reread,
-            restrict_free_ram_to: match self.restrict_free_ram_to {
-                Some(n) => n,
-                None => 0,
-            },
+            restrict_free_ram_to: self.restrict_free_ram_to.unwrap_or(0),
         }
     }
 }
@@ -164,9 +161,9 @@ impl BenchmarkResults {
 
 pub fn benchmark_file(config: &BenchmarkConfig) -> BenchmarkResults {
     let c_config = config.to_c_code();
-    let results = unsafe {
+
+    unsafe {
         let c_results = b::benchmark_file(&c_config);
         BenchmarkResults::from_c_code(c_results)
-    };
-    results
+    }
 }
