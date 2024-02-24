@@ -51,7 +51,6 @@ impl Operation {
 
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 struct BenchmarkStatus {
-    done: bool,
     #[serde(rename = "access-sizes-done")]
     access_sizes_done: Vec<u32>,
     #[serde(rename = "access-sizes-missing")]
@@ -73,7 +72,6 @@ impl BenchmarkProgressToml {
             let operation = Operation::from_is_read_op(benchmark.config.is_read_operation);
 
             let status = BenchmarkStatus {
-                done: false,
                 access_sizes_done: vec![],
                 access_sizes_missing: access_sizes.to_vec(),
             };
