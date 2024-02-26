@@ -152,6 +152,12 @@ pub fn save_and_update_progress(
     );
     let file_path = format!("{}/{}.txt", &dir, access_size,);
     fs::create_dir_all(dir)?;
+
+    /* If it already exists but we did still benchmark, it was most likely interrupted while writing... */
+    if Path::new(&file_path).exists() {
+        fs::remove_file(&file_path)?;
+    }
+
     File::create(&file_path)?;
 
     /* we save it as newline seperated f64s */

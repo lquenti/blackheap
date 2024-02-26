@@ -36,6 +36,7 @@ fn main() {
     for b in benchmarks.iter() {
         /* Which access sizes do we still have to do? */
         let missing_access_sizes = {
+            /* To make the borrow checker happy */
             let tmp_progress = progress.clone();
             tmp_progress
                 .get_missing_access_sizes(b)
