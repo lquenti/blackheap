@@ -52,6 +52,7 @@ fn bindgen_test_layout_max_align_t() {
 pub const access_pattern_ACCESS_PATTERN_CONST: access_pattern = 0;
 pub const access_pattern_ACCESS_PATTERN_SEQUENTIAL: access_pattern = 1;
 pub const access_pattern_ACCESS_PATTERN_RANDOM: access_pattern = 2;
+pub const access_pattern_ACCESS_PATTERN_REVERSE: access_pattern = 3;
 pub type access_pattern = ::std::os::raw::c_uint;
 pub const error_codes_ERROR_CODES_SUCCESS: error_codes = 0;
 pub const error_codes_ERROR_CODES_MALLOC_FAILED: error_codes = 1;
@@ -66,6 +67,7 @@ pub const error_codes_ERROR_CODES_REMOVE_FAILED: error_codes = 9;
 pub const error_codes_ERROR_CODES_DROP_PAGE_CACHE_FAILED_NO_PERMISSIONS: error_codes = 10;
 pub const error_codes_ERROR_CODES_DROP_PAGE_CACHE_FAILED_OTHER: error_codes = 11;
 pub const error_codes_ERROR_CODES_INCORRECT_FILE_BUFFER_SIZE: error_codes = 12;
+pub const error_codes_ERROR_CODES_TOO_SMALL_FILE_BUFFER: error_codes = 13;
 pub type error_codes = ::std::os::raw::c_uint;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]

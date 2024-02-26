@@ -10,6 +10,7 @@ pub enum AccessPattern {
     Const,
     Sequential,
     Random,
+    Reverse,
 }
 
 impl AccessPattern {
@@ -18,6 +19,7 @@ impl AccessPattern {
             Self::Const => b::access_pattern_ACCESS_PATTERN_CONST,
             Self::Sequential => b::access_pattern_ACCESS_PATTERN_SEQUENTIAL,
             Self::Random => b::access_pattern_ACCESS_PATTERN_RANDOM,
+            Self::Reverse => b::access_pattern_ACCESS_PATTERN_REVERSE,
         }
     }
 
@@ -26,6 +28,7 @@ impl AccessPattern {
             b::access_pattern_ACCESS_PATTERN_CONST => Self::Const,
             b::access_pattern_ACCESS_PATTERN_SEQUENTIAL => Self::Sequential,
             b::access_pattern_ACCESS_PATTERN_RANDOM => Self::Random,
+            b::access_pattern_ACCESS_PATTERN_REVERSE => Self::Reverse,
             _ => {
                 panic!("Unknown Access Pattern! Probably forgot to update Rust to C logic");
             }
@@ -52,6 +55,7 @@ pub enum ErrorCodes {
     DropPageCacheFailedNoPermissions,
     DropPageCacheFailedOther,
     IncorrectFileBufferSize,
+    TooSmallFileBuffer,
 }
 
 impl ErrorCodes {
@@ -74,6 +78,7 @@ impl ErrorCodes {
                 b::error_codes_ERROR_CODES_DROP_PAGE_CACHE_FAILED_OTHER
             }
             Self::IncorrectFileBufferSize => b::error_codes_ERROR_CODES_INCORRECT_FILE_BUFFER_SIZE,
+            Self::TooSmallFileBuffer => b::error_codes_ERROR_CODES_TOO_SMALL_FILE_BUFFER,
         }
     }
 
