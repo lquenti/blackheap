@@ -115,10 +115,6 @@ pub struct Cli {
     #[clap(short, long, default_value = "/tmp/blackheap_benchmark_test_file.dat")]
     pub file: PathBuf,
 
-    /// Which PredictionModel to use
-    #[clap(short, long, value_enum, default_value_t = Model::ConstantLinear)]
-    pub model: Model,
-
     /// Drop caches (requires root)
     #[clap(long)]
     pub drop_caches: bool,
