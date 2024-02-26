@@ -304,6 +304,17 @@ void pick_next_mem_position(const struct benchmark_config *config, struct benchm
     case ACCESS_PATTERN_RANDOM:
       state->last_mem_offset = ((size_t)rand() * 128) % (config->memory_buffer_in_bytes - config->access_size_in_bytes);
       return;
+    case ACCESS_PATTERN_REVERSE: {
+      /* we only have to move one back since it didnt update since the last read. */
+
+      /* Check for wrapping */
+      if (state->last_mem_offset < config->access_size_in_bytes) {
+        state->last_mem_offset = config->memory_buffer_in_bytes - config->access_size_in_bytes;
+      } else {
+        state->last_mem_offset -= config->access_size_in_bytes;
+      }
+      return;
+    }
   }
 }
 
@@ -349,6 +360,30 @@ enum error_codes pick_next_file_position(const struct benchmark_config *config, 
         }
       }
       break;
+    case ACCESS_PATTERN_REVERSE: { 
+      /* two access sizes since we need one to go back to the last read, and one more to go backwards */
+
+      /* check for wrapping */
+      if (state->last_file_offset < 2 * config->access_size_in_bytes) {
+        /* Do we even have enough space to move back 2 access sizes? */
+        if (config->file_size_in_bytes > 2 * config->access_size_in_bytes) {
+          state->last_file_offset = config->file_size_in_bytes - config->access_size_in_bytes;
+        } else {
+          fprintf(stderr, "File size %zu is too small for reverse access pattern with %zu access size.\n", config->file_size_in_bytes, config->access_size_in_bytes);
+          return ERROR_CODES_TOO_SMALL_FILE_BUFFER;
+        }
+      } else {
+        state->last_file_offset -= 2 * config->access_size_in_bytes;
+      }
+
+      /* Update file descriptor */
+      off_t new_offset = lseek(state->fd, state->last_file_offset, SEEK_SET);
+      if (new_offset == -1) {
+        fprintf(stderr, "Failed to seek \"%s\" to 0. \nError: %s\n", config->filepath, strerror(errno));
+        return ERROR_CODES_LSEEK_FAILED;
+      }
+    }
+    break;
   }
   return ERROR_CODES_SUCCESS;
 }

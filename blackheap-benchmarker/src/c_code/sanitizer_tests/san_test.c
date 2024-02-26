@@ -30,6 +30,21 @@ int main() {
         .file_size_in_bytes = 1024 * 10,
         .access_size_in_bytes = 128,
         .number_of_io_op_tests = 10,
+        .access_pattern_in_memory = ACCESS_PATTERN_CONST,
+        .access_pattern_in_file = ACCESS_PATTERN_CONST,
+        .is_read_operation = true,
+        .prepare_file_size = true,
+        .drop_cache_first = false,
+        .do_reread = false,
+        .restrict_free_ram_to = 0
+    }, "Simple Test (const)");
+
+    run_benchmark((struct benchmark_config){
+        .filepath = "/tmp/test_file.bin",
+        .memory_buffer_in_bytes = 1024,
+        .file_size_in_bytes = 1024 * 10,
+        .access_size_in_bytes = 128,
+        .number_of_io_op_tests = 10,
         .access_pattern_in_memory = ACCESS_PATTERN_SEQUENTIAL,
         .access_pattern_in_file = ACCESS_PATTERN_SEQUENTIAL,
         .is_read_operation = true,
@@ -37,7 +52,37 @@ int main() {
         .drop_cache_first = false,
         .do_reread = false,
         .restrict_free_ram_to = 0
-    }, "Simple Test");
+    }, "Simple Test (seq)");
+  
+    run_benchmark((struct benchmark_config){
+        .filepath = "/tmp/test_file.bin",
+        .memory_buffer_in_bytes = 1024,
+        .file_size_in_bytes = 1024 * 10,
+        .access_size_in_bytes = 128,
+        .number_of_io_op_tests = 10,
+        .access_pattern_in_memory = ACCESS_PATTERN_RANDOM,
+        .access_pattern_in_file = ACCESS_PATTERN_RANDOM,
+        .is_read_operation = true,
+        .prepare_file_size = true,
+        .drop_cache_first = false,
+        .do_reread = false,
+        .restrict_free_ram_to = 0
+    }, "Simple Test (rnd)");
+
+    run_benchmark((struct benchmark_config){
+        .filepath = "/tmp/test_file.bin",
+        .memory_buffer_in_bytes = 1024,
+        .file_size_in_bytes = 1024 * 10,
+        .access_size_in_bytes = 128,
+        .number_of_io_op_tests = 10,
+        .access_pattern_in_memory = ACCESS_PATTERN_REVERSE,
+        .access_pattern_in_file = ACCESS_PATTERN_REVERSE,
+        .is_read_operation = true,
+        .prepare_file_size = true,
+        .drop_cache_first = false,
+        .do_reread = false,
+        .restrict_free_ram_to = 0
+    }, "Simple Test (rev)");
 
     run_benchmark((struct benchmark_config){
         .filepath = "/tmp/test_file.bin",
@@ -83,6 +128,21 @@ int main() {
         .do_reread = false,
         .restrict_free_ram_to = 0
     }, "Can it handle wrapping (rnd)");
+
+    run_benchmark((struct benchmark_config){
+        .filepath = "/tmp/test_file.bin",
+        .memory_buffer_in_bytes = 1024 * 512, // 512KB
+        .file_size_in_bytes = 1024 * 512, // 512KB
+        .access_size_in_bytes = 1024 * 300, // 300KB
+        .number_of_io_op_tests = 10,
+        .access_pattern_in_memory = ACCESS_PATTERN_REVERSE,
+        .access_pattern_in_file = ACCESS_PATTERN_REVERSE,
+        .is_read_operation = true,
+        .prepare_file_size = true,
+        .drop_cache_first = false,
+        .do_reread = false,
+        .restrict_free_ram_to = 0
+    }, "Can it handle wrapping (rev)");
 
     run_benchmark((struct benchmark_config){
         .filepath = "/tmp/test_file.bin",

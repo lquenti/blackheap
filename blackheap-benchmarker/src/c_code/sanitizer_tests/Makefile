@@ -1,7 +1,7 @@
 all: clean build_asan build_ubsan
 
 clean:
-	rm *.exe
+	rm -f *.exe
 
 build_asan:
 	 clang -Wall -Wextra -fsanitize=address -g san_test.c ../benchmarker_internal.c -o benchmark_test_asan.exe
