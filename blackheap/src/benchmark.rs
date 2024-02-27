@@ -20,6 +20,7 @@ const ACCESS_SIZES: [u32; 24] = [
 pub enum BenchmarkScenario {
     RandomUncached,
     SameOffset,
+    Reverse,
 }
 
 impl ToString for BenchmarkScenario {
@@ -27,6 +28,7 @@ impl ToString for BenchmarkScenario {
         match self {
             BenchmarkScenario::SameOffset => "SameOffset".to_string(),
             BenchmarkScenario::RandomUncached => "RandomUncached".to_string(),
+            BenchmarkScenario::Reverse => "Reverse".to_string(),
         }
     }
 }
@@ -43,9 +45,44 @@ impl Benchmark {
         vec![
             Self::new_random_uncached_read(file_path, root),
             Self::new_random_uncached_write(file_path, root),
+            Self::new_reverse_read(file_path, root),
+            Self::new_reverse_write(file_path, root),
             Self::new_same_offset_read(file_path),
             Self::new_same_offset_write(file_path),
         ]
+    }
+
+    pub fn new_reverse_read(file_path: &str, root: bool) -> Self {
+        Benchmark {
+            scenario: BenchmarkScenario::RandomUncached,
+            config: BenchmarkConfig {
+                filepath: file_path.to_string(),
+                memory_buffer_in_bytes: 4 * 1024 * 1024 * 1024,
+                file_size_in_bytes: 25 * 1024 * 1024 * 1024,
+                access_size_in_bytes: 4 * 1024, /* any random value */
+                number_of_io_op_tests: 1000,
+                access_pattern_in_memory: AccessPattern::Reverse,
+                access_pattern_in_file: AccessPattern::Reverse,
+                is_read_operation: true,
+                prepare_file_size: true,
+                drop_cache_first: root,
+                do_reread: false,
+                restrict_free_ram_to: None,
+            },
+            results: HashMap::new(),
+        }
+    }
+
+    pub fn new_reverse_write(file_path: &str, root: bool) -> Self {
+        Benchmark {
+            scenario: BenchmarkScenario::RandomUncached,
+            config: {
+                let mut config = Self::new_reverse_read(file_path, root).config;
+                config.is_read_operation = false;
+                config
+            },
+            results: HashMap::new(),
+        }
     }
 
     pub fn new_random_uncached_read(file_path: &str, root: bool) -> Self {
