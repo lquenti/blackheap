@@ -54,7 +54,7 @@ impl Benchmark {
 
     pub fn new_reverse_read(file_path: &str, root: bool) -> Self {
         Benchmark {
-            scenario: BenchmarkScenario::RandomUncached,
+            scenario: BenchmarkScenario::Reverse,
             config: BenchmarkConfig {
                 filepath: file_path.to_string(),
                 memory_buffer_in_bytes: 4 * 1024 * 1024 * 1024,
@@ -75,7 +75,7 @@ impl Benchmark {
 
     pub fn new_reverse_write(file_path: &str, root: bool) -> Self {
         Benchmark {
-            scenario: BenchmarkScenario::RandomUncached,
+            scenario: BenchmarkScenario::Reverse,
             config: {
                 let mut config = Self::new_reverse_read(file_path, root).config;
                 config.is_read_operation = false;
