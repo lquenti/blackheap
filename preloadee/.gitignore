@@ -1,0 +1,5 @@
+*.csv
+build/
+*.txt
+main
+a.out
