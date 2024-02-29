@@ -20,6 +20,7 @@ const ACCESS_SIZES: [u32; 24] = [
 pub enum BenchmarkScenario {
     RandomUncached,
     SameOffset,
+    Sequential,
     Reverse,
 }
 
@@ -27,6 +28,7 @@ impl ToString for BenchmarkScenario {
     fn to_string(&self) -> String {
         match self {
             BenchmarkScenario::SameOffset => "SameOffset".to_string(),
+            BenchmarkScenario::Sequential => "Sequential".to_string(),
             BenchmarkScenario::RandomUncached => "RandomUncached".to_string(),
             BenchmarkScenario::Reverse => "Reverse".to_string(),
         }
@@ -49,6 +51,8 @@ impl Benchmark {
             Self::new_reverse_write(file_path, root),
             Self::new_same_offset_read(file_path),
             Self::new_same_offset_write(file_path),
+            Self::new_sequential_read(file_path),
+            Self::new_sequential_write(file_path),
         ]
     }
 
@@ -144,6 +148,39 @@ impl Benchmark {
             scenario: BenchmarkScenario::SameOffset,
             config: {
                 let mut config = Self::new_same_offset_read(file_path).config;
+                config.is_read_operation = false;
+                config
+            },
+            results: HashMap::new(),
+        }
+    }
+
+    pub fn new_sequential_read(file_path: &str) -> Self {
+        Benchmark {
+            scenario: BenchmarkScenario::Sequential,
+            config: BenchmarkConfig {
+                filepath: file_path.to_string(),
+                memory_buffer_in_bytes: 4 * 1024 * 1024 * 1024,
+                file_size_in_bytes: 25 * 1024 * 1024 * 1024,
+                access_size_in_bytes: 4 * 1024, /* any random value */
+                number_of_io_op_tests: 1000,
+                access_pattern_in_memory: AccessPattern::Sequential,
+                access_pattern_in_file: AccessPattern::Sequential,
+                is_read_operation: true,
+                prepare_file_size: true,
+                drop_cache_first: false,
+                do_reread: false,
+                restrict_free_ram_to: None,
+            },
+            results: HashMap::new(),
+        }
+    }
+
+    pub fn new_sequential_write(file_path: &str) -> Self {
+        Benchmark {
+            scenario: BenchmarkScenario::Sequential,
+            config: {
+                let mut config = Self::new_sequential_read(file_path).config;
                 config.is_read_operation = false;
                 config
             },
