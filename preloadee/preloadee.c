@@ -14,7 +14,7 @@
 #include<stdarg.h>
 
 
-#define CSV_HEADER "io_type,bytes,sec\n"
+#define CSV_HEADER "classification,io_type,bytes,sec\n"
 
 typedef ssize_t (*io_operation_t)(int fd, void *buf, size_t count);
 
@@ -91,7 +91,7 @@ static ssize_t do_io(bool is_read, int fd, void *buf, size_t count) {
   if (fd != current_state->fp) {
     char result_buf[256];
     sprintf(result_buf,
-        "\%c,%zu,%.17g\n",
+        "NotYetClassified,\%c,%zu,%.17g\n",
         is_read ? 'r' : 'w',
         res,
         duration
