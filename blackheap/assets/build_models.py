@@ -258,7 +258,12 @@ def find_significant_clusters_derivative(
     return significant_clusters, biggest_cluster
 
 
-def find_clusters_meanshift(b: Benchmark, num_points=1000, cutoff_threshold_ratio=0.05):
+def find_clusters_meanshift(
+    b: Benchmark,
+    num_points=1000,
+    significant_percentage=0.1,
+    cutoff_threshold_ratio=0.05,
+    ):
     xs = np.linspace(b.min_val, b.max_val, num_points)
     ys = b.kde(xs)
     xsys = [list(pair) for pair in zip(xs, ys)]
@@ -337,73 +342,21 @@ def measurements_to_model(
     )
 
 
-def measurements_to_linear_model_derivative(
-    measurements: Measurements,
-    num_points=1000,
-    significant_percentage=0.1,
-    cutoff_threshold_ratio=0.05,
-    use_biggest=False,
-):
-    return measurements_to_model(
-        measurements,
-        use_derivative=True,
-        use_linear=True,
-        num_points=num_points,
-        significant_percentage=significant_percentage,
-        cutoff_threshold_ratio=cutoff_threshold_ratio,
-        use_biggest=use_biggest,
-    )
+def create_all_models_from_measurements(all_measurements, measurements_to_model_f):
+    all_models = []
+    for read, write in all_measurements:
+        print(f"Processing: {read.name}")
+        all_models.append(measurements_to_model_f(read))
+        all_models.append(measurements_to_model_f(write))
 
-
-def measurements_to_constlinear_model_derivative(
-    measurements: Measurements,
-    num_points=1000,
-    significant_percentage=0.1,
-    cutoff_threshold_ratio=0.05,
-    use_biggest=False,
-):
-    return measurements_to_model(
-        measurements,
-        use_derivative=True,
-        use_linear=False,
-        num_points=num_points,
-        significant_percentage=significant_percentage,
-        cutoff_threshold_ratio=cutoff_threshold_ratio,
-        use_biggest=use_biggest,
-    )
-
-
-def measurements_to_linear_model_meanshift(
-    measurements: Measurements,
-    num_points=1000,
-    cutoff_threshold_ratio=0.05,
-    use_biggest=False,
-):
-    return measurements_to_model(
-        measurements,
-        use_derivative=False,
-        use_linear=True,
-        num_points=num_points,
-        cutoff_threshold_ratio=cutoff_threshold_ratio,
-        use_biggest=use_biggest,
-    )
-
-
-def measurements_to_constlinear_model_meanshift(
-    measurements: Measurements,
-    num_points=1000,
-    cutoff_threshold_ratio=0.05,
-    use_biggest=False,
-):
-    return measurements_to_model(
-        measurements,
-        use_derivative=False,
-        use_linear=False,
-        num_points=num_points,
-        cutoff_threshold_ratio=cutoff_threshold_ratio,
-        use_biggest=use_biggest,
-    )
-
+    # If we had constlinear, it is a list of tuples, so we have to flatten it down
+    all_models_flattened = []
+    for item in all_models:
+        if isinstance(item, tuple):
+            all_models_flattened.extend(item)
+        else:
+            all_models_flattened.append(item)
+    return all_models_flattened
 
 if __name__ == "__main__":
     print("Parsing arguments...")
@@ -411,21 +364,6 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
         description="Creates a model based on the measurements done by blackheap"
-    )
-    parser.add_argument(
-        "--constlinear",
-        action="store_true",
-        help="If set, it will generate a constlinear model instead of a linear one",
-    )
-    parser.add_argument(
-        "--meanshift",
-        action="store_true",
-        help="If set, it will use the Meanshift based clustering algorithm instead of the derivative based one. See the jupyter notebook for more explaination.",
-    )
-    parser.add_argument(
-        "--usebiggest",
-        action="store_true",
-        help="If set, it will use the right bound of the biggest significant cluster instead of the last one",
     )
     parser.add_argument(
         "--cluster-significance",
@@ -441,57 +379,42 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    def pick_cluster_function_based_on_cli(args):
-        if args.constlinear and args.meanshift:
-            return lambda m: measurements_to_constlinear_model_meanshift(
-                m,
-                cutoff_threshold_ratio=args.last_cluster_threshold,
-                use_biggest=args.usebiggest,
-            )
-        if args.constlinear and not args.meanshift:
-            return lambda m: measurements_to_constlinear_model_derivative(
-                m,
-                significant_percentage=args.cluster_significance,
-                cutoff_threshold_ratio=args.last_cluster_threshold,
-                use_biggest=args.usebiggest,
-            )
-        if not args.constlinear and args.meanshift:
-            return lambda m: measurements_to_linear_model_meanshift(
-                m,
-                cutoff_threshold_ratio=args.last_cluster_threshold,
-                use_biggest=args.usebiggest,
-            )
-        if not args.constlinear and not args.meanshift:
-            return lambda m: measurements_to_linear_model_derivative(
-                m,
-                significant_percentage=args.cluster_significance,
-                cutoff_threshold_ratio=args.last_cluster_threshold,
-                use_biggest=args.usebiggest,
-            )
-        assert False
-
-    measurements_to_model_f = pick_cluster_function_based_on_cli(args)
-
     print("Loading all measurements in")
     script_dir = os.path.dirname(os.path.realpath(__file__))
     all_measurements = [
         load_benchmark_folder(x) for x in get_benchmark_dirs(script_dir)
     ]
 
-    all_models = []
-    for read, write in all_measurements:
-        print(f"Processing: {read.name}")
-        all_models.append(measurements_to_model_f(read))
-        all_models.append(measurements_to_model_f(write))
+    output_folder = "./models"
+    if os.path.isdir(output_folder):
+        os.rmdir(output_folder)
+    os.makedirs(output_folder, exist_ok=True)
 
-    # If we had constlinear, it is a list of tuples, so we have to flatten it down
-    all_models_flattened = []
-    for item in all_models:
-        if isinstance(item, tuple):
-            all_models_flattened.extend(item)
-        else:
-            all_models_flattened.append(item)
+    """
+    All dimensions to choose of:
+    - linear/constlinear
+    - derivative/meanshift
+    - uselast/usebiggest
+    """
+    for use_linear in [False, True]:
+        linear_str = "linear" if use_linear else "constlinear"
+        for use_derivative in [False, True]:
+            cluster_algo_str = "derivative" if use_derivative else "meanshift"
+            for use_biggest in [False, True]:
+                cluster_choose_str = "biggest" if use_biggest else "last"
+                print("Creating:", linear_str, cluster_algo_str, cluster_choose_str)
+                m2mf = lambda m: measurements_to_model(
+                    m,
+                    use_linear=use_linear,
+                    use_derivative=use_derivative,
+                    use_biggest=use_biggest,
+                    num_points=1000,
+                    significant_percentage=args.cluster_significance,
+                    cutoff_threshold_ratio=args.last_cluster_threshold
+                )
+                all_models_flattened = create_all_models_from_measurements(all_measurements, m2mf)
 
-    with open(f"model.csv", "w") as fp:
-        fp.write(Model.all_to_csv(all_models_flattened))
-    print(f"Model successfully saved as model.csv")
+                file_str = f"{output_folder}/model_{linear_str}_type_{cluster_algo_str}_algo_{use_biggest}_selection.csv"
+                with open(file_str, "w") as fp:
+                    fp.write(Model.all_to_csv(all_models_flattened))
+
