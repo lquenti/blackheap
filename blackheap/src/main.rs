@@ -101,6 +101,23 @@ fn main() {
         std::process::exit(1);
     }
 
+    /* Create a CSV with all outputs we have
+     *
+     * Note that we can't do this while we do the single benchmarks
+     * becase this would break our benchmark resume approach.
+     * There, the strategy is whenever a folder exists but the benchmark
+     * is not yet completely finished, it got killed using the write.
+     * As a solution, we delete the full folder and benchmark that access size again.
+     *
+     * This is not possible here; if we delete the full csv we are back to square one.
+     */
+    info!("Creating a csv of all results");
+    let res = benchmark::create_csv_of_all_measurements(&cli.to);
+    if let Err(e) = res {
+        error!("{:?}", e);
+        std::process::exit(1);
+    }
+
     /* Print out how to use the assets, refer to the README */
     info!("Benchmark ran successfully! See the README for how to run the automated, Python-based analysis.");
 }

@@ -4,6 +4,7 @@ use crate::cli::Cli;
 use blackheap_benchmarker::{AccessPattern, BenchmarkConfig, BenchmarkResults};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
+use std::io::{BufRead, Write};
 use std::{
     collections::HashMap,
     fs,
@@ -251,5 +252,86 @@ pub fn save_and_update_progress(
     let progress_file_path = format!("{}/{}", cli.to.to_str().unwrap(), &FILE_NAME);
     progress.to_file(&progress_file_path)?;
 
+    Ok(())
+}
+
+fn find_benchmark_dirs(dir: &Path) -> Result<Vec<PathBuf>, std::io::Error> {
+    /* It is a benchmark dir if it has subfolders w/ read and write */
+    let mut benchmark_dirs = Vec::new();
+
+    for entry in fs::read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+
+        if path.is_dir() {
+            let contains_read = path.join("read").is_dir();
+            let contains_write = path.join("write").is_dir();
+
+            if contains_read && contains_write {
+                if let Some(dir_name) = path.file_name() {
+                    benchmark_dirs.push(dir_name.into());
+                }
+            }
+        }
+    }
+
+    Ok(benchmark_dirs)
+}
+
+fn read_floats_from_file(path: &Path) -> Result<Vec<f64>, std::io::Error> {
+    let file = File::open(path)?;
+    let buffered = std::io::BufReader::new(file);
+
+    let floats = buffered
+        .lines()
+        .filter_map(|line| line.ok())
+        .filter(|line| !line.trim().is_empty())
+        .filter_map(|line| line.parse::<f64>().ok())
+        .collect::<Vec<f64>>();
+
+    Ok(floats)
+}
+
+pub fn create_csv_of_all_measurements(dir: &Path) -> Result<(), std::io::Error> {
+    let all_benchmark_dirs = find_benchmark_dirs(dir)?;
+
+    let header = String::from("classification,io_type,bytes,sec");
+
+    let mut data = vec![header];
+    for benchmark_dir in all_benchmark_dirs {
+        for operation in ["read", "write"] {
+            let op_dir = dir.join(benchmark_dir.join(operation));
+            for entry in fs::read_dir(op_dir)? {
+                let entry = entry?;
+                let path = entry.path();
+                if path.is_file() && path.extension().and_then(|s| s.to_str()) == Some("txt") {
+                    let filename = path.file_name().unwrap().to_str().unwrap();
+                    if let Some(integer_part) = filename.split('.').next() {
+                        let scenarioname = benchmark_dir.file_name().unwrap().to_str().unwrap();
+
+                        let operation_short = match operation {
+                            "read" => "r",
+                            "write" => "w",
+                            _ => panic!(),
+                        };
+                        let csv_base_str =
+                            format!("{},{},{}", scenarioname, operation_short, integer_part);
+
+                        let lines = read_floats_from_file(&path)?;
+                        let lines = lines
+                            .iter()
+                            .map(|float| format!("{},{}", csv_base_str, float.to_string()));
+                        data.extend(lines);
+                    }
+                }
+            }
+        }
+    }
+
+    let output_path = dir.join("all_raw_data.csv");
+    let mut output_file = File::create(output_path)?;
+    for line in data {
+        writeln!(output_file, "{}", line)?;
+    }
     Ok(())
 }
