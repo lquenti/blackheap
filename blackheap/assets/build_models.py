@@ -414,7 +414,7 @@ if __name__ == "__main__":
                 )
                 all_models_flattened = create_all_models_from_measurements(all_measurements, m2mf)
 
-                file_str = f"{output_folder}/model_{linear_str}_type_{cluster_algo_str}_algo_{use_biggest}_selection.csv"
+                file_str = f"{output_folder}/model_{linear_str}_type_{cluster_algo_str}_algo_{cluster_choose_str}_selection.csv"
                 with open(file_str, "w") as fp:
                     fp.write(Model.all_to_csv(all_models_flattened))
 
