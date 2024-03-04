@@ -40,8 +40,9 @@ static void init_state() {
   current_state = malloc(sizeof(state_t));
 
   int timestamp = (int)time(NULL);
+  pid_t pid = getpid();
   char filename[256];
-  sprintf(filename, "./io_recordings_%d.csv", timestamp);
+  sprintf(filename, "./io_recordings_%d_%d.csv", pid, timestamp);
   current_state->orig_read = dlsym(RTLD_NEXT, "read");
   current_state->orig_write = dlsym(RTLD_NEXT, "write");
   current_state->orig_open = dlsym(RTLD_NEXT, "open");
