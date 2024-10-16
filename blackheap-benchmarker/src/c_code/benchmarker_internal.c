@@ -27,6 +27,7 @@ enum error_codes drop_page_cache() {
     }
   }
   
+  /* check kernel docs */
   char magic_value = '3';
   ssize_t res = write(fd, &magic_value, sizeof(char));
   if (res == -1) {
@@ -123,13 +124,13 @@ enum error_codes init_file(const struct benchmark_config *config, struct benchma
     bytes_written += write_result;
   }
 
-  /* Check whether it worked */
   if (fsync(state->fd) == -1) {
     fprintf(stderr, "Failed to flush \"%s\" to disk.\nError: %s\n", config->filepath, strerror(errno));
     close(state->fd);
     return ERROR_CODES_FSYNC_FAILED;
   }
 
+  /* Check whether it worked */
   if (fstat(state->fd, &st) == -1) {
     fprintf(stderr, "Error checking file size of %s\nError: %s\n", config->filepath, strerror(errno));
     close(state->fd);
@@ -271,7 +272,7 @@ enum error_codes reread(const struct benchmark_config *config, const struct benc
   int res = state->io_op(state->fd, state->buffer, config->access_size_in_bytes);
   if (res == -1) {
     fprintf(stderr, "Failed to write to \"%s\"\nError: %s\n", config->filepath, strerror(errno));
-    return ERROR_CODES_WRITE_FAILED;
+    return config->is_read_operation ? ERROR_CODES_READ_FAILED : ERROR_CODES_WRITE_FAILED;
   }
 
   /* Seek back so that we read it twice */

@@ -369,13 +369,13 @@ if __name__ == "__main__":
         "--cluster-significance",
         type=float,
         default=0.1,
-        help="See the jupyter notebook for explaination",
+        help="See the paper for explaination",
     )
     parser.add_argument(
         "--last-cluster-threshold",
         type=float,
         default=0.05,
-        help="See the jupyter notebook for explaination",
+        help="See the paper for explaination",
     )
     args = parser.parse_args()
 

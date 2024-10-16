@@ -27,7 +27,9 @@ fn main() {
     let benchmarks = Benchmark::get_all_benchmarks(cli.drop_caches, cli.file.to_str().unwrap());
     let progress = benchmark::load_or_create_progress(&cli.to, &benchmarks);
     if let Err(e) = progress {
+        error!("Error creating or parsing progress!");
         error!("{:?}", e);
+        error!("Consider resetting the {:?} directory", &cli.to);
         std::process::exit(1);
     }
     let mut progress = progress.unwrap();

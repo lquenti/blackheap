@@ -6,7 +6,6 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{BufRead, Write};
 use std::{
-    collections::HashMap,
     fs,
     path::{Path, PathBuf},
 };
@@ -40,7 +39,6 @@ impl ToString for BenchmarkScenario {
 pub struct Benchmark {
     pub scenario: BenchmarkScenario,
     pub config: BenchmarkConfig,
-    pub results: HashMap<u32, Vec<f64>>,
 }
 
 impl Benchmark {
@@ -57,7 +55,7 @@ impl Benchmark {
         ]
     }
 
-    pub fn new_reverse_read(file_path: &str, root: bool) -> Self {
+    fn new_reverse_read(file_path: &str, root: bool) -> Self {
         Benchmark {
             scenario: BenchmarkScenario::Reverse,
             config: BenchmarkConfig {
@@ -74,11 +72,10 @@ impl Benchmark {
                 do_reread: false,
                 restrict_free_ram_to: None,
             },
-            results: HashMap::new(),
         }
     }
 
-    pub fn new_reverse_write(file_path: &str, root: bool) -> Self {
+    fn new_reverse_write(file_path: &str, root: bool) -> Self {
         Benchmark {
             scenario: BenchmarkScenario::Reverse,
             config: {
@@ -86,11 +83,10 @@ impl Benchmark {
                 config.is_read_operation = false;
                 config
             },
-            results: HashMap::new(),
         }
     }
 
-    pub fn new_random_uncached_read(file_path: &str, root: bool) -> Self {
+    fn new_random_uncached_read(file_path: &str, root: bool) -> Self {
         Benchmark {
             scenario: BenchmarkScenario::RandomUncached,
             config: BenchmarkConfig {
@@ -107,11 +103,10 @@ impl Benchmark {
                 do_reread: false,
                 restrict_free_ram_to: None,
             },
-            results: HashMap::new(),
         }
     }
 
-    pub fn new_random_uncached_write(file_path: &str, root: bool) -> Self {
+    fn new_random_uncached_write(file_path: &str, root: bool) -> Self {
         Benchmark {
             scenario: BenchmarkScenario::RandomUncached,
             config: {
@@ -119,11 +114,10 @@ impl Benchmark {
                 config.is_read_operation = false;
                 config
             },
-            results: HashMap::new(),
         }
     }
 
-    pub fn new_same_offset_read(file_path: &str) -> Self {
+    fn new_same_offset_read(file_path: &str) -> Self {
         Benchmark {
             scenario: BenchmarkScenario::SameOffset,
             config: BenchmarkConfig {
@@ -140,11 +134,10 @@ impl Benchmark {
                 do_reread: true,
                 restrict_free_ram_to: None,
             },
-            results: HashMap::new(),
         }
     }
 
-    pub fn new_same_offset_write(file_path: &str) -> Self {
+    fn new_same_offset_write(file_path: &str) -> Self {
         Benchmark {
             scenario: BenchmarkScenario::SameOffset,
             config: {
@@ -152,11 +145,10 @@ impl Benchmark {
                 config.is_read_operation = false;
                 config
             },
-            results: HashMap::new(),
         }
     }
 
-    pub fn new_sequential_read(file_path: &str) -> Self {
+    fn new_sequential_read(file_path: &str) -> Self {
         Benchmark {
             scenario: BenchmarkScenario::Sequential,
             config: BenchmarkConfig {
@@ -173,11 +165,10 @@ impl Benchmark {
                 do_reread: false,
                 restrict_free_ram_to: None,
             },
-            results: HashMap::new(),
         }
     }
 
-    pub fn new_sequential_write(file_path: &str) -> Self {
+    fn new_sequential_write(file_path: &str) -> Self {
         Benchmark {
             scenario: BenchmarkScenario::Sequential,
             config: {
@@ -185,7 +176,6 @@ impl Benchmark {
                 config.is_read_operation = false;
                 config
             },
-            results: HashMap::new(),
         }
     }
 }
@@ -297,6 +287,7 @@ pub fn create_csv_of_all_measurements(dir: &Path) -> Result<(), std::io::Error> 
 
     let header = String::from("classification,io_type,bytes,sec");
 
+    /* see the header for cols */
     let mut data = vec![header];
     for benchmark_dir in all_benchmark_dirs {
         for operation in ["read", "write"] {
@@ -320,7 +311,7 @@ pub fn create_csv_of_all_measurements(dir: &Path) -> Result<(), std::io::Error> 
                         let lines = read_floats_from_file(&path)?;
                         let lines = lines
                             .iter()
-                            .map(|float| format!("{},{}", csv_base_str, float.to_string()));
+                            .map(|float| format!("{},{}", csv_base_str, float));
                         data.extend(lines);
                     }
                 }
