@@ -48,8 +48,6 @@ pub enum ErrorCodes {
     LseekFailed,
     FsyncFailed,
     FstatFailed,
-    IOOpFailed,
-    RemoveFailed,
 
     /* High Level Operations */
     DropPageCacheFailedNoPermissions,
@@ -69,8 +67,6 @@ impl ErrorCodes {
             Self::LseekFailed => b::error_codes_ERROR_CODES_LSEEK_FAILED,
             Self::FsyncFailed => b::error_codes_ERROR_CODES_FSYNC_FAILED,
             Self::FstatFailed => b::error_codes_ERROR_CODES_FSTAT_FAILED,
-            Self::IOOpFailed => b::error_codes_ERROR_CODES_IO_OP_FAILED,
-            Self::RemoveFailed => b::error_codes_ERROR_CODES_REMOVE_FAILED,
             Self::DropPageCacheFailedNoPermissions => {
                 b::error_codes_ERROR_CODES_DROP_PAGE_CACHE_FAILED_NO_PERMISSIONS
             }
@@ -92,8 +88,6 @@ impl ErrorCodes {
             b::error_codes_ERROR_CODES_LSEEK_FAILED => Self::LseekFailed,
             b::error_codes_ERROR_CODES_FSYNC_FAILED => Self::FsyncFailed,
             b::error_codes_ERROR_CODES_FSTAT_FAILED => Self::FstatFailed,
-            b::error_codes_ERROR_CODES_IO_OP_FAILED => Self::IOOpFailed,
-            b::error_codes_ERROR_CODES_REMOVE_FAILED => Self::RemoveFailed,
             b::error_codes_ERROR_CODES_DROP_PAGE_CACHE_FAILED_NO_PERMISSIONS => {
                 Self::DropPageCacheFailedNoPermissions
             }

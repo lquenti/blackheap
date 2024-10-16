@@ -431,7 +431,15 @@ enum error_codes do_benchmark(const struct benchmark_config *config, struct benc
     if (res != -1) {
       results->durations[i] = timespec_to_double(&end) - timespec_to_double(&start);
     } else {
+      // Note: this implies that whenever **a single** I/O op fails the whole
+      // benchmark is seen as unsuccessful.
+      //
+      // This may not be optimal, although it is currently unclear to me how
+      // a "expectable amount" of failing IO ops would look like...
+      //
+      // TODO thus we crash for now, but I am very open for a PR with better ideas
       results->durations[i] = -1.0;
+      return config->is_read_operation ? ERROR_CODES_READ_FAILED : ERROR_CODES_WRITE_FAILED;
     }
 
     /* update offsets */
