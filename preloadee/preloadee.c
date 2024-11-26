@@ -123,9 +123,15 @@ int open(const char *path, int oflag, ...) {
   va_list args;
   int mflag;
 
-  va_start(args, oflag);
-  mflag = va_arg(args, int);
-  int ret = current_state->orig_open(path, oflag, mflag);
+  int ret;
+  // only with O_CREAT the third argument is used
+  if (oflag & O_CREAT) {
+    va_start(args, oflag);
+    mflag = va_arg(args, int);
+    ret = current_state->orig_open(path, oflag, mflag);
+  } else {
+    ret = current_state->orig_open(path, oflag);
+  }
   return ret;
 }
 
