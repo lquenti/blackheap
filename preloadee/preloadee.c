@@ -12,7 +12,7 @@
 #include<dlfcn.h>
 #include<string.h>
 #include<stdarg.h>
-
+#include<threads.h>
 
 #define CSV_HEADER "classification,io_type,bytes,sec\n"
 
@@ -28,10 +28,47 @@ typedef struct state_t {
 
 static state_t *current_state = NULL;
 
+/* I tried to use multiple approaches in order to support both multithreading
+ * and multiprocessing. The main problems are
+ * - Do not sequentialize access too much (through a global mutex)
+ * - Do not increase overhead per I/O call too much
+ * - Do not expect any other thread to help you
+ *   (As they can go away by a process fork)
+ *
+ * A solution is valid if two threads never write their logs in the same file
+ *
+ * After thinking and playing around a lot, I found that there are basically
+ * two valid approaches:
+ *
+ * - Every thread writes in their own file; Every I/O request checks whether
+ *   the tid stayed the same; if not, open a new file...
+ *
+ * - Use an (atomically indexed) double buffer, and once the front buffer is
+ *   full the back buffer will be flushed out. If the front buffer is full
+ *   while the back buffer still flushes, block.
+ *
+ * While the second one seems faster, it can block quite a lot for write-heavy
+ * jobs. Furthermore, whenever the back buffer writeout happens, it probably
+ * invalidates a big chunk of the CPU caches, most-likely resulting in weird
+ * spikes. I expected it to be quite lock-free, but used up to 3 mutexes in the
+ * end.
+ *
+ * Thus, we use the TID checks instead. If you still want to have a cool non-
+ * blocking double buffer, see
+ * <https://gist.github.com/lquenti/58a64f93bcfea2bd5790a0e28ccba282>
+ */
+thread_local pid_t expected_tid;
+
 static void cleanup_state() {
-  // current_state is never a nullptr since this just gets
-  // called if init_state() got called first
   free(current_state);
+}
+
+static void open_based_on_tid_and_write_header() {
+  int timestamp = (int)time(NULL);
+  char filename[256];
+  sprintf(filename, "./io_recordings_%d_%d.csv", expected_tid, timestamp);
+  current_state->fp = current_state->orig_open(filename, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+  current_state->orig_write(current_state->fp, CSV_HEADER, strlen(CSV_HEADER));
 }
 
 
@@ -39,20 +76,13 @@ static void init_state() {
   atexit(cleanup_state);
   current_state = malloc(sizeof(state_t));
 
-  int timestamp = (int)time(NULL);
-  pid_t pid = getpid();
-  char filename[256];
-  sprintf(filename, "./io_recordings_%d_%d.csv", pid, timestamp);
+  expected_tid = gettid();
   current_state->orig_read = dlsym(RTLD_NEXT, "read");
   current_state->orig_write = dlsym(RTLD_NEXT, "write");
   current_state->orig_open = dlsym(RTLD_NEXT, "open");
   current_state->orig_close = dlsym(RTLD_NEXT, "close");
 
-  current_state->fp = current_state->orig_open(filename, O_CREAT | O_WRONLY | O_TRUNC, 0644);
-
-
-  // write CSV header
-  current_state->orig_write(current_state->fp, CSV_HEADER, strlen(CSV_HEADER));
+  open_based_on_tid_and_write_header();
 }
 
 
@@ -86,6 +116,15 @@ static ssize_t do_io(bool is_read, int fd, void *buf, size_t count) {
   res = io_op(fd, buf, count);
   clock_gettime(CLOCK_MONOTONIC, &end);
   duration = get_duration(&start, &end);
+
+
+  // Check if we forked in-between
+  // (avoid race condition)
+  pid_t current_tid = gettid();
+  if (current_tid != expected_tid) {
+    expected_tid = current_tid;
+    open_based_on_tid_and_write_header();
+  }
 
   // record results
   // (Don't record our recording)
